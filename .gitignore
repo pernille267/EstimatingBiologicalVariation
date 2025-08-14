@@ -1,0 +1,17 @@
+# RStudio temporary files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Shiny user-specific files
+rsconnect/
+*.Rproj
+
+# Data files that might be uploaded by users
+# If you have a folder for uploads, add it here, e.g.,
+# www/uploads/
+
+# R packages
+/renv/
+/packrat/
