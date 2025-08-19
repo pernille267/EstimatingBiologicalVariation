@@ -134,24 +134,64 @@ server <- function(input, output, session) {
     return(guesses)
   }
   
-  # 2. COMPILE STAN MODELS ON STARTUP
+  # 2. LOAD PRE-COMPILED STAN MODELS
   # --------------------------------------------------------------------------
+  # These models are compiled once offline using 'precompile_models.R'
+  # and saved as .rds files. This makes the app start up much faster.
   compiled_models <- reactiveValues()
-  withProgress(message = 'Compiling Stan Models...', value = 0, {
-    model_file_1 <- "stan_model_4.stan"
-    model_file_2 <- "stan_model_3.stan"
-    incProgress(0.1, detail = "Checking for model files...")
-    if (!file.exists(model_file_1) || !file.exists(model_file_2)) {
-      stop("One or both Stan model files not found.")
+  withProgress(message = 'Loading Stan Models...', value = 0, {
+    # Correct mapping: Model 1 is NTT, Model 2 is NTTDFGAM
+    model_file_1_rds <- "stan_model_1_compiled.rds" # NTT model (from stan_model_3.stan)
+    model_file_2_rds <- "stan_model_2_compiled.rds" # NTTDFGAM model (from stan_model_4.stan)
+    
+    incProgress(0.1, detail = "Checking for compiled model files...")
+    if (!file.exists(model_file_1_rds) || !file.exists(model_file_2_rds)) {
+      stop(
+        "One or both pre-compiled Stan model files (.rds) not found. ",
+        "Please run the 'precompile_models.R' script first."
+      )
     }
-    incProgress(0.2, detail = paste("Compiling", model_file_1))
-    compiled_models$model1 <- stan_model(file = model_file_1)
-    incProgress(0.5, detail = paste("Compiling", model_file_2))
-    compiled_models$model2 <- stan_model(file = model_file_2)
-    incProgress(1, detail = "Compilation complete.")
+    
+    incProgress(0.3, detail = "Loading Model 1 (NTT)...")
+    compiled_models$model1 <- readRDS(model_file_1_rds)
+    
+    incProgress(0.7, detail = "Loading Model 2 (NTTDFGAM)...")
+    compiled_models$model2 <- readRDS(model_file_2_rds)
+    
+    incProgress(1, detail = "Models loaded.")
   })
   
-  # 3. DATA HANDLING & DYNAMIC INPUTS
+  # 3. WIZARD NAVIGATION LOGIC
+  # --------------------------------------------------------------------------
+  observeEvent(input$goto_step2, {
+    req(input$file_upload)
+    
+    updateTabsetPanel(session, "setup_wizard", selected = "step2_map")
+  })
+  observeEvent(input$back_to_step1, {
+    updateTabsetPanel(session, "setup_wizard", selected = "step1_upload")
+  })
+  observeEvent(input$goto_step3, {
+    # Require mandatory columns to be selected before proceeding
+    req(
+      input$measurement_col,
+      input$subject_id_col,
+      input$sample_id_col,
+      input$replicate_id_col
+    )
+    updateTabsetPanel(session, "setup_wizard", selected = "step3_filter")
+  })
+  observeEvent(input$back_to_step2, {
+    updateTabsetPanel(session, "setup_wizard", selected = "step2_map")
+  })
+  observeEvent(input$goto_step4, {
+    updateTabsetPanel(session, "setup_wizard", selected = "step4_params")
+  })
+  observeEvent(input$back_to_step3, {
+    updateTabsetPanel(session, "setup_wizard", selected = "step3_filter")
+  })
+  
+  # 4. DATA HANDLING & DYNAMIC INPUTS
   # --------------------------------------------------------------------------
   
   # Reactive to read the selected data
@@ -383,144 +423,111 @@ server <- function(input, output, session) {
     )
   })
   
-  # 6. ANALYSIS LOGIC
+  # 7. ANALYSIS LOGIC
   # --------------------------------------------------------------------------
   run_analysis <- function(model_to_run) {
     
-    # Requirements that needs to be satisfied before running is allowed
-    req(
-      model_to_run,
-      filtered_data(),
-      input$measurement_col,
-      input$subject_id_col,
-      input$sample_id_col,
-      input$replicate_id_col
-    )
-    # Show notification that the sampling starts
-    showNotification(
-      ui = "Starting Stan analysis...",
-      type = "message",
-      duration = NULL,
-      id = "stan_running"
-    )
-    # Copy data.table to avoid modifying the original data.table
-    data_for_stan <- copy(filtered_data())
-    # Standard names
-    standard_names <- c(
-      "y",
-      "SubjectID",
-      "SampleID",
-      "ReplicateID"
-    )
-    # User names
-    user_selected_cols <- c(
-      input$measurement_col,
-      input$subject_id_col,
-      input$sample_id_col,
-      input$replicate_id_col
-    )
-    # Change from user names to standard names
-    setnames(
-      data_for_stan,
-      old = user_selected_cols,
-      new = standard_names,
-      skip_absent = TRUE
-    )
-    
-    # Construct hyper_strength vector from weakness factor inputs
-    hyper_strength_vec <- c(
-      input$hyper_beta_weakness,
-      input$hyper_cvi_weakness,
-      input$hyper_cva_weakness,
-      input$hyper_cvg_weakness,
-      input$hyper_dfi_weakness,
-      input$hyper_dfa_weakness
-    )
-    
-    # Convert log_transformed input to logical
-    log_trans_logical <- (input$log_transformed == "Yes")
-    
-    # Prepare the stan data
-    prepared_stan_data <- pernille_prepares_for_stan_modeling(
-      data = data_for_stan,
-      hypers = list(
-        "beta" = input$hyper_beta,
-        "cvi" = input$hyper_cvi,
-        "cva" = input$hyper_cva,
-        "cvg" = input$hyper_cvg,
-        "dfi" = input$hyper_dfi,
-        "dfa" = input$hyper_dfa
-      ),
-      hyper_strength = hyper_strength_vec,
-      log_transformed = log_trans_logical
-    )
-    
-    # Calculate warmup iterations
-    total_iter <- as.numeric(input$iter)
-    warmup_iter <- floor(total_iter * (as.numeric(input$burn) / 100))
-    
-    # Do the sampling
-    fit <- sampling(
-      object = model_to_run,
-      data = prepared_stan_data,
-      chains = input$nchains,
-      iter = total_iter,
-      warmup = warmup_iter,
-      thin = 1,
-      seed = 123,
-      control = list(
-        adapt_delta = as.numeric(input$adapt_delta) / 100,
-        max_treedepth = as.numeric(input$max_treedepth)
+    withProgress(message = 'Analysis in progress', value = 0, {
+      
+      req(
+        model_to_run,
+        filtered_data(),
+        input$measurement_col,
+        input$subject_id_col,
+        input$sample_id_col,
+        input$replicate_id_col
       )
-    )
-    
-    # Remove notification that says stan is running
-    removeNotification("stan_running")
-    
-    # Add notification that says stan sampling is complete
-    showNotification(
-      ui = "Analysis complete! Processing results...",
-      type = "message",
-      duration = 5
-    )
-    extracted_fit <- extract(fit)
-    bayesian_output_table <- process_stan_output(
-      fit = extracted_fit,
-      log_transformed = log_trans_logical,
-      analyte = paste0(
-        input$analyte_name,
-        " (",
-        input$analyte_material,
-        ")"
-      ),
-      group = input$group_name,
-      data = data_for_stan
-    )[[1]]
-    
-    bayesian_output_plot <- plot_subject_specific_CVI(
-      fit = extracted_fit,
-      log_transformed = log_trans_logical,
-      analyte = paste0(
-        input$analyte_name,
-        " (",
-        input$analyte_material,
-        ")"
-      ),
-      group = input$group_name,
-      data = data_for_stan
-    )
-    list(
-      table = bayesian_output_table,
-      plot = bayesian_output_plot
-    )
+      
+      incProgress(0.1, detail = "Preparing data...")
+      
+      data_for_stan <- copy(filtered_data())
+      setnames(
+        data_for_stan,
+        old = c(input$measurement_col, input$subject_id_col, input$sample_id_col, input$replicate_id_col),
+        new = c("y", "SubjectID", "SampleID", "ReplicateID"),
+        skip_absent = TRUE
+      )
+      
+      hyper_strength_vec <- c(input$hyper_beta_weakness, input$hyper_cvi_weakness, input$hyper_cva_weakness, input$hyper_cvg_weakness, input$hyper_dfi_weakness, input$hyper_dfa_weakness)
+      log_trans_logical <- (input$log_transformed == "Yes")
+      
+      prepared_stan_data <- pernille_prepares_for_stan_modeling(
+        data = data_for_stan,
+        hypers = list("beta" = input$hyper_beta, "cvi" = input$hyper_cvi, "cva" = input$hyper_cva, "cvg" = input$hyper_cvg, "dfi" = input$hyper_dfi, "dfa" = input$hyper_dfa),
+        hyper_strength = hyper_strength_vec,
+        log_transformed = log_trans_logical
+      )
+      
+      # --- Time Estimation Logic ---
+      incProgress(0.2, detail = "Estimating run time...")
+      
+      test_iter <- 50
+      start_time <- Sys.time()
+      suppressMessages({
+        sampling(
+          object = model_to_run, data = prepared_stan_data, chains = 1, 
+          iter = test_iter, warmup = floor(test_iter/2), refresh = 0,
+          control = list(adapt_delta = 0.8)
+        )
+      })
+      end_time <- Sys.time()
+      
+      elapsed_seconds <- as.numeric(difftime(end_time, start_time, units = "secs"))
+      time_per_iter <- elapsed_seconds / test_iter
+      estimated_seconds <- time_per_iter * as.numeric(input$iter) * as.numeric(input$nchains)
+      
+      format_time <- function(s) {
+        mins <- floor(s / 60)
+        secs <- round(s %% 60)
+        if (mins > 0) paste("approx.", mins, "min", secs, "sec")
+        else paste("approx.", secs, "sec")
+      }
+      time_estimate_str <- format_time(estimated_seconds)
+      # --- End of Time Estimation Logic ---
+      
+      total_iter <- as.numeric(input$iter)
+      warmup_iter <- floor(total_iter * (as.numeric(input$burn) / 100))
+      
+      incProgress(0.3, detail = paste("Running MCMC...", time_estimate_str))
+      
+      fit <- sampling(
+        object = model_to_run,
+        data = prepared_stan_data,
+        chains = input$nchains,
+        iter = total_iter,
+        warmup = warmup_iter,
+        thin = 1,
+        seed = 123,
+        open_progress = FALSE,
+        control = list(adapt_delta = as.numeric(input$adapt_delta) / 100, max_treedepth = as.numeric(input$max_treedepth))
+      )
+      
+      incProgress(0.8, detail = "Processing posterior samples...")
+      
+      extracted_fit <- extract(fit)
+      analyte_full_name <- paste0(input$analyte_name, " (", input$analyte_material, ")")
+      
+      bayesian_output_table <- process_stan_output(
+        fit = extracted_fit,
+        log_transformed = log_trans_logical,
+        analyte = analyte_full_name,
+        group = input$group_name,
+        data = data_for_stan
+      )[[1]]
+      
+      bayesian_output_plot <- plot_subject_specific_CVI(
+        fit = extracted_fit,
+        log_transformed = log_trans_logical,
+        analyte = analyte_full_name,
+        group = input$group_name,
+        data = data_for_stan
+      )
+      
+      incProgress(1, detail = "Done!")
+      
+      list(table = bayesian_output_table, plot = bayesian_output_plot)
+    })
   }
-  
-  analysis_results_model1 <- eventReactive(input$run_analysis_model1_btn, {
-    run_analysis(compiled_models$model1)
-  })
-  analysis_results_model2 <- eventReactive(input$run_analysis_model2_btn, {
-    run_analysis(compiled_models$model2)
-  })
   
   # 7. RENDER OUTPUTS
   # --------------------------------------------------------------------------

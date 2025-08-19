@@ -126,7 +126,7 @@ generated quantities {
     }
     sigma_I_pred_raw = sigma_I_pred_temp;
   }
-  sigma_I_pred = sigma_I_pred_raw * sqrt(df_I_param_minus2 / df_I_param);
+  sigma_I_pred = sigma_I_pred_raw * sqrt(df_I_param / df_I_param_minus2);
   real df_I = df_I_param;
   real df_A = df_A_param;
   real sigma_I = sigma_I_mean;
