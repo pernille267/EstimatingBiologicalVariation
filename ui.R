@@ -11,6 +11,7 @@ library(shinycssloaders)
 library(shinyWidgets)
 library(DT)
 library(shinyBS)
+library(shinybusy)
 
 # User functions
 # ------------------------------------------------------------------------------
@@ -98,7 +99,9 @@ ui <- dashboardPage(
       menuItem("Setup & Data Upload", tabName = "setup", icon = icon("cogs")),
       menuItem("Model 1 (NTT)", tabName = "model1_results", icon = icon("chart-simple")),
       menuItem("Model 2 (NTTDFGAM)", tabName = "model2_results", icon = icon("chart-area")),
-      menuItem("Documentation", tabName = "documentation", icon = icon("book"))
+      menuItem("Documentation", tabName = "documentation", icon = icon("book")),
+      menuItem("", tabName = "exploring"),
+      menuItem("", tabName = "merge_tables")
     )
   ),
   
@@ -541,7 +544,9 @@ ui <- dashboardPage(
               div(
                 class = "card-body",
                 withSpinner(
-                  DT::DTOutput("results_table_model1")
+                  ui_element = DT::DTOutput("results_table_model1"),
+                  image = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3JkYjF0OXJjdjUyd2JwNWJhOXBjeHVjZXB4aWxlMWdxNm56Z2J2eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fefXhtGG2NeynEUHtU/giphy.gif",
+                  image.width = 300
                 )
               )
             )
@@ -560,19 +565,17 @@ ui <- dashboardPage(
               ),
               div(
                 class = "card-body",
-                div(
-                  class = "plot-container",
-                  style = "max-width: 100%; overflow-x: auto;",
-                  withSpinner(
-                    plotOutput("subject_plot_model1", height = "600px")
-                  )
+                withSpinner(
+                  plotOutput("subject_plot_model1", width = "100%"),
+                  image = "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmx0bnF2YjB5eWN1NmJodG9vOGoyOXlud2x3ZDZxcmdma3ZrM2IxNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VegxrmsHVdYS4E0QKH/giphy.gif",
+                  image.width = 300
                 )
               )
             )
           ),
-          # --- Peek at Filtered Data ---
+          # --- Subject-Specific Concentration Versus CV_i Plot ---
           tabPanel(
-            title = "CV Versus Concentration Plot",
+            title = "Concentration Versus CV Plot",
             value = "cv_vs_conc_ntt",
             icon = icon("vial"),
             div(
@@ -585,7 +588,9 @@ ui <- dashboardPage(
               div(
                 class = "card-body",
                 withSpinner(
-                  plotOutput("filtered_data_table_model1")
+                  plotOutput("filtered_data_table_model1", width = "100%"),
+                  image = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dWYzMXhxdGEya3FyZjBuaXc2Y2V1OTdtZGp1MXI0YXQ5ODd3d2g3ZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/jUhkz8bRXfFqpwP34k/giphy.gif",
+                  image.width = 300
                 )
               )
             )
@@ -640,7 +645,8 @@ ui <- dashboardPage(
               div(
                 class = "card-body",
                 withSpinner(
-                  DT::DTOutput("results_table_model2")
+                  ui_element = DT::DTOutput("results_table_model2"),
+                  image = "www/Bayesian_Sampling_Loading_Icon_GIF.gif"
                 )
               )
             )
@@ -661,9 +667,10 @@ ui <- dashboardPage(
                 class = "card-body",
                 div(
                   class = "plot-container",
-                  style = "max-width: 100%; overflow-x: auto;",
                   withSpinner(
-                    plotOutput("subject_plot_model2", height = "600px")
+                    ui_element = plotOutput("subject_plot_model2"),
+                    color = "#605ca8",
+                    type = 4
                   )
                 )
               )
@@ -671,7 +678,7 @@ ui <- dashboardPage(
           ),
           # --- Peek at Filtered Data ---
           tabPanel(
-            title = "CV Versus Concentration Plot",
+            title = "Concentration Versus CV Plot",
             value = "cv_vs_conc_nttdfgam",
             icon = icon("vial"),
             div(
@@ -683,8 +690,13 @@ ui <- dashboardPage(
               ),
               div(
                 class = "card-body",
-                withSpinner(
-                  plotOutput("filtered_data_table_model2", height = "600px")
+                div(
+                  class = "plot-container",
+                  withSpinner(
+                    ui_element = plotOutput("filtered_data_table_model2"),
+                    color = "#605ca8",
+                    type = 4
+                  )
                 )
               )
             )
@@ -817,8 +829,8 @@ ui <- dashboardPage(
                     <li><code>SD[&sigma;<sub>i</sub>]</code> \\(\\sim \\mathrm{N}(\\mathrm{E}[\\mathrm{SD}[\\sigma_i]], \\mathrm{Var}[\\mathrm{SD}[\\sigma_i]])\\), with \\(\\mathrm{E}[\\mathrm{SD}[\\sigma_i]] = 0.5 \\cdot \\color{purple}{\\sigma_I} \\) and \\(\\mathrm{Var}[\\mathrm{SD}[\\sigma_i]] = 4 \\cdot \\color{purple}{\\sigma_I}^2 \\). </li>
                   </ul>
                   <li><code>&sigma;<sub>A</sub></code> \\(\\sim \\mathrm{N}(\\color{purple}{\\mathrm{E}[\\sigma_A]}, \\mathrm{Var}[\\sigma_A])\\), with \\(\\mathrm{Var}[\\sigma_A] = (\\color{purple}{F_A} \\cdot \\color{purple}{\\mathrm{E}[\\sigma_A]})^2 \\).</li>
-                  <li><code>df<sub>I</sub></code> \\(\\sim \\mathrm{N}(\\mathrm{E}[\\mathrm{df}_I], \\mathrm{Var}[\\mathrm{df}_I])\\), with \\(\\mathrm{Var}[\\mathrm{df}_I] = (F_{\\mathrm{df}_I} \\cdot \\mathrm{E}[\\mathrm{df}_I])^2 \\).</li>
-                  <li><code>df<sub>A</sub></code> \\(\\sim \\mathrm{N}(\\mathrm{E}[\\mathrm{df}_A], \\mathrm{Var}[\\mathrm{df}_A])\\), with \\(\\mathrm{Var}[\\mathrm{df}_A] = (F_{\\mathrm{df}_A} \\cdot \\mathrm{E}[\\mathrm{df}_A])^2 \\).</li>
+                  <li><code>df<sub>I</sub></code> \\(\\sim \\mathrm{N}(\\color{purple}{\\mathrm{E}[\\mathrm{df}_I]}, \\mathrm{Var}[\\mathrm{df}_I])\\), with \\(\\mathrm{Var}[\\mathrm{df}_I] = (\\color{purple}{F_{\\mathrm{df}_I}} \\cdot \\color{purple}{\\mathrm{E}[\\mathrm{df}_I]})^2 \\).</li>
+                  <li><code>df<sub>A</sub></code> \\(\\sim \\mathrm{N}(\\color{purple}{\\mathrm{E}[\\mathrm{df}_A]}, \\mathrm{Var}[\\mathrm{df}_A])\\), with \\(\\mathrm{Var}[\\mathrm{df}_A] = (\\color{purple}{F_{\\mathrm{df}_A}} \\cdot \\color{purple}{\\mathrm{E}[\\mathrm{df}_A]})^2 \\).</li>
                 </ul>
                 <p> Here, \\(\\color{purple}{\\sigma_I} = \\mathrm{E}[\\mathrm{E}[\\sigma_i]]\\). For "Model 2 (NTTDFGAM)", the priors for \\(\\mathrm{df}_I\\) and \\(\\mathrm{df}_A\\) are instead: </p>
                 <ul>
@@ -831,11 +843,11 @@ ui <- dashboardPage(
                 <p>When "Apply Log Transformation" is set to "Yes", the model assumes a multiplicative relationship, which becomes additive on the log scale:</p>
                 $$ y_{isr} = \\beta \\cdot G_i \\cdot I_{is} \\cdot A_{isr} $$
                 $$ \\log(y_{isr}) = \\log(\\beta) + \\log(G_i) + \\log(I_{is}) + \\log(A_{isr}) $$
-                <p>The model structure remains the same, but it now operates on the logarithms of the measurements. The parameters $ \\sigma_G, \\sigma_i, \\sigma_A $ now represent the standard deviations of the variation components on the log scale.</p>
+                <p>The model structure remains the same, but it now operates on the logarithms of the measurements. The parameters \\(\\sigma_G, \\sigma_i, \\sigma_A\\) now represent the standard deviations of the variation components on the log scale.</p>
                 <br>
                 
                 <h3>Coefficients of Variation (CV) Calculation</h3>
-                <p>While the models are parameterized with standard deviations ($ \\sigma $), the results are presented as Coefficients of Variation (CV). The conversion formula is different for each model.</p>
+                <p>While the models are parameterized with standard deviations (\\(\\sigma\\)), the results are presented as Coefficients of Variation (CV). The conversion formula is different for each model.</p>
                 
                 <h4>On the Original (Identity) Scale</h4>
                 <p>The population-level CVs are calculated relative to the overall population mean (\\(\\beta \\)). For the Normally-distributed component (\\(\\mathrm{CV}_G\\)):</p>
@@ -843,18 +855,97 @@ ui <- dashboardPage(
                 <p>For the t-distributed components (\\(\\mathrm{CV}_I\\), \\(\\mathrm{CV}_A\\)), the standard deviation must first be derived from the scale parameter (\\(s\\)) and degrees of freedom \\(\\nu\\):</p>
                 $$ \\sigma = s \\cdot \\sqrt{\\frac{\\nu}{\\nu - 2}} \\quad \\implies \\quad \\text{CV}(\\%) = \\frac{\\sigma}{\\beta} \\times 100\\% $$
                 <p><strong>Priors:</strong> When you provide a prior for a CV on this scale, the application uses the prior mean for \\(\\beta\\) to convert it back to a prior for the standard deviation \\(\\sigma\\).</p>
-                <p><strong>Subject-Specific CVs:</strong> Importantly, the within-subject CV for each individual subject ($CV_i$) is calculated relative to that subject\'s own mean (\\(\\beta + G_i\\)), not the overall population mean. This provides a personalized estimate of variation.</p>
+                <p><strong>Subject-Specific CVs:</strong> Importantly, the within-subject CV for each individual subject \\(\\mathrm{CV}_i\\) is calculated relative to that subject\'s own mean (\\(\\beta + G_i\\)), not the overall population mean. This provides a personalized estimate of variation.</p>
                 $$ \\text{CV}_i(\\%) = \\frac{\\sigma_i}{\\beta + G_i} \\times 100\\% $$
 
                 <h4>On the Log-Transformed Scale</h4>
-                <p>When data is log-transformed, the CV is derived from the standard deviation on the log scale ($ \\sigma_{\\log} $) and <strong>does not depend on the mean</strong>. For the log-normally distributed component ($CV_G$):</p>
+                <p>When data is log-transformed, the CV is derived from the standard deviation on the log scale \\(\\sigma_{\\log}\\) and <strong>does not depend on the mean</strong>. For the log-normally distributed component \\(\\mathrm{CV}_G\\):</p>
                 $$ \\text{CV}_G(\\%) = \\sqrt{e^{\\sigma_{\\log, G}^2} - 1} \\times 100\\% $$
-                <p>For the log-t distributed components ($CV_I, CV_A$), the variance on the log scale is first calculated from the scale ($s_{\\log}$) and degrees of freedom ($ \\nu $), then used in the same formula:</p>
+                <p>For the log-t distributed components (\\(\\mathrm{CV}_I\\), \\(\\mathrm{CV}_A\\)), the variance on the log scale is first calculated from the scale \\(s_{\\log}\\) and degrees of freedom \\(\\nu\\), then used in the same formula:</p>
                 $$ \\sigma_{\\log}^2 = s_{\\log}^2 \\cdot \\frac{\\nu}{\\nu - 2} \\quad \\implies \\quad \\text{CV}(\\%) = \\sqrt{e^{\\sigma_{\\log}^2} - 1} \\times 100\\% $$
                 <p><strong>Priors:</strong> When you provide a prior for a CV on the log scale, the application uses the inverse formula \\(\\sigma_{\\log} = \\sqrt{\\ln((\\text{CV}/100)^2 + 1)}\\) to set the prior for the standard deviation on the log scale. This conversion does not involve \\(\\beta\\).</p>
                 
               </div>
             ')
+          )
+        )
+      ),
+      tabItem(
+        tabName = "exploring",
+        div(
+          class = "page-header",
+          h1(
+            class = "main-title",
+            icon("chart-pie"),
+            "Exploratory Analysis"
+          )
+        ),
+        # Histogram
+        div(
+          class = "dashboard-card",
+          div(
+            class = "card-header",
+            icon("chart-simple", class = "header-icon"),
+            h3("Histogram for Your Data")
+          ),
+          div(
+            class = "card-body",
+            div(
+              class = "parameter-section",
+              h5("Apply Logarithmic Transformation on Data"),
+              radioGroupButtons(
+                inputId = "log_hist",
+                label = NULL,
+                choiceNames = c("Yes", "No"),
+                choiceValues = c("Yes", "No"),
+                selected = "No",
+                status = "primary",
+                justified = TRUE
+              ) 
+            ),
+            plotOutput(
+              outputId = "hist",
+              width = "100%"
+            )
+          )
+        ),
+        # Prior plots
+        div(
+          class = "dashboard-card",
+          div(
+            class = "card-header",
+            icon("chart-area", class = "header-icon"),
+            h3("Density Plots of Prior Distributions")
+          ),
+          div(
+            class = "card-body",
+            div(
+              class = "parameter-section",
+              h5("Apply Logarithmic Transformation on Data"),
+              radioGroupButtons(
+                inputId = "log_priors",
+                label = NULL,
+                choiceNames = c("Yes", "No"),
+                choiceValues = c("Yes", "No"),
+                selected = "No",
+                status = "primary",
+                justified = TRUE
+              ),
+              h5("Apply the NTTDFGAM Model"),
+              radioGroupButtons(
+                inputId = "nttdfgam_priors",
+                label = NULL,
+                choiceNames = c("Yes", "No"),
+                choiceValues = c("Yes", "No"),
+                selected = "No",
+                status = "primary",
+                justified = TRUE
+              )
+            ),
+            plotOutput(
+              outputId = "prior_densities",
+              width = "100%"
+            )
           )
         )
       )
