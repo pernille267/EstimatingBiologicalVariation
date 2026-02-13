@@ -93,39 +93,6 @@ analyte_synonyms <- list(
   )
 )
 
-# --- Helper Constants ---
-
-# define predifined hyperparameter priors for specific analytes (update and push request)
-analyte_priors <- list(
-  "HbA1c" = list(beta = 5, cvi = 1.2, cva = 2.5, cvg = 5.4),
-  "Glucose" = list(beta = 5, cvi = 4.7, cva = 2.5, cvg = 8.0),
-  "ALA" = list(beta = 2, cvi = 16.0, cva = 5.0, cvg = 27.0),
-  "PBG" = list(beta = 1.8, cvi = 20.0, cva = 8.0, cvg = 30.0)
-  # Add other analytes here as needed
-)
-
-# define analyte name synomym mapping (update and push request)
-analyte_synonyms <- list(
-  "HbA1c" = c(
-    "hba1c", "a1c", "hemoglobin a1c", "glycated hemoglobin",
-    "glycosylated hemoglobin", "glycohemoglobin", "langtidsblodsukker"
-  ),
-  "Glucose" = c(
-    "glucose", "glukose", "glu", "blood sugar", 
-    "blodsukker", "p-glucose", "s-glucose", "b-glucose", 
-    "p-glukose", "s-glukose", "b-glukose", "fbs", "fbg"
-  ),
-  "ALA" = c(
-    "ala", "aminolevulinic acid", "delta-aminolevulinic acid",
-    "d-ala", "dala", "5-aminolevulinic acid", "aminolevulinsyre",
-    "delta-aminolevulinsyre", "u-ala", "p-ala"
-  ),
-  c(
-    "pbg", "porphobilinogen", "porfobilinogen", 
-    "u-pbg"
-  )
-)
-
 # SERVER LOGIC
 # ------------------------------------------------------------------------------
 server <- function(input, output, session) {
@@ -464,10 +431,6 @@ server <- function(input, output, session) {
     return(advice_list)
   }
   
-<<<<<<< HEAD
-=======
-  
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
   # 2. LOAD PRE-COMPILED STAN MODELS
   # --------------------------------------------------------------------------
   compiled_models <- reactiveValues()
@@ -673,7 +636,6 @@ server <- function(input, output, session) {
   })
   
   # 5. DYNAMIC FILTER UI GENERATION
-<<<<<<< HEAD
   # ----------------------------------------------------------------------------
   
   # --- Turn on Dynamic Filtering where Possible -------------------------------
@@ -681,9 +643,6 @@ server <- function(input, output, session) {
   # Turn on analyte filtering if an `analyte` column exists and is mapped
   # - Analyte can for example be `glucose`, `HBa1c`, or `CRP`
   # - Users can only select one analyte at the time
-=======
-  # --------------------------------------------------------------------------
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
   output$analyte_filter_ui <- renderUI({
     req(input$analyte_col)
     unique_vals <- unique(uploaded_data()[[input$analyte_col]])
@@ -728,7 +687,6 @@ server <- function(input, output, session) {
     selectizeInput("filter_group_2", label, choices = unique_vals, multiple = TRUE)
   })
   
-<<<<<<< HEAD
   # 6. UPDATING HYPERPARAMETERS BASED ON SELECTED ANALYTE
   # --------------------------------------------------------------------------
   
@@ -741,24 +699,11 @@ server <- function(input, output, session) {
     req(input$filter_analyte)
     
     # Find the canonical analyte name using our analyte name synonym mapper (fancy AI)
-=======
-  # --- NEW ---
-  # 6. OBSERVER FOR UPDATING HYPERPARAMETERS BASED ON ANALYTE
-  # --------------------------------------------------------------------------
-  observeEvent(input$filter_analyte, {
-    
-    req(input$filter_analyte)
-    
-    # --- UPDATED LOGIC ---
-    
-    # 1. Find the canonical name using our helper function and synonym map
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
     canonical_name <- get_canonical_analyte_name(
       input_value = input$filter_analyte,
       synonym_map = analyte_synonyms
     )
     
-<<<<<<< HEAD
     # Check if a valid canonical name was found (i.e., `canonical_name` is not `NULL`)
     if (!is.null(canonical_name)) {
       
@@ -767,15 +712,6 @@ server <- function(input, output, session) {
       priors <- analyte_priors[[canonical_name]]
       
       # Update the default numeric inputs for `beta`, `cvi`, `cva` and `cvg`
-=======
-    # 2. Check if a valid canonical name was found
-    if (!is.null(canonical_name)) {
-      
-      # 3. Retrieve the priors using the canonical name
-      priors <- analyte_priors[[canonical_name]]
-      
-      # 4. Update the numeric inputs (this part remains the same)
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
       updateNumericInput(session, "hyper_beta", value = priors$beta)
       updateNumericInput(session, "hyper_cvi", value = priors$cvi)
       updateNumericInput(session, "hyper_cva", value = priors$cva)
@@ -786,7 +722,6 @@ server <- function(input, output, session) {
   
   # 6. AUTOMATIC NAME GENERATION
   # --------------------------------------------------------------------------
-<<<<<<< HEAD
   
   # --- These event observers automatically populate the name fields -----------
   # - Based on changes in filtering choices made by the user
@@ -824,26 +759,6 @@ server <- function(input, output, session) {
     sex_name_str <- paste(input$filter_sex, collapse = ", ")
     
     # Update default sex name (can be changed manually after)
-=======
-  # These observers automatically populate the name fields based on filter selections.
-  
-  observeEvent(input$filter_analyte, {
-    req(input$filter_analyte)
-    updateTextInput(session, "analyte_name", value = input$filter_analyte)
-  }, ignoreNULL = TRUE, ignoreInit = TRUE)
-  
-  observeEvent(input$filter_material, {
-    req(input$filter_material)
-    # Combine multiple selections into a single string
-    material_name_str <- paste(input$filter_material, collapse = ", ")
-    updateTextInput(session, "analyte_material", value = material_name_str)
-  }, ignoreNULL = TRUE, ignoreInit = TRUE)
-  
-  observeEvent(input$filter_sex, {
-    req(input$filter_sex)
-    # Combine multiple selections into a single string
-    sex_name_str <- paste(input$filter_sex, collapse = ", ")
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
     updateTextInput(session, "sex_name", value = sex_name_str)
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
   
@@ -889,7 +804,6 @@ server <- function(input, output, session) {
   })
   
   # 8. ANALYSIS LOGIC
-<<<<<<< HEAD
   # ----------------------------------------------------------------------------
   
   # --- The Grand Modelling function -------------------------------------------
@@ -897,12 +811,6 @@ server <- function(input, output, session) {
   run_analysis <- function(model_to_run) {
     
     # Wrap All Calculations Inside withProgress() to Display Progress to User
-=======
-  # --------------------------------------------------------------------------
-  run_analysis <- function(model_to_run) {
-    
-    # --- Wrap All Calculations Inside withProgress() to Display Progress to User ---
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
     withProgress(message = 'Analysis in progress', value = 0, {
       
       # Before starting the following are required:
@@ -990,7 +898,6 @@ server <- function(input, output, session) {
       initfunc.stan <- function() hypers
       
       # --- Time Estimation Logic ---
-<<<<<<< HEAD
       # Estimates run time for the actual sampling using
       # - 500 iterations
       # - 1 chain
@@ -1017,13 +924,6 @@ server <- function(input, output, session) {
         
         # Warnings and Messages are not relevant for thr trial run.
         # They are suppressed!
-=======
-      if (as.numeric(input$iter) >= 500) { # Estimates time using 500 iterations for one chain and one core ...
-        incProgress(0.2, detail = "Estimating run time...")
-        
-        test_iter <- 500
-        start_time <- Sys.time()
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         suppressWarnings({
           suppressMessages({
             sampling(
@@ -1032,10 +932,7 @@ server <- function(input, output, session) {
               chains = 1,
               iter = test_iter,
               warmup = floor(test_iter * (as.numeric(input$burn) / 100)),
-<<<<<<< HEAD
               init = initfunc.stan,
-=======
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
               thin = 1,
               seed = 123,
               cores = 1,
@@ -1043,7 +940,6 @@ server <- function(input, output, session) {
               control = list(
                 adapt_delta = as.numeric(input$adapt_delta) / 100,
                 max_treedepth = as.numeric(input$max_treedepth)
-<<<<<<< HEAD
               ),
               refresh = 10
             )
@@ -1103,25 +999,10 @@ server <- function(input, output, session) {
         # If the number of seconds is larger than or equal to 60, the message
         # will be given with both minutes and seconds. Otherwise, the message
         # will be given in only seconds.
-=======
-              )
-            )
-          })
-        })
-        end_time <- Sys.time()
-        
-        elapsed_seconds <- as.numeric(difftime(end_time, start_time, units = "secs")) - 1
-        incProgress(0.25, detail = paste("One chain using one core takes", round(elapsed_seconds, 0L), ")", "for 500 iterations"))
-        Sys.sleep(3)
-        time_per_iter <- elapsed_seconds / test_iter
-        estimated_seconds <- time_per_iter * as.numeric(input$iter) * as.numeric(input$nchains) / (1 / (0.05 + 0.95 / as.numeric(input$number_of_cores))) 
-        
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         format_time <- function(s) {
           s <- s
           mins <- floor(s / 60)
           secs <- round(s %% 60)
-<<<<<<< HEAD
           if (mins > 0) {
             paste(
               "Sampling will take approximately",
@@ -1149,21 +1030,11 @@ server <- function(input, output, session) {
           amount = 0.25,
           detail = "Selected number of iterations not high enough to justify estimating the run time ..."
         )
-=======
-          if (mins > 0) paste("Will take approximately", mins, "minutes and", secs, "seconds")
-          else paste("Will take approximately", secs, "seconds")
-        }
-        time_estimate_str <- format_time(estimated_seconds)
-      }
-      else {
-        incProgress(0.2, detail = "Selected number of iterations not high enough to estimate run time ...")
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
       }
       
       
       # --- End of Time Estimation Logic ---
       
-<<<<<<< HEAD
       # 28 % done
       incProgress(
         amount = 0.28,
@@ -1259,62 +1130,13 @@ server <- function(input, output, session) {
         amount = 0.9,
         detail = "Processing posterior and predictive distribution samples..."
       )
-=======
-      # --- Interpret User Input Regarding Number of Iterations ---
-      total_iter <- as.numeric(input$iter)
-      warmup_iter <- floor(total_iter * (as.numeric(input$burn) / 100))
-      
-      incProgress(0.3, detail = paste("Running Bayesian model...", time_estimate_str))
-      
-      # Create an empty list to store warnings
-      captured_warnings <- list()
-      
-      # Wrap the sampling call in withCallingHandlers to catch warnings
-      fit <- withCallingHandlers(
-        # The main expression to run:
-        expr = {
-          rstan::sampling(
-            object = model_to_run,
-            data = prepared_stan_data,
-            chains = input$nchains,
-            iter = as.numeric(input$iter),
-            warmup = floor(as.numeric(input$iter) * (as.numeric(input$burn) / 100)),
-            thin = 1,
-            seed = 123,
-            cores = as.numeric(input$number_of_cores),
-            control = list(
-              adapt_delta = as.numeric(input$adapt_delta) / 100,
-              max_treedepth = as.numeric(input$max_treedepth)
-            )
-          )
-        },
-        warning = function(w) {
-          captured_warnings <<- c(captured_warnings, w$message)
-          # invokeRestart("muffleWarning") # Insert when captured warnings are explained as desired
-        }
-      )
-      
-      parsed_advice <- parse_stan_warnings(
-        warnings = captured_warnings,
-        current_iter = input$iter,
-        current_adapt_delta = input$adapt_delta,
-        current_max_treedepth = input$max_treedepth
-      )
-      
-      
-      incProgress(0.9, detail = "Processing posterior samples...")
-      
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
       
       # --- Handling Posterior Samples ---
       extracted_fit <- extract(fit)
       
-<<<<<<< HEAD
       #browser()
       out <<- extracted_fit
       
-=======
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
       # Extract all relevant summary metrics from stan output
       processed_stan_output <- process_stan_output( 
         fit = extracted_fit,
@@ -1323,7 +1145,6 @@ server <- function(input, output, session) {
         material = input$analyte_material,
         sex = input$sex_name,
         group = input$group_name,
-<<<<<<< HEAD
         data = data_for_stan
       )
       
@@ -1408,68 +1229,6 @@ server <- function(input, output, session) {
         detail = "Everything is done!"
       )
       
-=======
-        data = data_for_stan
-      )
-      
-      bayesian_output_table <- processed_stan_output[[1]]
-      
-      
-      # Handling grouping aestics for plots
-      color_by_input <- NULL
-      shape_by_input <- NULL
-      
-      if (input$sex_col != "") {
-        if (!is.null(input$filter_sex) && length(input$filter_sex) >= 2) {
-          color_by_input <- input$sex_col  
-        }
-        else if (input$material_col != "") {
-          if (!is.null(input$filter_material) && length(input$filter_material) >= 2) {
-            color_by_input <- input$material_col
-          }
-        }
-        else if (input$group_1_col != "") {
-          if (!is.null(input$filter_group_1) && length(input$filter_group_1) >= 2) {
-            color_by_input <- input$group_1_col
-          }
-        }
-      }
-      else if (input$material_col != "") {
-        if (!is.null(input$filter_material) && length(input$filter_material) >= 2) {
-          color_by_input <- input$material_col
-        }
-        else if (input$group_1_col != "") {
-          if (!is.null(input$filter_group_1) && length(input$filter_group_1) >= 2) {
-            color_by_input <- input$group_1_col
-          }
-        }
-      }
-      else if (input$group_1_col != "") {
-        if (!is.null(input$filter_group_1) && length(input$filter_group_1) >= 2) {
-          color_by_input <- input$group_1_col
-        }
-      }
-      
-      # --- Subject-Wise CV Plot --- 
-      bayesian_output_plot <- plot_subject_specific_CVI(
-        processed_output = processed_stan_output, 
-        color_by = color_by_input,
-        shape_by = shape_by_input,
-        data = data_for_stan
-      )
-      
-      # --- Subject-Wise Concentration Versus CV Plot ---
-      bayesian_output_plot2 <- plot_subject_specific_CVI(
-        processed_output = processed_stan_output, 
-        color_by = color_by_input,
-        shape_by = shape_by_input,
-        data = data_for_stan,
-        against_concentration = TRUE
-      )
-      
-      incProgress(1, detail = "Done!")
-      
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
       # --- Output List ---
       list(
         table = bayesian_output_table,
@@ -1480,18 +1239,14 @@ server <- function(input, output, session) {
     })
   }
   
-<<<<<<< HEAD
   # Event Reactive Expression which is rerun each time the `Run NTT Model`
   # button is pressed. In this case, the expression is:
   # - `run_analysis(...$model1)`
   # - Note: Will only run if the system is not busy when the button is pressed
-=======
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
   analysis_results_model1 <- eventReactive(input$run_analysis_model1_btn, {
     run_analysis(compiled_models$model1)
   })
   
-<<<<<<< HEAD
   # Event Observer which produce advice to the user (based on collected warnings)
   # each time `analysis_results_model1()` changes state. In practice it changes
   # state each time the `Run NTT Model` button is pressed while the system is
@@ -1535,32 +1290,10 @@ server <- function(input, output, session) {
   # button is pressed. In this case, the expression is:
   # - `run_analysis(...$model2)`
   # - Note: Will only run if the system is not busy when the button is pressed
-=======
-  observeEvent(analysis_results_model1(), {
-    
-    advice <- analysis_results_model1()$advice
-    
-    # If the list of advice is not empty, show the modal
-    if (length(advice) > 0) {
-      showModal(modalDialog(
-        title = tagList(icon("exclamation-triangle"), "Potential Model Issues Detected"),
-        p("The analysis completed, but Stan reported the following potential issues. Please review these recommendations before trusting the results:"),
-        tags$ul(
-          advice # The list of <li> tags from our parsing function
-        ),
-        easyClose = TRUE,
-        footer = modalButton("Dismiss")
-      ))
-    }
-  })
-  
-  
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
   analysis_results_model2 <- eventReactive(input$run_analysis_model2_btn, {
     run_analysis(compiled_models$model2)
   })
   
-<<<<<<< HEAD
   # Event Observer which produce advice to the user (based on collected warnings)
   # each time `analysis_results_model2()` changes state. In practice it changes
   # state each time the `Run NTTDFGAM Model` button is pressed while the system is
@@ -1574,13 +1307,6 @@ server <- function(input, output, session) {
     # to the user. Therefore, we check whether the length of the `advice` list is
     # non-empty. If it is non-empty, a warning modal pops up, which the user
     # can read, and then cancel out if they are finished (or do not care).
-=======
-  observeEvent(analysis_results_model2(), {
-    
-    advice <- analysis_results_model2()$advice
-    
-    # If the list of advice is not empty, show the modal
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
     if (length(advice) > 0) {
       showModal(
         modalDialog(
@@ -1593,17 +1319,11 @@ server <- function(input, output, session) {
           ),
           p(
             paste0(
-<<<<<<< HEAD
               "The sampling from the NTTDFGAM Bayesian model is completed. ",
               "However, Stan reported the following potential issues. ",
               "It is important to review these messages and recommendations ",
               "before you start trusting the results! An ethically inclined ",
               "person would never do that, and you should not either."
-=======
-              "The analysis completed, but Stan reported the following ",
-              "potential issues. Please review these recommendations before ",
-              "trusting the results:"
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
             )
           ),
           tags$ul(
@@ -1616,7 +1336,6 @@ server <- function(input, output, session) {
     }
   })
   
-<<<<<<< HEAD
   # 9. RENDER OUTPUTS (TABLES & PLOTS)
   # ----------------------------------------------------------------------------
   
@@ -1624,10 +1343,6 @@ server <- function(input, output, session) {
   # - Typically only one row.
   # - Can scroll in x-direction and y-direction
   # - Export buttons included (copy, csv, excel, pdf, and print)
-=======
-  # 9. RENDER OUTPUTS
-  # --------------------------------------------------------------------------
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
   output$results_table_model1 <- renderDT({
     DT::datatable(
       data = analysis_results_model1()$table,
@@ -1670,20 +1385,16 @@ server <- function(input, output, session) {
   },
   res = 120)
   
-<<<<<<< HEAD
   # Concentration versus CV(%) plot (NTT model)
   # - Concentration (`beta` + G_i) on the x-axis
   # - CV_p(i) (%) on the y-axis (median + 95% credible intervals) (error bars)
   # - Groups are represented by colors and point shapes
   # - Web quality: 120
-=======
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
   output$filtered_data_table_model1 <- renderPlot({
     analysis_results_model1()$plot2
   },
   res = 120)
   
-<<<<<<< HEAD
   # Construct download handler for the NTT model outputs
   # Which object that is downloaded depends on which tab that is currently open ...
   output$download_results_model1_btn <- downloadHandler(
@@ -1692,12 +1403,6 @@ server <- function(input, output, session) {
       # Checks if the `Subject-Specific CV Plot` tab is selected
       if (input$model_ntt_tabs == "subject_cvi_plot_ntt") {
         # Create a generic file name for the downloaded plot (.tif)
-=======
-  output$download_results_model1_btn <- downloadHandler(
-    filename = function() {
-      
-      if (input$model_ntt_tabs == "subject_cvi_plot_ntt") {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         paste0(
           "bvem_ntt_",
           "subject_specific_cv_plot_",
@@ -1717,13 +1422,9 @@ server <- function(input, output, session) {
         )
       }
       
-<<<<<<< HEAD
       # Checks if the `Concentration Versus CV Plot` tab is selected
       else if (input$model_ntt_tabs == "cv_vs_conc_ntt") {
         # Create a generic file name for the downloaded plot (.tif)
-=======
-      else if (input$model_ntt_tabs == "cv_vs_conc_ntt") {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         paste0(
           "bvem_ntt_",
           "subject_specific_concentration_vs_cv_plot_",
@@ -1743,13 +1444,9 @@ server <- function(input, output, session) {
         )
       }
       
-<<<<<<< HEAD
       # Checks if the `Summary Statistics` tab is selected
       else {
         # Create a generic file name for the downloaded table (.xlsx)
-=======
-      else {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         paste0(
           "bvem_ntt_",
           "high_level_summary_stats_",
@@ -1771,13 +1468,9 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       
-<<<<<<< HEAD
       # Checks if the `Subject-Specific CV Plot` tab is selected
       if (input$model_ntt_tabs == "subject_cvi_plot_ntt") {
         # Save as .tif to disk (16.8 x 16.8 cm) with quality 450 (dpi)
-=======
-      if (input$model_ntt_tabs == "subject_cvi_plot_ntt") {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         ggsave(
           filename = file,
           plot = analysis_results_model1()$plot,
@@ -1789,13 +1482,9 @@ server <- function(input, output, session) {
         )
       }
       
-<<<<<<< HEAD
       # Checks if the `Concentration Versus CV Plot` tab is selected
       else if (input$model_ntt_tabs == "cv_vs_conc_ntt") {
         # Save as .tif to disk (16.8 x 16.8 cm) with quality 450 (dpi)
-=======
-      else if (input$model_ntt_tabs == "cv_vs_conc_ntt") {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         ggsave(
           filename = file,
           plot = analysis_results_model1()$plot2,
@@ -1807,13 +1496,9 @@ server <- function(input, output, session) {
         )
       }
       
-<<<<<<< HEAD
       # Checks if the `Summary Statistics` tab is selected
       else {
         # Save as .xlsx to disk (with centered headers in bold)
-=======
-      else {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         writexl::write_xlsx(
           x = analysis_results_model1()$table,
           format_headers = TRUE,
@@ -1868,20 +1553,16 @@ server <- function(input, output, session) {
     analysis_results_model2()$plot
   })
   
-<<<<<<< HEAD
   # Concentration versus CV(%) plot (NTTDFGAM model)
   # - Concentration (`beta` + G_i) on the x-axis
   # - CV_p(i) (%) on the y-axis (median + 95% credible intervals) (error bars)
   # - Groups are represented by colors and point shapes
   # - Web quality: 120
-=======
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
   output$filtered_data_table_model2 <- renderPlot({
     analysis_results_model2()$plot2
   },
   res = 120)
   
-<<<<<<< HEAD
   # Construct download handler for the NTTDFGAM model outputs
   # Which object that is downloaded depends on which tab that is currently open ...
   output$download_results_model2_btn <- downloadHandler(
@@ -1890,11 +1571,6 @@ server <- function(input, output, session) {
       # Checks if the `Subject-Specific CV Plot` tab is selected
       if (input$model_ntt_tabs == "subject_cvi_plot_nttdfgam") {
         # Create a generic file name for the downloaded plot (.tif)
-=======
-  output$download_results_model2_btn <- downloadHandler(
-    filename = function() {
-      if (input$model_ntt_tabs == "subject_cvi_plot_nttdfgam") {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         paste0(
           "bvem_nttdfgam_",
           "subject_specific_cv_plot_",
@@ -1913,7 +1589,6 @@ server <- function(input, output, session) {
           ".tif"
         )
       }
-<<<<<<< HEAD
       
       # Checks if the `Concentration Versus CV Plot` tab is selected
       else if (input$model_ntt_tabs == "cv_vs_conc_nttdgam") {
@@ -1940,9 +1615,6 @@ server <- function(input, output, session) {
       # Checks if the `Summary Statistics` tab is selected
       else {
         # Create a generic file name for the downloaded table (.xlsx)
-=======
-      else {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         paste0(
           "bvem_nttdfgam_",
           "high_level_summary_stats_",
@@ -1964,13 +1636,9 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       
-<<<<<<< HEAD
       # Checks if the `Subject-Specific CV Plot` tab is selected
       if (input$model_ntt_tabs == "subject_cvi_plot_nttdfgam") {
         # Save as .tif to disk (16.8 x 16.8 cm) with quality 450 (dpi)
-=======
-      if (input$model_ntt_tabs == "subject_cvi_plot_nttdfgam") {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         ggsave(
           filename = file,
           plot = analysis_results_model2()$plot,
@@ -1981,7 +1649,6 @@ server <- function(input, output, session) {
           units = "cm"
         )
       }
-<<<<<<< HEAD
       
       # Checks if the `Concentration Versus CV Plot` tab is selected
       else if (input$model_ntt_tabs == "cv_vs_conc_ntt") {
@@ -2000,9 +1667,6 @@ server <- function(input, output, session) {
       # Checks if the `Summary Statistics` tab is selected
       else {
         # Save as .xlsx to disk (with centered headers in bold)
-=======
-      else {
->>>>>>> 6f1b2c53becf023614bb03d6bd800520c970532a
         writexl::write_xlsx(
           x = analysis_results_model2()$table,
           format_headers = TRUE,

@@ -53,7 +53,6 @@ create_parameter_row <- function(id_stem, label_latex,
   )
 }
 
-
 # Creates a navigation button row for the wizard
 create_wizard_nav_buttons <- function(prev_id = NULL, next_id = NULL) {
   div(class = "button-container",
@@ -65,7 +64,7 @@ create_wizard_nav_buttons <- function(prev_id = NULL, next_id = NULL) {
           icon = icon("arrow-left"),
           style = "gradient",
           color = "default",
-          size = "sm"
+          size = "md"
         )
       } else {
         div() # Empty div to maintain spacing
@@ -77,7 +76,7 @@ create_wizard_nav_buttons <- function(prev_id = NULL, next_id = NULL) {
           icon = icon("arrow-right"),
           style = "gradient",
           color = "royal",
-          size = "sm"
+          size = "md"
         )
       }
   )
@@ -99,19 +98,19 @@ ui <- dashboardPage(
       menuItem("Setup & Data Upload", tabName = "setup", icon = icon("cogs")),
       menuItem("Model 1 (NTT)", tabName = "model1_results", icon = icon("chart-simple")),
       menuItem("Model 2 (NTTDFGAM)", tabName = "model2_results", icon = icon("chart-area")),
+      menuItem("Data Exploration", tabName = "exploring", icon = icon("heart-circle-plus")),
       menuItem("Documentation", tabName = "documentation", icon = icon("book")),
-      menuItem("", tabName = "exploring"),
-      menuItem("", tabName = "merge_tables")
+      menuItem("Debug Monitor", tabName = "debugging", icon = icon("bug"))
     )
   ),
   
   # 3. BODY
   # --------------------------------------------------------------------------
   dashboardBody(
-    withMathJax(),
-    includeCSS("www/styles.css"),
+    withMathJax(),# --- Allow LaTex style mathematics ---
+    includeCSS("www/styles.css"),# --- Load CSS ---
     tabItems(
-      # -- Tab 1: Setup and Inputs --
+      # --- Tab 1: Setup and Data Upload ---
       tabItem(
         tabName = "setup",
         div(
@@ -122,12 +121,15 @@ ui <- dashboardPage(
             "Analysis Setup"
           )
         ),
-        tabsetPanel(
+        
+        # --- Wizard Setup (Four Steps) ---
+        shiny::tabsetPanel(
           id = "setup_wizard",
-          type = "hidden",
+          type = "pills",# --- Wizard Setup (1 / 4) - Upload Data ---
+          selected = "step1_upload",
           
-          # Upload Data
-          tabPanelBody(
+          shiny::tabPanel(
+            title = "1",
             value = "step1_upload",
             div(
               class = "dashboard-card",
@@ -149,7 +151,7 @@ ui <- dashboardPage(
                   ),
                   h5("Select Sheet (only for .xlsx)"),
                   radioGroupButtons(
-                    inputId = "sheet_name",
+                    inputId = "sheet_name", 
                     label = NULL,
                     choices = "No sheets before upload ...",
                     selected = NULL,
@@ -158,14 +160,13 @@ ui <- dashboardPage(
                     justified = TRUE,
                     disabled = TRUE
                   ),
-                  create_wizard_nav_buttons(next_id = "goto_step2")
+                  create_wizard_nav_buttons(next_id = "goto_step2", prev_id = NULL)
                 )
               )
             )
-          ),
-          
-          # Map columns
-          tabPanelBody(
+          ),# --- Wizard Setup (2 / 4) - Mapping Columns ---
+          shiny::tabPanel(
+            title = "2",
             value = "step2_map",
             div(
               class = "dashboard-card-drop-down",
@@ -174,14 +175,14 @@ ui <- dashboardPage(
                 icon("tasks", class = "header-icon"), 
                 h3("Select Columns"),
                 div(
-                  style="margin-left: auto;", # Pushes buttons to the right
+                  style="margin-left: auto;",
                   actionBttn(
                     inputId = "guess_cols_btn",
                     label = "Guess",
                     icon = icon("wand-magic-sparkles"),
                     style = "gradient",
                     color = "royal",
-                    size = "sm"
+                    size = "md"
                   ),
                   actionBttn(
                     inputId = "reset_cols_btn",
@@ -189,39 +190,77 @@ ui <- dashboardPage(
                     icon = icon("undo"),
                     style = "gradient",
                     color = "royal",
-                    size = "sm"
+                    size = "md"
+                  )
+                )
+              ),
+              fluidRow(
+                column(
+                  width = 6,
+                  div(
+                    class = "card-sub-header",
+                    icon("arrow-pointer", class = "sub-header-icon"),
+                    h4("Mandatory Selections")
+                  ),
+                  div(
+                    class = "card-body",
+                    div(
+                      class = "parameter-section",
+                      h5("Measurement Column (y)"),
+                      selectInput("measurement_col", NULL, choices = c("None" = ""), selected = ""),
+                      h5("Subject ID Column"),
+                      selectInput("subject_id_col", NULL, choices = c("None" = ""), selected = ""),
+                      h5("Sample ID Column"),
+                      selectInput("sample_id_col", NULL, choices = c("None" = ""), selected = ""),
+                      h5("Replicate ID Column"),
+                      selectInput("replicate_id_col", NULL, choices = c("None" = ""), selected = "")
+                    )
+                  )
+                ),
+                column(
+                  width = 6,
+                  div(
+                    class = "card-sub-header",
+                    icon("people-group", class = "sub-header-icon"),
+                    h4("Group & Population Selections", id = "group_selections_help")
+                  ),
+                  bsTooltip(
+                    id = "group_selections_help",
+                    title = paste0(
+                      "Although group selections is optional, it is ",
+                      "recommended as not stratifying may cause issues."
+                    ),
+                    placement = "top",
+                    trigger = "hover"
+                  ),
+                  div(
+                    class = "card-body",
+                    div(
+                      class = "parameter-section",
+                      h5("Analyte Column"),
+                      selectInput("analyte_col", NULL, choices = c("None" = ""), selected = ""),
+                      h5("Material / Matrix Column"),
+                      selectInput("material_col", NULL, choices = c("None" = ""), selected = ""),
+                      h5("Sex Column"),
+                      selectInput("sex_col", NULL, choices = c("None" = ""), selected = ""),
+                      h5("Deseases Column"),
+                      selectInput("deseases_col", NULL, choices = c("None" = ""), selected = "")
+                    )
                   )
                 )
               ),
               div(
                 class = "card-sub-header",
-                icon("arrow-pointer", class = "sub-header-icon"),
-                h4("Mandatory Selections")
-              ),
-              div(
-                class = "card-body",
-                div(
-                  class = "parameter-section",
-                  h5("Measurement Column (y)"),
-                  selectInput("measurement_col", NULL, choices = c("None" = ""), selected = ""),
-                  h5("Subject ID Column"),
-                  selectInput("subject_id_col", NULL, choices = c("None" = ""), selected = ""),
-                  h5("Sample ID Column"),
-                  selectInput("sample_id_col", NULL, choices = c("None" = ""), selected = ""),
-                  h5("Replicate ID Column"),
-                  selectInput("replicate_id_col", NULL, choices = c("None" = ""), selected = ""),
-                )
-              ),
-              div(
-                class = "card-sub-header",
                 icon("people-group", class = "sub-header-icon"),
-                h4("Group Selections", id = "group_selections_help")
+                h4("Custom Group Selections", id = "custom_group_selections_help")
               ),
               bsTooltip(
-                id = "group_selections_help",
+                id = "custom_group_selections_help",
                 title = paste0(
-                  "Although group selections is optional, it is ",
-                  "recommended as not stratifying may cause issues."
+                  "Custom groups are groups other than analyte, material ",
+                  "(i.e., sample matrix), sex and deseases ",
+                  "(or state of wellbeing). May for example be age, sampling ",
+                  "interval or region. Only two custom groups are allowed."
                 ),
                 placement = "top",
                 trigger = "hover"
@@ -230,22 +269,25 @@ ui <- dashboardPage(
                 class = "card-body",
                 div(
                   class = "parameter-section",
-                  h5("Analyte Column"),
-                  selectInput("analyte_col", NULL, choices = c("None" = ""), selected = ""),
-                  h5("Material Column"),
-                  selectInput("material_col", NULL, choices = c("None" = ""), selected = ""),
-                  h5("Sex Column"),
-                  selectInput("sex_col", NULL, choices = c("None" = ""), selected = ""),
-                  h5("Group 1 Column"),
-                  selectInput("group_1_col", NULL, choices = c("None" = ""), selected = ""),
-                  h5("Group 2 Column"),
-                  selectInput("group_2_col", NULL, choices = c("None" = ""), selected = "")
+                  fluidRow(
+                    column(
+                      width = 6,
+                      h5("Custom Group 1 Column"),
+                      selectInput("group_1_col", NULL, choices = c("None" = ""), selected = "")
+                    ),
+                    column(
+                      width = 6,
+                      h5("Custom Group 2 Column"),
+                      selectInput("group_2_col", NULL, choices = c("None" = ""), selected = "")
+                    )
+                  )
                 ),
                 create_wizard_nav_buttons(prev_id = "back_to_step1", next_id = "goto_step3")
               )
             )
-          ),
-          tabPanelBody(
+          ),# --- Wizard Setup (3 / 4) - Group Stratification & Naming ---
+          shiny::tabPanel(
+            title = "3",
             value = "step3_filter",
             div(
               class = "dashboard-card-drop-down",
@@ -254,11 +296,16 @@ ui <- dashboardPage(
                 icon("filter", class = "header-icon"), 
                 h3("Filter Data & Define Names")
               ),
-              div(
-                class = "card-body",
-                fluidRow(
-                  column(
-                    width = 6,
+              fluidRow(
+                column(
+                  width = 6,
+                  div(
+                    class = "card-sub-header",
+                    icon("filter", class = "sub-header-icon"),
+                    h4("Filter by Groups")
+                  ),
+                  div(
+                    class = "card-body",
                     div(
                       class = "parameter-section",
                       uiOutput("analyte_filter_ui"),
@@ -266,10 +313,18 @@ ui <- dashboardPage(
                       uiOutput("sex_filter_ui"),
                       uiOutput("group_1_filter_ui"),
                       uiOutput("group_2_filter_ui")
-                    )
+                    )  
+                  )
+                ),
+                column(
+                  width = 6,
+                  div(
+                    class = "card-sub-header",
+                    icon("pen", class = "sub-header-icon"),
+                    h4("Set Names to Groups")
                   ),
-                  column(
-                    width = 6,
+                  div(
+                    class = "card-body",
                     div(
                       class = "parameter-section",
                       textInput("analyte_name", "Analyte Name", placeholder = "e.g., Glucose"),
@@ -278,12 +333,16 @@ ui <- dashboardPage(
                       textInput("group_name", "Group Name", placeholder = "e.g., Healthy")
                     )
                   )
-                ),
+                )
+              ),
+              div(
+                class = "card-body",
                 create_wizard_nav_buttons(prev_id = "back_to_step2", next_id = "goto_step4")
               )
             )
-          ),
-          tabPanelBody(
+          ),# --- Wizard Setup (4 / 4) - Hyperparameters & Advanced Settings ---
+          shiny::tabPanel(
+            title = "4",
             value = "step4_params",
             fluidRow(
               column(
@@ -300,9 +359,7 @@ ui <- dashboardPage(
                     fluidRow(
                       column(
                         width = 3,
-                        h4(
-                          "Parameter",
-                        )
+                        h4("Parameter")
                       ),
                       column(
                         width = 4,
@@ -351,55 +408,62 @@ ui <- dashboardPage(
                       trigger = "hover"
                     )
                   ),
+                  
+                  # --- Hyperparameter Selections ---
                   div(
                     class = "card-body",
                     div(
                       class = "parameter-section",
-                      # --- Parameter Rows (created by the helper function) ---
                       create_parameter_row(
                         "beta", "\\(\\beta\\)",
                         val_expected = 7, min_expected = -1000, max_expected = 1e6, step_expected = 0.01,
                         val_weakness = 0.5, min_weakness = 0.1, max_weakness = 4, step_weakness = 0.1
                       ),
-                      
                       create_parameter_row(
                         "cvi", "\\(\\mathrm{CV}_{I}(\\%)\\)",
                         val_expected = 9.4, min_expected = 0, max_expected = 80, step_expected = 0.1,
                         val_weakness = 2, min_weakness = 1e-2, max_weakness = 4, step_weakness = 0.1
                       ),
-                      
                       create_parameter_row(
                         "cva", "\\(\\mathrm{CV}_{A}(\\%)\\)",
                         val_expected = 2.5, min_expected = 0, max_expected = 20, step_expected = 0.1,
                         val_weakness = 2, min_weakness = 1e-2, max_weakness = 12, step_weakness = 0.2
                       ),
-                      
                       create_parameter_row(
                         "cvg", "\\(\\mathrm{CV}_{G}(\\%)\\)",
                         val_expected = 8.0, min_expected = 0, max_expected = 200, step_expected = 0.1,
                         val_weakness = 2, min_weakness = 1e-2, max_weakness = 4, step_weakness = 0.1
                       ),
-                      
                       create_parameter_row(
                         "dfi", "\\(\\mathrm{df}_{I}\\)",
                         val_expected = 20, min_expected = 2, max_expected = 1000, step_expected = 1,
-                        val_weakness = round(1/sqrt(2), 1L), min_weakness = 1e-2, max_weakness = 12, step_weakness = 0.01
+                        val_weakness = round(1/sqrt(2), 2L), min_weakness = 1e-2, max_weakness = 12, step_weakness = 0.01
                       ),
-                      
                       create_parameter_row(
                         "dfa", "\\(\\mathrm{df}_{A}\\)",
                         val_expected = 20, min_expected = 2, max_expected = 1000, step_expected = 1,
-                        val_weakness = round(1/sqrt(2), 1L), min_weakness = 1e-2, max_weakness = 12, step_weakness = 0.01
+                        val_weakness = round(1/sqrt(2), 2L), min_weakness = 1e-2, max_weakness = 12, step_weakness = 0.01
+                      ),
+                      create_parameter_row(
+                        "hbhr", "\\(\\mathrm{HBHR}(\\%)\\)",
+                        val_expected = 50, min_expected = 2, max_expected = 200, step_expected = 1,
+                        val_weakness = round(2/3, 2L), min_weakness = 1e-2, max_weakness = 12, step_weakness = 0.01
                       )
                     ),
                     create_wizard_nav_buttons(prev_id = "back_to_step3")
                   )
                 )
               ),
+              # --- Advanced Modelling Options (for Bayesian Models) ---
               column(
                 width = 6,
                 box(
-                  title = tagList(icon("microchip"), "Advanced Modelling Options"),
+                  title = tagList(
+                    icon(
+                      name = "microchip"
+                    ),
+                    "Advanced Modelling Options"
+                  ),
                   solidHeader = TRUE,
                   collapsible = TRUE,
                   collapsed = TRUE,
@@ -430,7 +494,7 @@ ui <- dashboardPage(
                         seq(3000, 7500, by = 500),
                         seq(10000, 25000, by = 2500)
                       ),
-                      selected = 1000,
+                      selected = 2500,
                       grid = FALSE,
                       from_min = 100,
                       to_max = 1e5,
@@ -452,7 +516,7 @@ ui <- dashboardPage(
                       inputId = "nchains",
                       label = NULL,
                       choices = seq(from = 2, to = parallel::detectCores()),
-                      selected = 4,
+                      selected = ifelse(parallel::detectCores() >= 12, 8, 4),
                       grid = FALSE,
                       from_min = 2,
                       to_max = parallel::detectCores(),
@@ -487,7 +551,7 @@ ui <- dashboardPage(
                       inputId = "number_of_cores",
                       label = NULL,
                       choices = seq(1, parallel::detectCores()),
-                      selected = 4,
+                      selected = ifelse(parallel::detectCores() >= 12, 8, 4),
                       grid = FALSE
                     )
                   )
@@ -497,41 +561,47 @@ ui <- dashboardPage(
           )
         )
       ),
-      
-      # -- Model 1 Results Tab --
+      # --- Model 1 Module - NTT Bayesian Model - Tables and Plots ---
       tabItem(
         tabName = "model1_results",
         div(
-          class = "page-header",
-          h1(
-            class = "main-title",
-            icon("chart-simple"),
-            "Sample from the NTT Model"
-          ),
-          actionBttn(
-            inputId = "run_analysis_model1_btn",
-            label = "Run NTT Model",
-            icon = icon("play"),
-            style = "gradient",
-            color = "royal",
-            size = "lg"
-          ),
-          downloadBttn(
-            outputId = "download_results_model1_btn",
-            label = "Download",
-            icon = icon("download"),
-            style = "gradient",
-            color = "royal",
-            size = "lg"
+          class = "dashboard-card",
+          div(
+            class = "card-header",
+            h1(
+              icon(
+                name = "chart-simple"
+              ),
+              "Sample from the NTT Model"
+            ),
+            div(
+              style = "margin-left: auto;",
+              actionBttn(
+                inputId = "run_analysis_model1_btn",
+                label = "Run NTT Model",
+                icon = icon("play"),
+                style = "gradient",
+                color = "royal",
+                size = "md"
+              ),
+              downloadBttn(
+                outputId = "download_results_model1_btn",
+                label = "Download",
+                icon = icon("download"),
+                style = "gradient",
+                color = "royal",
+                size = "md"
+              )
+            )
           )
         ),
-        # --- NTT tabsetPanel ---
+        # --- Construct Tabset Panel for the NTT Model Module ---
         tabsetPanel(
           id = "model_ntt_tabs",
           type = "pills",
-          # --- Summary Statistics ---
+          # --- Panel 1 / 5 - NTT - High-Level Summary Statistics ---
           tabPanel(
-            title = "Summary Statistics",
+            title = "",
             value = "summary_stats_ntt",
             icon = icon("calculator"),
             div(
@@ -551,45 +621,231 @@ ui <- dashboardPage(
               )
             )
           ),
-          # --- Subject-Specific CV_i Plot ---
+          # --- Panel 2 / 5 - NTT - Subject-Wise CV_p(i) + CrIs Plot ---
           tabPanel(
-            title = "Subject-Specific CV Plot",
+            title = "",
             value = "subject_cvi_plot_ntt",
             icon = icon("person-dress"),
             div(
               class = "dashboard-card",
               div(
                 class = "card-header",
-                icon("calculator", class = "header-icon"),
-                h3("Subject-Wise \\(\\mathrm{CV}_{I}(\\%)\\) + Credible Intervals Plot")
+                icon("person-dress", class = "header-icon"),
+                h3("Subject-Wise \\(\\mathrm{CV}_{I}(\\%)\\) + Credible Intervals Plot"),
+                downloadBttn(
+                  outputId = "raw_data_download_2_ntt",
+                  label = "Raw Data",
+                  icon = icon("download"),
+                  style = "gradient",
+                  color = "royal",
+                  size = "xs"
+                )
               ),
               div(
                 class = "card-body",
                 withSpinner(
-                  plotOutput("subject_plot_model1", width = "100%"),
+                  ui_element = plotOutput(
+                    outputId = "subject_plot_model1",
+                    width = "100%",
+                    height = "400px"
+                  ),
                   image = "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmx0bnF2YjB5eWN1NmJodG9vOGoyOXlud2x3ZDZxcmdma3ZrM2IxNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VegxrmsHVdYS4E0QKH/giphy.gif",
                   image.width = 300
                 )
               )
             )
           ),
-          # --- Subject-Specific Concentration Versus CV_i Plot ---
+          # --- Panel 3 / 5 - NTT - Subject-Wise Concentration Versus CV_p(i) ---
           tabPanel(
-            title = "Concentration Versus CV Plot",
+            title = "",
             value = "cv_vs_conc_ntt",
             icon = icon("vial"),
             div(
               class = "dashboard-card",
               div(
                 class = "card-header",
-                icon("poll", class = "header-icon"),
+                icon("vial", class = "header-icon"),
                 h3("Subject-Wise Concentration Against \\(\\mathrm{CV}_{I}(\\%)\\)")
               ),
               div(
                 class = "card-body",
                 withSpinner(
-                  plotOutput("filtered_data_table_model1", width = "100%"),
+                  ui_element = plotOutput(
+                    outputId = "filtered_data_table_model1",
+                    width = "100%",
+                    height = "400px"
+                  ),
                   image = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dWYzMXhxdGEya3FyZjBuaXc2Y2V1OTdtZGp1MXI0YXQ5ODd3d2g3ZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/jUhkz8bRXfFqpwP34k/giphy.gif",
+                  image.width = 300
+                )
+              )
+            )
+          ),
+          # --- Panel 4 / 5 - NTT - Subject-Wise CV_p(i) versus RCV (%) ---
+          tabPanel(
+            title = "",
+            value = "rcv_ntt",
+            icon = icon("arrow-right-arrow-left"),
+            div(
+              class = "dashboard-card",
+              div(
+                class = "card-header",
+                icon("arrow-right-arrow-left", class = "header-icon"),
+                h3("Subject-Wise \\(\\mathrm{CV}_{I}(\\%)\\) Against Reference Change Values")
+              ),
+              div(
+                class = "card-body",
+                withSpinner(
+                  ui_element = plotOutput(
+                    outputId = "rcv_plot_ntt",
+                    width = "100%",
+                    height = "400px"
+                  ),
+                  image = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dWYzMXhxdGEya3FyZjBuaXc2Y2V1OTdtZGp1MXI0YXQ5ODd3d2g3ZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/jUhkz8bRXfFqpwP34k/giphy.gif",
+                  image.width = 300
+                )
+              )
+            )
+          ),
+          # --- Panel 5 / 5 - NTT - More Plots & Sampling Diagnostics ---
+          tabPanel(
+            title = "Advanced",
+            value = "diagnostics_and_more_ntt",
+            icon = icon("brain"), 
+            div(
+              class = "dashboard-card",
+              div(
+                class = "card-header",
+                icon("chart-area", class = "header-icon"),
+                h3("Posterior Density Plots")
+              ),
+              div(
+                class = "card-body",
+                fluidRow(
+                  column(
+                    width = 4,
+                    div(
+                      class = "parameter-section",
+                      h5("Select Parameters to Plot"),
+                      radioGroupButtons(
+                        inputId = "selected_posterior_parameters_ntt",
+                        choiceNames = c(
+                          "Univariate",
+                          "\\(\\mathrm{CV}_{p(i)}\\)",
+                          "\\(\\mu_{p(i)}\\)"
+                        ),
+                        choiceValues = c(
+                          "univariate",
+                          "subject_cvs",
+                          "h_set_points"
+                        ),
+                        status = "primary",
+                        justified = TRUE
+                      )
+                    )
+                  ),
+                  column(
+                    width = 4,
+                    div(
+                      class = "parameter-section",
+                      h5("Include Histogram"),
+                      radioGroupButtons(
+                        inputId = "included_histogram_to_posterior_plots_ntt",
+                        choiceNames = c(
+                          "Yes",
+                          "No"
+                        ),
+                        choiceValues = c(
+                          "Yes",
+                          "No"
+                        ),
+                        status = "primary",
+                        justified = TRUE
+                      )
+                    )  
+                  )
+                ),
+                withSpinner(
+                  plotOutput(
+                    outputId = "posterior_density_plots_ntt",
+                    width = "100%",
+                    height = "800px"
+                  ),
+                  image = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExY210b2VmdGxyeTNiZnBiNzJkYTRzYWVkdzZqdXZzamFpNnR4NXZ3cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l378c04F2fjeZ7vH2/giphy.gif",
+                  image.width = 300
+                )
+              )
+            ),
+            div(
+              class = "dashboard-card",
+              div(
+                class = "card-header",
+                icon("chart-line", class = "header-icon"),
+                h3("Trace Plots")
+              ),
+              div(
+                class = "card-body",
+                div(
+                  class = "parameter-section",
+                  h5("Select Parameters to Plot"),
+                  radioGroupButtons(
+                    inputId = "selected_trace_plot_parameters_ntt",
+                    choiceNames = c(
+                      "Univariate",
+                      "\\(\\mathrm{CV}_{p(i)}\\)",
+                      "\\(\\mu_{p(i)}\\)"
+                    ),
+                    choiceValues = c(
+                      "univariate",
+                      "subject_cvs",
+                      "h_set_points"
+                    ),
+                    status = "primary",
+                    justified = TRUE
+                  )
+                ),
+                withSpinner(
+                  plotOutput(
+                    outputId = "trace_plots_ntt",
+                    width = "100%",
+                    height = "800px"
+                  ),
+                  image = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTFkYnYxMng0emFqbHNtdDh1dTFmcTZncG5oYTNpam9zczU0YW1nNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/33PMXr72xOqBdOUzTO/giphy.gif",
+                  image.width = 300
+                )
+              )
+            ),
+            div(
+              class = "dashboard-card",
+              div(
+                class = "card-header",
+                icon("stethoscope", class = "header-icon"),
+                h3("MCMC Sampling Diagnostics")
+              ),
+              div(
+                class = "card-body",
+                div(
+                  class = "parameter-section",
+                  h5("Effective Sample Sizes as Percentages"),
+                  radioGroupButtons(
+                    inputId = "ess_as_percentages_ntt",
+                    choiceNames = c(
+                      "Yes",
+                      "No"
+                    ),
+                    choiceValues = c(
+                      "Yes",
+                      "No"
+                    ),
+                    status = "primary",
+                    justified = TRUE
+                  )
+                ),
+                withSpinner(
+                  ui_element = DT::DTOutput(
+                    outputId = "mcmc_parameter_diagnostics_ntt"
+                  ),
+                  image = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2hzYW9xY2R3NW5qdXlmbW82YjhkeTM5ejFraXZ1aDkzeXAyOGZ3aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/hvXcXEyDpdV1uZJ0nJ/giphy.gif",
                   image.width = 300
                 )
               )
@@ -597,11 +853,9 @@ ui <- dashboardPage(
           )
         )
       ),
-      
-      # --- Model 2 Results Tab ---
+      # --- Model 2 Module - NTTDFGAM Bayesian Model - Tables and Plots ---
       tabItem(
         tabName = "model2_results",
-        
         div(
           class = "page-header",
           h1(
@@ -626,13 +880,13 @@ ui <- dashboardPage(
             size = "lg"
           )
         ),
-        # --- NTTDFGAM tabsetPanel ---
-        tabsetPanel(
+        # --- Construct Tabset Panel for the NTTDFGAM Model Module ---
+        shiny::tabsetPanel(
           id = "model_nttdfgam_tabs",
           type = "pills",
-          # --- Summary Statistics ---
-          tabPanel(
-            title = "Summary Statistics",
+          # --- Panel 1 / 3 - NTTDFGAM - High-Level Summary Statistics ---
+          shiny::tabPanel(
+            title = "",
             value = "summary_stats_nttdfgam",
             icon = icon("calculator"),
             div(
@@ -645,15 +899,18 @@ ui <- dashboardPage(
               div(
                 class = "card-body",
                 withSpinner(
-                  ui_element = DT::DTOutput("results_table_model2"),
-                  image = "www/Bayesian_Sampling_Loading_Icon_GIF.gif"
+                  ui_element = DT::DTOutput(
+                    outputId = "results_table_model2"
+                  ),
+                  color = "#605ca8",
+                  type = 4
                 )
               )
             )
           ),
-          # --- Subject-Specific CV_i Plot ---
+          # --- Panel 2 / 3 - NTTDFGAM - Subject-Wise CV_p(i) + CrIs Plot ---
           tabPanel(
-            title = "Subject-Specific CV Plot",
+            title = "",
             value = "subject_cvi_plot_nttdfgam",
             icon = icon("person"),
             div(
@@ -668,7 +925,11 @@ ui <- dashboardPage(
                 div(
                   class = "plot-container",
                   withSpinner(
-                    ui_element = plotOutput("subject_plot_model2"),
+                    ui_element = plotOutput(
+                      outputId = "subject_plot_model2",
+                      width = "100%",
+                      height = "400px"
+                    ),
                     color = "#605ca8",
                     type = 4
                   )
@@ -676,9 +937,9 @@ ui <- dashboardPage(
               )
             )
           ),
-          # --- Peek at Filtered Data ---
+          # --- Panel 3 / 3 - NTTDFGAM - Concentration Versus CV_p(i) ---
           tabPanel(
-            title = "Concentration Versus CV Plot",
+            title = "",
             value = "cv_vs_conc_nttdfgam",
             icon = icon("vial"),
             div(
@@ -693,7 +954,11 @@ ui <- dashboardPage(
                 div(
                   class = "plot-container",
                   withSpinner(
-                    ui_element = plotOutput("filtered_data_table_model2"),
+                    ui_element = plotOutput(
+                      outputId = "filtered_data_table_model2",
+                      width = "100%",
+                      height = "400px"
+                    ),
                     color = "#605ca8",
                     type = 4
                   )
@@ -703,11 +968,283 @@ ui <- dashboardPage(
           )
         )
       ),
+      # --- Data Exploration & Data Removal Module ---
+      tabItem(
+        tabName = "exploring",
+        div(
+          class = "page-header",
+          h1(
+            class = "main-title",
+            icon("chart-pie"),
+            "Data Exploration & Exclusion"
+          )
+        ),
+        tabsetPanel(
+          id = "exploring_tabs",
+          type = "pills",
+          # --- Panel 1 / 4 - Data Exploration & Exclusion - Exlude Data ---
+          tabPanel(
+            title = "Exlcude Data",
+            value = "exclude_data_tab",
+            icon = icon("indent"),
+            fluidRow(
+              column(
+                width = 6,
+                div(
+                  class = "dashboard-card",
+                  div(
+                    class = "card-header",
+                    icon("table-list", class = "header-icon"),
+                    h3("Active Data Points")
+                  ),
+                  div(
+                    class = "card-body",
+                    p("Select a row in this table and click 'Exclude' to remove it from the analysis."),
+                    actionBttn(
+                      inputId = "exclude_btn",
+                      label = "Exclude Selected Point",
+                      icon = icon("minus-circle"),
+                      style = "gradient",
+                      color = "danger",
+                      size = "sm",
+                      block = TRUE
+                    ),
+                    withSpinner(
+                      ui_element = DT::DTOutput(
+                        outputId = "main_table"
+                      )
+                    )
+                  )
+                )
+              ),
+              column(
+                width = 6,
+                div(
+                  class = "dashboard-card",
+                  div(
+                    class = "card-header",
+                    icon("indent", class = "header-icon"),
+                    h3("Excluded Data Points")
+                  ),
+                  div(
+                    class = "card-body",
+                    p("Select a row in this table and click 'Restore' to add it back to the analysis."),
+                    actionBttn(
+                      inputId = "restore_btn",
+                      label = "Restore Selected Point",
+                      icon = icon("plus-circle"),
+                      style = "gradient",
+                      color = "success",
+                      size = "sm",
+                      block = TRUE
+                    ),
+                    hr(),
+                    withSpinner(
+                      ui_element = DTOutput(
+                        outputId = "excluded_table"
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ),
+          # --- Panel 2 / 4 - Data Exploration & Exclusion - Histogram ---
+          tabPanel(
+            title = "Histogram",
+            value = "histogram_tab",
+            icon = icon("chart-simple"),
+            div(
+              class = "dashboard-card",
+              div(
+                class = "card-header",
+                icon("chart-simple", class = "header-icon"),
+                h3("Histogram for Your Data")
+              ),
+              div(
+                class = "card-body",
+                div(
+                  class = "parameter-section",
+                  fluidRow(
+                    column(
+                      width = 6,
+                      h5("Apply Logarithmic Transformation on Data"),
+                      radioGroupButtons(
+                        inputId = "log_hist",
+                        label = NULL,
+                        choiceNames = c("Yes", "No"),
+                        choiceValues = c("Yes", "No"),
+                        selected = "No",
+                        status = "primary",
+                        justified = TRUE
+                      )
+                    ),
+                    column(
+                      width = 6,
+                      h5("Apply Bootstrap for Confidence Intervals"),
+                      radioGroupButtons(
+                        inputId = "bootstrap",
+                        label = NULL,
+                        choiceNames = c("Yes", "No"),
+                        choiceValues = c("Yes", "No"),
+                        selected = "No",
+                        status = "primary",
+                        justified = TRUE
+                      )
+                    )
+                  )
+                ),
+                plotOutput(
+                  outputId = "hist",
+                  width = "100%",
+                  height = "400px"
+                )
+              )
+            )
+          ),
+          # --- Panel 3 / 4 - Data Exploration & Exclusion - Data Plots ---
+          tabPanel(
+            title = "Data Plots",
+            value = "data_plots",
+            icon = icon("chart-bar"),
+            div(
+              class = "dashboard-card",
+              div(
+                class = "card-header",
+                icon("chart-bar", class = "header-icon"),
+                h3("Data Plots")
+              ),
+              div(
+                class = "card-body",
+                div(
+                  class = "parameter-section",
+                  h5("Select Type of Plot"),
+                  radioGroupButtons(
+                    inputId = "selected_data_plot",
+                    label = NULL,
+                    choiceNames = c(
+                      "Subject Range",
+                      "Subject Over Time",
+                      "Sample Variation",
+                      "Replication Variation"
+                    ),
+                    choiceValues = c(
+                      "sr",
+                      "sot",
+                      "sv",
+                      "rv"
+                    ),
+                    selected = "sot",
+                    status = "primary",
+                    justified = TRUE
+                  ),
+                  conditionalPanel(
+                    condition = "input.selected_data_plot == 'sr'",
+                    h5("Normalize Results"),
+                    radioGroupButtons(
+                      inputId = "sr_normalize",
+                      label = NULL,
+                      choices = c("No", "Yes"),
+                      selected = "No",
+                      status = "primary",
+                      size = "sm",
+                      justified = TRUE
+                    )
+                  ),
+                  conditionalPanel(
+                    condition = "input.selected_data_plot == 'sot'",
+                    h5("Normalize Results"),
+                    radioGroupButtons(
+                      inputId = "sot_normalize",
+                      label = NULL,
+                      choices = c("No", "Yes"),
+                      selected = "No",
+                      status = "primary",
+                      size = "sm",
+                      justified = TRUE
+                    )
+                  ),
+                  conditionalPanel(
+                    condition = "input.selected_data_plot == 'sv'",
+                    h5("Select Dispersion Measure"),
+                    radioGroupButtons(
+                      inputId = "sv_dispersion",
+                      label = NULL,
+                      choiceNames = c("SD", "CV", "MAD", "Ratio", "Range"),
+                      choiceValues = c("sd", "cv", "mad", "ratio", "range"),
+                      selected = "sd",
+                      status = "primary",
+                      size = "sm",
+                      justified = TRUE
+                    )
+                  )
+                ),
+                withSpinner(
+                  ui_element = plotOutput(
+                    outputId = "output_data_plot",
+                    width = "100%",
+                    height = "800px"
+                  )
+                )
+              )
+            )
+          ),
+          # --- Panel 4 / 4 - Data Exploration & Exclusion - Prior Plots ---
+          tabPanel(
+            title = "Prior Density Plots",
+            value = "prior_plots_tab",
+            icon = icon("chart-area"),
+            div(
+              class = "dashboard-card",
+              div(
+                class = "card-header",
+                icon("chart-area", class = "header-icon"),
+                h3("Prior Density Plots")
+              ),
+              div(
+                class = "card-body",
+                div(
+                  class = "parameter-section",
+                  h5("Apply Logarithmic Transformation on Data"),
+                  radioGroupButtons(
+                    inputId = "log_priors",
+                    label = NULL,
+                    choiceNames = c("Yes", "No"),
+                    choiceValues = c("Yes", "No"),
+                    selected = "No",
+                    status = "primary",
+                    justified = TRUE
+                  ),
+                  h5("Apply the NTTDFGAM Model"),
+                  radioGroupButtons(
+                    inputId = "nttdfgam_priors",
+                    label = NULL,
+                    choiceNames = c("Yes", "No"),
+                    choiceValues = c("Yes", "No"),
+                    selected = "No",
+                    status = "primary",
+                    justified = TRUE
+                  )
+                ),
+                plotOutput(
+                  outputId = "prior_densities",
+                  width = "100%",
+                  height = "800px"
+                )
+              )
+            )
+          )
+        )
+      ),
+      # --- Application Documentation Module ---
       tabItem(
         tabName = "documentation",
         fluidRow(
           box(
-            title = tagList(icon("book-open"), "Application Documentation"),
+            title = tagList(
+              icon("book-open"),
+              "Application Documentation"
+            ),
             solidHeader = TRUE,
             status = "primary",
             width = 12,
@@ -717,21 +1254,21 @@ ui <- dashboardPage(
                 
                 <h2>1. Introduction</h2>
                 <hr>
-                <p>This document provides a comprehensive guide to the <strong>Biological Variation Shiny application</strong>, a tool designed for performing sophisticated Bayesian analysis on biological data. The application allows users to upload their data, configure model parameters, and run one of two advanced Bayesian hierarchical models to estimate components of biological variation.</p>
+                <p>This document provides a comprehensive guide to the <strong>Biological Variation application</strong>, a tool designed for performing sophisticated Bayesian analysis on biological variation data. The application allows users to upload their data, configure model parameters, and run one of two advanced Bayesian hierarchical models to estimate components of biological variation.</p>
                 <p>The application is built with a user-friendly "wizard" interface for setup and provides detailed, interactive outputs including summary tables and plots.</p>
                 
                 <h3>Key Features:</h3>
                 <ul>
                   <li><strong>Intuitive Wizard:</strong> A four-step process guides the user from data upload to model configuration.</li>
                   <li><strong>Flexible Data Input:</strong> Supports both <code>.csv</code> and <code>.xlsx</code> file formats, with automatic sheet detection for Excel files.</li>
-                  <li><strong>Smart Column Mapping:</strong> Includes a "Guess" feature that intelligently identifies data columns based on common naming conventions (in English and Norwegian).</li>
+                  <li><strong>AI Column Mapping:</strong> Includes a "Guess" feature that intelligently identifies data columns based on common naming conventions (in English and Norwegian).</li>
                   <li><strong>Two Bayesian Models:</strong>
                       <ol>
                           <li><strong>Model 1 (NTT):</strong> A Normal-Transformed t-distribution model.</li>
-                          <li><strong>Model 2 (NTTDFGAM):</strong> An extension of the NTT model that incorporates a Gamma distribution for the degrees of freedom parameter.</li>
+                          <li><strong>Model 2 (NTTDFGAM):</strong> An extension of the NTT model that incorporates a Gamma distribution for the degrees of freedom parameters.</li>
                       </ol>
                   </li>
-                  <li><strong>Customizable Analysis:</strong> Users can set prior distributions (hyperparameters) and configure MCMC sampling parameters.</li>
+                  <li><strong>Customizable Analysis:</strong> Users can set hyperparameters for the prior distributions and configure MCMC sampling parameters.</li>
                   <li><strong>Interactive Outputs:</strong> Results are presented in sortable, filterable tables and high-quality plots.</li>
                   <li><strong>Easy Export:</strong> All results, including tables (<code>.xlsx</code>) and plots (<code>.tif</code>), can be easily downloaded.</li>
                 </ul>
@@ -745,6 +1282,12 @@ ui <- dashboardPage(
                   <li><code>stan_model_2_compiled.rds</code>: The pre-compiled Stan model file for the NTTDFGAM model.</li>
                 </ol>
                 <p>The application will check for these files upon startup and will not run without them. If they are missing, you may need to run a pre-compilation script.</p>
+                <p>Before uploading a dataset, ensure it is formatted in a way that is acceptable: </p>
+                <ol>
+                  <li> <strong> Long format </strong>: Each row in the uploaded dataset should correspond to exactly one measurement. This measurement should correspond with a particular grouping. </li>
+                  <li> <strong> Mandatory Identifier Columns </strong>: The uploaded dataset <strong> must include </strong> subject, sample and replicate identifier columns. So the minimal requirement for number of rows in an uploaded dataset is four (mandatory identifier columns and the column that holds the measurement results). </li>
+                  <li> <strong> Unique Subject Identifiers Column </strong>: The subject identifiers should represent a particular subject. Never use the same subject identifier for two or more unique subjects. For example, if you have two groups in your dataset, you cannot assign equal subject identifiers in both groups. In other words, you cannot assign the subject identifier <strong> 9 </strong> to both Jack Smith and Jane Russels, even if Jane have diabetes and Jack is healthy </li>
+                </ol>
                 <br>
                 
                 <h2>3. User Guide: Step-by-Step Workflow</h2>
@@ -791,32 +1334,56 @@ ui <- dashboardPage(
                 <hr>
                 <p>Navigate to either the <strong>Model 1 (NTT)</strong> or <strong>Model 2 (NTTDFGAM)</strong> tab in the sidebar.</p>
                 <ol>
-                  <li><strong>Run Analysis:</strong> Click the large <strong>Run ... Model</strong> button. A progress bar will appear with an estimated time to completion.</li>
-                  <li><strong>View Results:</strong> Once complete, results appear in three sub-tabs:
+                  <li><strong>Run Analysis:</strong> Click the large <strong>Run ... Model</strong> button.
+                  A progress bar will appear with an estimated time to completion.
+                  Note that this completion time estimate can be quite unstable, so do not trust it blindly.
+                  It is there only to give a rough time estimate. </li>
+                  <li><strong>View Results:</strong> Once the analysis is complete, the results will appear in five sub-tabs:
                     <ul>
-                      <li><strong>Summary Statistics:</strong> An interactive table with posterior summaries for all model parameters.</li>
-                      <li><strong>Subject-Specific CV Plot:</strong> A plot displaying the estimated within-subject coefficient of variation (\\(\\mathrm{CV}_{I}\\)) for each subject.</li>
-                      <li><strong>CV Versus Concentration Plot:</strong> A diagnostic plot showing each subject\'s average concentration against their estimated \\(\\mathrm{CV}_{I}\\).</li>
+                      <li><strong>Summary Statistics:</strong> An interactive table providing high-level posterior summaries of the most 
+                      important model parameters. Summaries are given by posterior means and \\(95\\%\\) credible
+                      intervals for \\(\\beta\\), \\(\\mathrm{E}[\\mathrm{CV}_i]\\) (\\(\\mathrm{CV}_{\\mathrm{I}}\\)), 
+                      \\(\\mathrm{CV}_G\\), and \\(\\mathrm{CV}_A\\). Summaries are also given by the posterior median 
+                      and a \\(60\\%\\) prediction interval for \\(\\mathrm{CV}_i\\). The remaining parts of
+                      the summary statistics include three different estimations of the Harris-Brown Heterogeneity ratio (HBHR). </li>
+                      <li><strong>Subject-Specific CV Plot:</strong> A plot displaying the estimated within-subject Coefficient
+                      of Variation (\\(\\mathrm{CV}_{p(i)}\\)) for each subject. The results are ordered by the
+                      posterior medians of \\(\\mathrm{CV}_{p(i)}\\). </li>
+                      <li><strong>CV Versus Concentration Plot:</strong> A diagnostic plot showing each subject\'s average
+                      concentration (homeostatic set points, \\(\\mu_{p(i)}\\)) plotted against their \\(\\mathrm{CV}_{p(i)}\\).</li>
+                      <li><strong>CV Versus Reference Change Value Plot:</strong> A plot demonstrating the Reference Change
+                      Value(s) (RCV, \\(\\mathrm{RCV}(\\%)\\)) as a function of \\(\\mathrm{CV}_{p(i)}\\).
+                      Two purple horizontal lines display the RCVs for \\(\\mathrm{E}[\\mathrm{CV}_i]\\).
+                      Additionally, the credible intervals of \\(\\mathrm{CV}_{p(i)}\\) are incorporated into the
+                      pointwise RCV (shown as green ribbons). </li>
+                      <li><strong>Advanced:</strong> This tab includes more plots and tools for sampling diagnostics.
+                      Here you can find posterior distribution plots, trace plots, and a table summarizing mixing
+                      measures and effective sample sizes for most model parameters. </li>
                     </ul>
                   </li>
-                  <li><strong>Download Results:</strong> Click the <strong>Download</strong> button. The file will be an <code>.xlsx</code> for tables or a <code>.tif</code> for plots.</li>
+                  <li><strong>Download Results:</strong> Click the <strong>Download</strong> button.
+                  The file will be an <code>.xlsx</code> for tables or a <code>.tif</code> for plots.
+                  Note that posterior distribution plots and trace plots cannot be downloaded in the
+                  current version of the application. </li>
                 </ol>
                 <br>
                 
                 <h2>5. Statistical and Mathematical Details</h2>
                 <hr>
-                <p>This section provides an overview of the statistical models used in the application, which differ depending on whether a log transformation is applied.</p>
+                <p>This section provides an overview of the statistical models used in the application, which
+                differ depending on whether a log transformation is applied.</p>
                 
                 <h3>The Hierarchical Model Structure</h3>
-                <p>The application uses a Bayesian hierarchical model to partition variance into its biological and analytical components.</p>
+                <p>The application uses a Bayesian hierarchical model (3-level nested model) to partition variance
+                into its biological and analytical components.</p>
                 
                 <h4>Case 1: Additive Model (Original Scale)</h4>
                 <p>When "Apply Log Transformation" is set to "No", the model assumes an additive relationship:</p>
                 $$ y_{isr} = \\beta + G_i + I_{is} + A_{isr} $$
                 <ul>
-                  <li><code>&beta;</code> is the overall population mean.</li>
-                  <li><code>G<sub>i</sub></code> \\(\\sim \\mathrm{N}(0, \\sigma_G^2)\\) represents the <strong>between-subject</strong> variation.</li>
-                  <li><code>I<sub>is</sub></code> \\(\\sim \\mathrm{lst}(0, \\sigma_i^2, \\mathrm{df}_I)\\) represents the <strong>within-subject</strong> variation.</li>
+                  <li><code>&beta;</code> is the overall population mean (fixed effect).</li>
+                  <li><code>G<sub>i</sub></code> \\(\\sim \\mathrm{N}(0, \\sigma_G^2)\\) represents the <strong>between-subject</strong> biological variation.</li>
+                  <li><code>I<sub>is</sub></code> \\(\\sim \\mathrm{lst}(0, \\sigma_i^2, \\mathrm{df}_I)\\) represents the <strong>within-subject</strong> biological variation.</li>
                   <li><code>A<sub>isr</sub></code> \\(\\sim \\mathrm{lst}(0, \\sigma_A^2, \\mathrm{df}_A)\\) represents the <strong>analytical</strong> variation.</li>
                 </ul>
                 <p>We set the following priors for \\(\\beta, \\sigma_G, \\sigma_i, \\sigma_A, \\mathrm{df}_{I} \\text{ and } \\mathrm{df}_{A}\\):</p>
@@ -826,7 +1393,7 @@ ui <- dashboardPage(
                   <li><code>&sigma;<sub>i</sub></code> \\(\\sim \\mathrm{N}(\\mathrm{E}[\\sigma_i], \\mathrm{Var}[\\sigma_i])\\) for \\(i = 1, \\ldots, n\\) where:
                   <ul>
                     <li><code>E[&sigma;<sub>i</sub>]</code> \\(\\sim \\mathrm{N}(\\color{purple}{\\color{purple}{\\sigma_I}}, \\mathrm{Var}[\\mathrm{E}[\\sigma_i]])\\), with \\(\\mathrm{Var}[\\mathrm{E}[\\sigma_i]] = (\\color{purple}{F_I} \\cdot \\color{purple}{\\sigma_I})^2 \\).</li>
-                    <li><code>SD[&sigma;<sub>i</sub>]</code> \\(\\sim \\mathrm{N}(\\mathrm{E}[\\mathrm{SD}[\\sigma_i]], \\mathrm{Var}[\\mathrm{SD}[\\sigma_i]])\\), with \\(\\mathrm{E}[\\mathrm{SD}[\\sigma_i]] = 0.5 \\cdot \\color{purple}{\\sigma_I} \\) and \\(\\mathrm{Var}[\\mathrm{SD}[\\sigma_i]] = 4 \\cdot \\color{purple}{\\sigma_I}^2 \\). </li>
+                    <li><code>SD[&sigma;<sub>i</sub>]</code> \\(\\sim \\mathrm{N}(\\mathrm{E}[\\mathrm{SD}[\\sigma_i]], \\mathrm{Var}[\\mathrm{SD}[\\sigma_i]])\\), with \\(\\mathrm{E}[\\mathrm{SD}[\\sigma_i]] = \\mathrm{HBHR} \\cdot \\color{purple}{\\sigma_I} \\) and \\(\\mathrm{Var}[\\mathrm{SD}[\\sigma_i]] = (F_{\\mathrm{HBHR}} \\cdot \\color{purple}{\\sigma_I})^2 \\). </li>
                   </ul>
                   <li><code>&sigma;<sub>A</sub></code> \\(\\sim \\mathrm{N}(\\color{purple}{\\mathrm{E}[\\sigma_A]}, \\mathrm{Var}[\\sigma_A])\\), with \\(\\mathrm{Var}[\\sigma_A] = (\\color{purple}{F_A} \\cdot \\color{purple}{\\mathrm{E}[\\sigma_A]})^2 \\).</li>
                   <li><code>df<sub>I</sub></code> \\(\\sim \\mathrm{N}(\\color{purple}{\\mathrm{E}[\\mathrm{df}_I]}, \\mathrm{Var}[\\mathrm{df}_I])\\), with \\(\\mathrm{Var}[\\mathrm{df}_I] = (\\color{purple}{F_{\\mathrm{df}_I}} \\cdot \\color{purple}{\\mathrm{E}[\\mathrm{df}_I]})^2 \\).</li>
@@ -846,109 +1413,72 @@ ui <- dashboardPage(
                 <p>The model structure remains the same, but it now operates on the logarithms of the measurements. The parameters \\(\\sigma_G, \\sigma_i, \\sigma_A\\) now represent the standard deviations of the variation components on the log scale.</p>
                 <br>
                 
-                <h3>Coefficients of Variation (CV) Calculation</h3>
-                <p>While the models are parameterized with standard deviations (\\(\\sigma\\)), the results are presented as Coefficients of Variation (CV). The conversion formula is different for each model.</p>
+                <h3>From User Priors to Effective Priors</h3>
+                <p>The Bayesian models are parameterized with standard deviations (\\(\\sigma\\)). However, you
+                (the user) are required to parameterize the models using CVs. Before the MCMC sampling starts, 
+                the user priors are converted to the priors actually used by the model. We call the 
+                priors actually used by the model Effective Priors. How the user priors are transformed to 
+                effective priors depend on whether the additive or multiplicative model is assumed.<p/>
                 
-                <h4>On the Original (Identity) Scale</h4>
-                <p>The population-level CVs are calculated relative to the overall population mean (\\(\\beta \\)). For the Normally-distributed component (\\(\\mathrm{CV}_G\\)):</p>
-                $$ \\text{CV}_G(\\%) = \\frac{\\sigma_G}{\\beta} \\times 100\\% $$
-                <p>For the t-distributed components (\\(\\mathrm{CV}_I\\), \\(\\mathrm{CV}_A\\)), the standard deviation must first be derived from the scale parameter (\\(s\\)) and degrees of freedom \\(\\nu\\):</p>
-                $$ \\sigma = s \\cdot \\sqrt{\\frac{\\nu}{\\nu - 2}} \\quad \\implies \\quad \\text{CV}(\\%) = \\frac{\\sigma}{\\beta} \\times 100\\% $$
-                <p><strong>Priors:</strong> When you provide a prior for a CV on this scale, the application uses the prior mean for \\(\\beta\\) to convert it back to a prior for the standard deviation \\(\\sigma\\).</p>
-                <p><strong>Subject-Specific CVs:</strong> Importantly, the within-subject CV for each individual subject \\(\\mathrm{CV}_i\\) is calculated relative to that subject\'s own mean (\\(\\beta + G_i\\)), not the overall population mean. This provides a personalized estimate of variation.</p>
-                $$ \\text{CV}_i(\\%) = \\frac{\\sigma_i}{\\beta + G_i} \\times 100\\% $$
-
-                <h4>On the Log-Transformed Scale</h4>
-                <p>When data is log-transformed, the CV is derived from the standard deviation on the log scale \\(\\sigma_{\\log}\\) and <strong>does not depend on the mean</strong>. For the log-normally distributed component \\(\\mathrm{CV}_G\\):</p>
-                $$ \\text{CV}_G(\\%) = \\sqrt{e^{\\sigma_{\\log, G}^2} - 1} \\times 100\\% $$
-                <p>For the log-t distributed components (\\(\\mathrm{CV}_I\\), \\(\\mathrm{CV}_A\\)), the variance on the log scale is first calculated from the scale \\(s_{\\log}\\) and degrees of freedom \\(\\nu\\), then used in the same formula:</p>
-                $$ \\sigma_{\\log}^2 = s_{\\log}^2 \\cdot \\frac{\\nu}{\\nu - 2} \\quad \\implies \\quad \\text{CV}(\\%) = \\sqrt{e^{\\sigma_{\\log}^2} - 1} \\times 100\\% $$
-                <p><strong>Priors:</strong> When you provide a prior for a CV on the log scale, the application uses the inverse formula \\(\\sigma_{\\log} = \\sqrt{\\ln((\\text{CV}/100)^2 + 1)}\\) to set the prior for the standard deviation on the log scale. This conversion does not involve \\(\\beta\\).</p>
+                <h4> Case 1: Additive Model (Identity Scale) </h4>
+                
+                $$\\mathrm{E}[\\sigma_i] = \\frac{\\mathrm{E}[\\mathrm{CV}_i(\\%)] \\cdot \\beta}{100\\%} \\cdot \\sqrt{\\frac{\\mathrm{df}_I - 2}{\\mathrm{df}_I}} \\quad
+                \\mathrm{SD}[\\sigma_i] = \\frac{\\mathrm{SD}[\\mathrm{CV}_i(\\%)] \\cdot \\beta}{100\\%} \\cdot \\sqrt{\\frac{\\mathrm{df}_I - 2}{\\mathrm{df}_I}}$$
+                
+                $$\\sigma_A = \\frac{\\mathrm{CV}_A (\\%) \\cdot \\beta}{100\\%} \\cdot \\sqrt{\\frac{\\mathrm{df}_A - 2}{\\mathrm{df}_A}} \\quad
+                \\sigma_G = \\frac{\\mathrm{CV}_G (\\%) \\cdot \\beta}{100\\%} $$
+                
+                <h4> Case 2: Multiplicative Model (Log Scale) </h4>
+                
+                $$\\mathrm{E}[\\sigma_i] = \\sqrt{\\log\\Big(\\Big[\\frac{\\mathrm{E}[\\mathrm{CV}_i(\\%)]}{100\\%}\\Big]^2 + 1\\Big)\\cdot\\Big(\\frac{\\mathrm{df}_I - 2}{\\mathrm{df}_I}\\Big)}$$
+                $$\\mathrm{SD}[\\sigma_i] = \\sqrt{\\log\\Big(\\Big[\\frac{\\mathrm{SD}[\\mathrm{CV}_i(\\%)]}{100\\%}\\Big]^2 + 1\\Big)\\cdot\\Big(\\frac{\\mathrm{df}_I - 2}{\\mathrm{df}_I}\\Big)}$$
+                $$\\sigma_A = \\sqrt{\\log\\Big(\\Big[\\frac{\\mathrm{CV}_A(\\%)}{100\\%}\\Big]^2 + 1\\Big)\\cdot\\Big(\\frac{\\mathrm{df}_A - 2}{\\mathrm{df}_A}\\Big)}$$
+                $$\\sigma_G = \\sqrt{\\log\\Big(\\Big[\\frac{\\mathrm{CV}_A(\\%)}{100\\%}\\Big]^2 + 1\\Big)} \\quad
+                \\beta \\to \\log(\\beta)$$
+                
+                <h3>From Effective Posteriors to User Posteriors</h3>
+                <p> Since the Bayesian models are parameterized with standard deviations, the posterior and 
+                predictive distributions are also parameterized in this way. The user is typically not interested 
+                in viewing the results in this way, so the parameters parameterized with standard deviations 
+                must be back-transformed into user posteriors. How the effective posteriors are transformed back
+                to the user scale depends on whether the additive or multiplicative model was assumed. </p>
+                
+                <h4> Case 1: Additive Model (Identity Scale) </h4>
+                
+                $$\\mathrm{E}[\\mathrm{CV}_{i}(\\%)] = \\frac{\\mathrm{E}[\\sigma_i]}{\\beta} \\cdot \\sqrt{\\frac{\\mathrm{df}_I}{\\mathrm{df}_I - 2}} \\cdot 100\\% \\quad
+                \\mathrm{SD}[\\mathrm{CV}_{i}(\\%)] = \\frac{\\mathrm{SD}[\\sigma_i]}{\\beta} \\cdot \\sqrt{\\frac{\\mathrm{df}_I}{\\mathrm{df}_I - 2}} \\cdot 100\\%$$
+                
+                $$\\mathrm{CV}_{p(i)}(\\%) = \\frac{\\sigma_{p(i)}}{\\mu_{p(i)}} \\cdot \\sqrt{\\frac{\\mathrm{df}_I}{\\mathrm{df}_I - 2}} \\cdot 100\\%\\quad 
+                \\mathrm{CV}_{i, \\mathrm{pred}}(\\%) = \\frac{\\sigma_{i, \\mathrm{pred}}}{G_{i, \\mathrm{pred}} + \\beta_{i, \\mathrm{pred}}} \\cdot 100\\%$$
+                
+                $$\\mathrm{CV}_{A}(\\%) = \\frac{\\sigma_A}{\\beta} \\cdot \\sqrt{\\frac{\\mathrm{df}_A}{\\mathrm{df}_A - 2}} \\cdot 100\\% \\quad
+                \\mathrm{CV}_{G}(\\%) = \\frac{\\sigma_G}{\\beta} \\cdot 100\\%$$
+                
+                <h4> Case 2: Multiplicative Model (Log Scale) </h4>
+                
+                
+                $$\\mathrm{E}[\\mathrm{CV}_{i}(\\%)] = \\sqrt{\\exp\\Big[\\mathrm{E}[\\sigma_i]^2 \\cdot \\frac{\\mathrm{df}_I}{\\mathrm{df}_I - 2} \\Big] - 1} \\cdot 100\\% \\quad
+                \\mathrm{SD}[\\mathrm{CV}_{i}(\\%)] = \\sqrt{\\exp\\Big[\\mathrm{SD}[\\sigma_i]^2 \\cdot \\frac{\\mathrm{df}_I}{\\mathrm{df}_I - 2} \\Big] - 1} \\cdot 100\\%$$
+                
+                $$\\mathrm{CV}_{p(i)}(\\%) = \\sqrt{\\exp\\Big[\\sigma_{p(i)}^2 \\cdot \\frac{\\mathrm{df}_I}{\\mathrm{df}_I - 2} \\Big] - 1} \\cdot 100\\% \\quad 
+                \\mathrm{CV}_{i, \\mathrm{pred}}(\\%) = \\sqrt{\\exp\\Big[\\sigma_{i, \\mathrm{pred}}^2 \\Big] - 1} \\cdot 100\\%$$
+                
+                $$\\mathrm{CV}_{A}(\\%) = \\sqrt{\\exp\\Big[\\sigma_{A}^2 \\cdot \\frac{\\mathrm{df}_A}{\\mathrm{df}_A - 2} \\Big] - 1} \\cdot 100\\% \\quad
+                \\mathrm{CV}_{G}(\\%) = \\sqrt{\\exp\\Big[\\sigma_{G}^2\\Big] - 1} \\cdot 100\\% \\quad
+                \\beta \\to \\exp(\\beta)$$
                 
               </div>
             ')
           )
         )
       ),
+      # --- Debugging Module ---
       tabItem(
-        tabName = "exploring",
-        div(
-          class = "page-header",
-          h1(
-            class = "main-title",
-            icon("chart-pie"),
-            "Exploratory Analysis"
-          )
-        ),
-        # Histogram
-        div(
-          class = "dashboard-card",
-          div(
-            class = "card-header",
-            icon("chart-simple", class = "header-icon"),
-            h3("Histogram for Your Data")
-          ),
-          div(
-            class = "card-body",
-            div(
-              class = "parameter-section",
-              h5("Apply Logarithmic Transformation on Data"),
-              radioGroupButtons(
-                inputId = "log_hist",
-                label = NULL,
-                choiceNames = c("Yes", "No"),
-                choiceValues = c("Yes", "No"),
-                selected = "No",
-                status = "primary",
-                justified = TRUE
-              ) 
-            ),
-            plotOutput(
-              outputId = "hist",
-              width = "100%"
-            )
-          )
-        ),
-        # Prior plots
-        div(
-          class = "dashboard-card",
-          div(
-            class = "card-header",
-            icon("chart-area", class = "header-icon"),
-            h3("Density Plots of Prior Distributions")
-          ),
-          div(
-            class = "card-body",
-            div(
-              class = "parameter-section",
-              h5("Apply Logarithmic Transformation on Data"),
-              radioGroupButtons(
-                inputId = "log_priors",
-                label = NULL,
-                choiceNames = c("Yes", "No"),
-                choiceValues = c("Yes", "No"),
-                selected = "No",
-                status = "primary",
-                justified = TRUE
-              ),
-              h5("Apply the NTTDFGAM Model"),
-              radioGroupButtons(
-                inputId = "nttdfgam_priors",
-                label = NULL,
-                choiceNames = c("Yes", "No"),
-                choiceValues = c("Yes", "No"),
-                selected = "No",
-                status = "primary",
-                justified = TRUE
-              )
-            ),
-            plotOutput(
-              outputId = "prior_densities",
-              width = "100%"
-            )
-          )
-        )
+        tabName = "debugging",
+        h2("Live Input Monitor"),
+        verbatimTextOutput("debug_console")
       )
     )
   )
 )
+
