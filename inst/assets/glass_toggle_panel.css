@@ -1,0 +1,35 @@
+/* ==========================================================================
+   GLASS TOGGLE PANEL
+   Theme: Smooth Slide & Fade
+   ========================================================================== */
+
+.glass-toggle-panel {
+  /* Hidden State */
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden; /* Essential for sliding effect */
+
+  /* Smooth Transition */
+  transition: max-height 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
+              opacity 0.4s ease-in-out,
+              transform 0.4s ease,
+              margin-bottom 0.4s ease;
+
+  /* Starting position slightly up for "drop" effect */
+  transform: translateY(-10px);
+  margin-bottom: 0;
+}
+
+/* Visible State (Added by JS) */
+.glass-toggle-panel.show {
+  max-height: 2000px; /* Arbitrary large height to allow content */
+  opacity: 1;
+  transform: translateY(0);
+  margin-bottom: 20px; /* Add spacing only when open */
+  overflow: visible;   /* Allow tooltips/shadows to spill out when open */
+}
+
+/* Inner content wrapper (optional, helps with padding animation) */
+.glass-toggle-content {
+  padding-top: 5px;
+}

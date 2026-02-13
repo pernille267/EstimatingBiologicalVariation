@@ -1,0 +1,423 @@
+/* ==========================================================================
+   CUSTOM GLASS BUTTONS (Action & Download)
+   Theme: Split Capsule | Glossy 3D Pop | Purple/Green/White Variants
+   ========================================================================== */
+
+/* --- WRAPPER ---
+   Holds the Urgent Message and the Button together.
+   The urgent message is now absolute (ghost) so it doesn't affect layout flow.
+   The wrapper is mainly for positioning context and margin.
+*/
+.glass-btn-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 6px;
+  vertical-align: middle;
+  position: relative;
+}
+
+/* ==========================================================================
+   BASE BUTTON STYLES (Purple Default)
+   ========================================================================== */
+.glass-btn,
+.glass-download-btn {
+  /* Layout */
+  display: inline-flex;
+  align-items: stretch;
+  justify-content: flex-start;
+
+  /* Dimensions */
+  height: 42px;
+  min-width: 160px;
+  margin: 0;
+  padding: 0;
+
+  /* Shape & Masking */
+  border-radius: 50px;
+  border: none;
+  outline: none;
+  overflow: hidden;
+
+  /* Glossy 3D Background (V5 Style) */
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #7571b8 0%, #605CA8 50%, #4d4a8e 100%);
+
+  /* 3D Pop Shadow */
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 4px 12px rgba(96, 92, 168, 0.3);
+
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  text-decoration: none !important;
+}
+
+/* --- THE URGENT INDICATOR --- */
+.urgent-indicator {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  pointer-events: none;
+  z-index: 100;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 5px;
+
+  /* Text Style */
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #D9534F; /* Urgent Red */
+  text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+
+  /* Animation */
+  animation: urgentBounce 1s infinite ease-in-out;
+
+  /* Visibility Control */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.urgent-indicator.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* The Arrow Symbol */
+.urgent-arrow {
+  font-size: 18px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+/* Animation Keyframes (includes X centering) */
+@keyframes urgentBounce {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-5px);
+  }
+}
+
+/* --- Icon Section (Left Side of Pill) --- */
+.glass-btn-icon {
+  background-color: #ffffff;
+  color: #605CA8;
+
+  /* Size */
+  width: 44px;
+  min-width: 44px;
+  flex-shrink: 0;
+
+  /* Centering */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+
+  /* Subtle inner shadow for depth */
+  box-shadow: inset -2px 0 4px rgba(96, 92, 168, 0.1);
+
+  transition: color 0.2s, background-color 0.2s;
+  z-index: 2;
+}
+
+/* --- Label Section (Right Side of Pill) --- */
+.glass-btn-label {
+  background: transparent;
+  color: #ffffff;
+
+  /* Layout */
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px 0 10px;
+
+  /* Text */
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+
+  z-index: 1;
+}
+
+/* ==========================================================================
+   HOVER EFFECTS (Purple Default)
+   ========================================================================== */
+.glass-btn:hover,
+.glass-download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    0 8px 20px rgba(96, 92, 168, 0.4);
+  filter: brightness(1.08);
+}
+
+.glass-btn:hover .glass-btn-icon,
+.glass-download-btn:hover .glass-btn-icon {
+  color: #4d4a8e;
+}
+
+/* ==========================================================================
+   ACTIVE/CLICK STATE
+   ========================================================================== */
+.glass-btn:active, .glass-btn.active,
+.glass-download-btn:active, .glass-download-btn.active {
+  transform: translateY(1px);
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 2px 6px rgba(96, 92, 168, 0.3);
+  filter: brightness(0.95);
+}
+
+/* ==========================================================================
+   DISABLED STATE
+   ========================================================================== */
+.glass-btn.disabled,
+.glass-download-btn.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  filter: grayscale(0.8);
+  transform: none !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+}
+
+/* ==========================================================================
+   GREEN VARIANT
+   ========================================================================== */
+.glass-btn.green,
+.glass-download-btn.green {
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #34ce57 0%, #28A745 50%, #1e7e34 100%);
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.glass-btn.green .glass-btn-icon,
+.glass-download-btn.green .glass-btn-icon {
+  color: #28A745;
+  box-shadow: inset -2px 0 4px rgba(40, 167, 69, 0.1);
+}
+
+.glass-btn.green:hover,
+.glass-download-btn.green:hover {
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    0 8px 20px rgba(40, 167, 69, 0.4);
+}
+
+.glass-btn.green:hover .glass-btn-icon,
+.glass-download-btn.green:hover .glass-btn-icon {
+  color: #1e7e34;
+}
+
+.glass-btn.green:active, .glass-btn.green.active,
+.glass-download-btn.green:active, .glass-download-btn.green.active {
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 2px 6px rgba(40, 167, 69, 0.3);
+}
+
+/* ==========================================================================
+   WHITE VARIANT (For use on purple backgrounds)
+   ========================================================================== */
+.glass-btn.white,
+.glass-download-btn.white {
+  /* Medium Gray Gradient (V2 Style) */
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 50%),
+    linear-gradient(135deg, #f4f4f8 0%, #e4e4e9 50%, #d8d8de 100%);
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.85),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.glass-btn.white .glass-btn-icon,
+.glass-download-btn.white .glass-btn-icon {
+  background-color: #ffffff; /* Pure White */
+  color: #605CA8;            /* Purple text/icon */
+  box-shadow: inset -1px 0 3px rgba(0, 0, 0, 0.08); /* Separator shadow */
+}
+
+.glass-btn.white .glass-btn-label,
+.glass-download-btn.white .glass-btn-label {
+  color: #605CA8;
+  text-shadow: none;
+}
+
+.glass-btn.white:hover,
+.glass-download-btn.white:hover {
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    0 8px 20px rgba(0, 0, 0, 0.2);
+  filter: brightness(1.02);
+}
+
+.glass-btn.white:hover .glass-btn-icon,
+.glass-download-btn.white:hover .glass-btn-icon {
+  background-color: #ffffff;
+  color: #4d4a8e;
+}
+
+.glass-btn.white:active, .glass-btn.white.active,
+.glass-download-btn.white:active, .glass-download-btn.white.active {
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* ==========================================================================
+   SMALL SIZE VARIANT
+   ========================================================================== */
+.glass-btn.glass-btn-sm,
+.glass-download-btn.glass-btn-sm {
+  height: 32px;
+  min-width: 0;
+}
+
+.glass-btn.glass-btn-sm .glass-btn-icon {
+  width: 34px;
+  min-width: 34px;
+  font-size: 1em;
+}
+
+.glass-btn.glass-btn-sm .glass-btn-label {
+  font-size: 13px;
+  padding: 0 12px 0 8px;
+}
+
+/* ==========================================================================
+   ICON-ONLY VARIANT
+   Still a split capsule: icon left, stubby gradient right (~2 chars wide).
+   Label is hidden but revealed on hover with a smooth expand.
+   ========================================================================== */
+.glass-btn.glass-btn-icon-only {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* The gradient stub: matches icon section width for a balanced capsule */
+.glass-btn.glass-btn-icon-only .glass-btn-label {
+  max-width: 44px;
+  width: 44px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: transparent;
+  transition: max-width 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+              width 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+              padding 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+              color 0.2s ease;
+}
+
+/* On hover: expand to reveal the label text */
+.glass-btn.glass-btn-icon-only:hover .glass-btn-label {
+  max-width: 200px;
+  padding: 0 15px 0 10px;
+  color: #ffffff;
+}
+
+/* White variant label color on hover */
+.glass-btn.glass-btn-icon-only.white:hover .glass-btn-label {
+  color: #605CA8;
+}
+
+/* sm + icon-only stub */
+.glass-btn.glass-btn-icon-only.glass-btn-sm .glass-btn-label {
+  max-width: 34px;
+  width: 34px;
+}
+
+.glass-btn.glass-btn-icon-only.glass-btn-sm:hover .glass-btn-label {
+  max-width: 180px;
+  padding: 0 12px 0 8px;
+}
+
+/* ==========================================================================
+   ICON-ONLY  —  TOOLTIP VARIANT
+   The label section is the same stub, but does NOT expand.
+   Instead a tooltip appears below the button on hover.
+   ========================================================================== */
+
+/* Override: prevent expand on the tooltip variant */
+.glass-btn.glass-btn-icon-tooltip:hover .glass-btn-label {
+  max-width: 44px;
+  width: 44px;
+  padding: 0;
+  color: transparent;
+}
+.glass-btn.glass-btn-icon-tooltip.glass-btn-sm:hover .glass-btn-label {
+  max-width: 34px;
+  width: 34px;
+  padding: 0;
+  color: transparent;
+}
+
+/* The tooltip itself — reuse the wrapper as positioning context */
+.glass-btn-wrapper:has(.glass-btn-icon-tooltip)::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  white-space: nowrap;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(50, 48, 80, 0.92);
+  padding: 4px 10px;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+  z-index: 9999;
+}
+
+.glass-btn-wrapper:has(.glass-btn-icon-tooltip):hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(6px);
+}
+
+/* Tiny arrow pointing up */
+.glass-btn-wrapper:has(.glass-btn-icon-tooltip)::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+  border: 5px solid transparent;
+  border-bottom-color: rgba(50, 48, 80, 0.92);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+  z-index: 9999;
+}
+
+.glass-btn-wrapper:has(.glass-btn-icon-tooltip):hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(4px);
+}
+
+

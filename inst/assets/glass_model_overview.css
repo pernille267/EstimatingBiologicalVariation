@@ -1,0 +1,404 @@
+/* ==========================================================================
+   MODEL OVERVIEW GRID
+   2x2 layout for the Overview tab of NTT / NTTDFGAM model pages
+   ========================================================================== */
+
+.model-overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+/* --- Individual Panel --- */
+.overview-panel {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(96, 92, 168, 0.04);
+  transition: box-shadow 0.2s ease, opacity 0.4s ease, transform 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.overview-panel.panel-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.overview-panel:hover {
+  box-shadow: 0 4px 16px rgba(96, 92, 168, 0.08);
+}
+
+/* --- Panel Header --- */
+.overview-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(135deg, #fafafa, #f8f8fa);
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.overview-panel-header i {
+  font-size: 14px;
+  color: #605CA8;
+  background: rgba(96, 92, 168, 0.08);
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Green theme variant for NTTDFGAM */
+.model-overview-grid.theme-green .overview-panel-header i {
+  color: #28A745;
+  background: rgba(40, 167, 69, 0.08);
+}
+
+/* --- Panel Body --- */
+.overview-panel-body {
+  padding: 16px 18px;
+  flex: 1;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 13.5px;
+  color: #333;
+  line-height: 1.6;
+  min-height: 180px;
+}
+
+/* ==========================================================================
+   DATA SUMMARY STYLES
+   ========================================================================== */
+
+.overview-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.overview-stat-row:last-child {
+  border-bottom: none;
+}
+
+.overview-stat-label {
+  color: #6c757d;
+  font-size: 13px;
+}
+
+.overview-stat-value {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 13px;
+}
+
+/* Section dividers within panels */
+.overview-section-title {
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #868e96;
+  margin: 14px 0 6px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed #e9ecef;
+}
+
+.overview-section-title:first-child {
+  margin-top: 0;
+}
+
+/* ==========================================================================
+   CONFIG TABLE
+   ========================================================================== */
+
+.overview-config-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.overview-config-table th {
+  text-align: left;
+  padding: 6px 8px;
+  color: #868e96;
+  font-weight: 600;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.overview-config-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f5f5f5;
+  color: #495057;
+}
+
+.overview-config-table tr:last-child td {
+  border-bottom: none;
+}
+
+.overview-config-table td:last-child {
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: right;
+}
+
+/* ==========================================================================
+   DIAGNOSTICS STYLES
+   ========================================================================== */
+
+.overview-diag-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(40, 167, 69, 0.06);
+  border: 1px solid rgba(40, 167, 69, 0.15);
+  border-radius: 8px;
+  color: #155724;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.overview-diag-success i {
+  font-size: 16px;
+  color: #28A745;
+}
+
+.overview-diag-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 13px;
+}
+
+.overview-diag-stat:last-child {
+  border-bottom: none;
+}
+
+.overview-diag-stat .diag-label {
+  color: #6c757d;
+}
+
+.overview-diag-stat .diag-value {
+  font-weight: 600;
+}
+
+.overview-diag-stat .diag-value.diag-ok {
+  color: #28A745;
+}
+
+.overview-diag-stat .diag-value.diag-warn {
+  color: #e0a800;
+}
+
+.overview-diag-stat .diag-value.diag-bad {
+  color: #dc3545;
+}
+
+.overview-diag-params {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 193, 7, 0.05);
+  border: 1px solid rgba(255, 193, 7, 0.15);
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: #856404;
+}
+
+.overview-diag-params .diag-params-title {
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.overview-diag-params code {
+  font-family: 'Source Code Pro', 'Consolas', monospace;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   AWAITING ANALYSIS PLACEHOLDER
+   ========================================================================== */
+
+.overview-awaiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 150px;
+  color: #adb5bd;
+  text-align: center;
+}
+
+.overview-awaiting i {
+  font-size: 32px;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+.overview-awaiting .awaiting-text {
+  font-size: 13px;
+  font-style: italic;
+}
+
+.overview-awaiting .awaiting-subtext {
+  font-size: 11.5px;
+  margin-top: 5px;
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   ADVICE / RECOMMENDATIONS STYLES
+   ========================================================================== */
+
+.overview-advice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 7px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.overview-advice-item:last-child {
+  margin-bottom: 0;
+}
+
+.overview-advice-item i {
+  font-size: 13px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.overview-advice-item.advice-ok {
+  background: rgba(40, 167, 69, 0.05);
+  border: 1px solid rgba(40, 167, 69, 0.12);
+  color: #155724;
+}
+
+.overview-advice-item.advice-ok i {
+  color: #28A745;
+}
+
+.overview-advice-item.advice-warn {
+  background: rgba(255, 193, 7, 0.05);
+  border: 1px solid rgba(255, 193, 7, 0.15);
+  color: #856404;
+}
+
+.overview-advice-item.advice-warn i {
+  color: #e0a800;
+}
+
+.overview-advice-item.advice-critical {
+  background: rgba(220, 53, 69, 0.04);
+  border: 1px solid rgba(220, 53, 69, 0.15);
+  color: #721c24;
+}
+
+.overview-advice-item.advice-critical i {
+  color: #dc3545;
+}
+
+.overview-advice-item.advice-info {
+  background: rgba(96, 92, 168, 0.04);
+  border: 1px solid rgba(96, 92, 168, 0.12);
+  color: #3d3a6e;
+}
+
+.overview-advice-item.advice-info i {
+  color: #605CA8;
+}
+
+/* ==========================================================================
+   STATUS BADGE (toolbar indicator)
+   ========================================================================== */
+
+.model-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.model-status-badge i {
+  font-size: 11px;
+}
+
+.model-status-badge.status-not-run {
+  background: rgba(173, 181, 189, 0.12);
+  color: #868e96;
+  border: 1px solid rgba(173, 181, 189, 0.25);
+}
+
+.model-status-badge.status-success {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28A745;
+  border: 1px solid rgba(40, 167, 69, 0.25);
+}
+
+.model-status-badge.status-warning {
+  background: rgba(255, 193, 7, 0.1);
+  color: #856404;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.model-status-badge.status-error {
+  background: rgba(220, 53, 69, 0.08);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.model-status-badge.status-stale {
+  background: rgba(255, 193, 7, 0.08);
+  color: #a17c06;
+  border: 1px solid rgba(255, 193, 7, 0.25);
+  animation: stale-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes stale-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 1000px) {
+  .model-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}

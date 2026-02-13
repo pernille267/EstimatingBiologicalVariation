@@ -1,0 +1,363 @@
+/* ============================================================================
+   Glass Analysis Progress — Glassmorphism Progress Overlay
+   ============================================================================ */
+
+/* --- Overlay backdrop --- */
+.glass-analysis-progress-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(ellipse at 50% 40%, rgba(120, 60, 180, 0.25) 0%, rgba(20, 10, 40, 0.65) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.glass-analysis-progress-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* --- Main card --- */
+.glass-progress-card {
+  position: relative;
+  width: min(520px, 92vw);
+  padding: 36px 40px 32px;
+  border-radius: 24px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(200, 160, 255, 0.10) 40%,
+    rgba(255, 180, 220, 0.08) 100%
+  );
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 8px 32px rgba(100, 40, 180, 0.30),
+    0 1.5px 0 rgba(255, 255, 255, 0.18) inset,
+    0 -1px 6px rgba(200, 100, 255, 0.08) inset;
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  color: #f0e8ff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transform: translateY(12px) scale(0.97);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  overflow: hidden;
+}
+
+.glass-analysis-progress-overlay.visible .glass-progress-card {
+  transform: translateY(0) scale(1);
+}
+
+/* Shine sweep on the card */
+.glass-progress-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.06) 46%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 54%,
+    transparent 70%
+  );
+  animation: glass-progress-shine 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes glass-progress-shine {
+  0%   { transform: translateX(-40%) rotate(25deg); }
+  50%  { transform: translateX(40%) rotate(25deg); }
+  100% { transform: translateX(-40%) rotate(25deg); }
+}
+
+/* --- Header --- */
+.glass-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.glass-progress-header-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.40);
+  flex-shrink: 0;
+  animation: glass-progress-icon-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glass-progress-icon-pulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(168, 85, 247, 0.40); }
+  50%      { box-shadow: 0 4px 22px rgba(236, 72, 153, 0.55); }
+}
+
+.glass-progress-header-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+.glass-progress-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  background: linear-gradient(90deg, #d8b4fe, #f9a8d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.3;
+}
+
+.glass-progress-subtitle {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(220, 200, 255, 0.65);
+  letter-spacing: 0.2px;
+}
+
+/* --- Progress bar track --- */
+.glass-progress-bar-track {
+  position: relative;
+  width: 100%;
+  height: 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) inset;
+}
+
+.glass-progress-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  min-width: 0%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #a855f7, #d946ef, #ec4899, #f472b6);
+  background-size: 300% 100%;
+  animation: glass-progress-gradient-shift 4s ease infinite;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 0 14px rgba(168, 85, 247, 0.45),
+    0 0 4px rgba(236, 72, 153, 0.3);
+}
+
+@keyframes glass-progress-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Gloss highlight on bar */
+.glass-progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  right: 4px;
+  height: 45%;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.0) 100%);
+  pointer-events: none;
+}
+
+/* Sparkle particles moving along the bar */
+.glass-progress-bar-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(255, 255, 255, 0.15) 2px,
+    transparent 4px,
+    transparent 18px
+  );
+  animation: glass-bar-sparkle 1.5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes glass-bar-sparkle {
+  0%   { transform: translateX(-18px); }
+  100% { transform: translateX(18px); }
+}
+
+/* --- Percentage text --- */
+.glass-progress-percentage-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.glass-progress-percentage {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #c084fc, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-variant-numeric: tabular-nums;
+}
+
+.glass-progress-step-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(220, 200, 255, 0.7);
+  max-width: 55%;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Detail label / current task --- */
+.glass-progress-detail {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(240, 230, 255, 0.85);
+  margin-bottom: 22px;
+  min-height: 1.3em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.glass-progress-detail-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d946ef;
+  box-shadow: 0 0 8px rgba(217, 70, 239, 0.6);
+  animation: glass-dot-blink 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes glass-dot-blink {
+  0%, 100% { opacity: 0.5; transform: scale(0.85); }
+  50%      { opacity: 1;   transform: scale(1.1); }
+}
+
+/* --- Time info grid --- */
+.glass-progress-time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.glass-progress-time-box {
+  padding: 12px 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  text-align: center;
+  transition: background 0.3s ease;
+}
+
+.glass-progress-time-box:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.glass-progress-time-label {
+  font-size: 0.63rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(200, 170, 255, 0.55);
+  margin-bottom: 5px;
+}
+
+.glass-progress-time-value {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #e9d5ff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+}
+
+/* --- Completion state --- */
+.glass-progress-card.completed .glass-progress-bar-fill {
+  background: linear-gradient(90deg, #22c55e, #4ade80, #86efac);
+  background-size: 300% 100%;
+  box-shadow:
+    0 0 14px rgba(34, 197, 94, 0.5),
+    0 0 4px rgba(74, 222, 128, 0.3);
+}
+
+.glass-progress-card.completed .glass-progress-percentage {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-progress-card.completed .glass-progress-detail-dot {
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+  animation: none;
+}
+
+/* --- Error state --- */
+.glass-progress-card.errored .glass-progress-bar-fill {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+  background-size: 300% 100%;
+  animation: none;
+  box-shadow:
+    0 0 14px rgba(239, 68, 68, 0.5),
+    0 0 4px rgba(248, 113, 113, 0.3);
+}
+
+.glass-progress-card.errored .glass-progress-detail-dot {
+  background: #f87171;
+  box-shadow: 0 0 8px rgba(248, 113, 113, 0.6);
+  animation: none;
+}
+
+/* --- Responsive --- */
+@media (max-width: 520px) {
+  .glass-progress-card {
+    padding: 24px 20px 22px;
+    border-radius: 18px;
+  }
+  .glass-progress-time-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .glass-progress-time-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+  }
+  .glass-progress-time-label {
+    margin-bottom: 0;
+  }
+  .glass-progress-percentage {
+    font-size: 1.6rem;
+  }
+}

@@ -1,0 +1,89 @@
+/* Base styles for the loader wrapper */
+.glass-loader-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.85); /* Økt litt for bedre kontrast mot innhold bak */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Fullscreen mode (default) */
+.glass-loader-wrapper.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Localized mode (når den er inni et kort) */
+.glass-loader-wrapper.localized {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  border-radius: inherit; /* Arver rundingen til kortet */
+}
+
+/* Spinner animation - Modern, Elegant & LARGE */
+.glass-loader-spinner {
+  /* Dynamisk størrelse: 20% av forelderen, men aldri mindre enn 80px eller større enn 200px */
+  width: 20%;
+  min-width: 80px;
+  max-width: 200px;
+  /* Sørger for at den alltid er kvadratisk basert på bredden */
+  aspect-ratio: 1 / 1;
+  height: auto;
+
+  border: 6px solid rgba(111, 66, 193, 0.2); /* Tykkere border for bedre synlighet */
+  border-top-color: #6f42c1; /* Klar lilla hovedfarge */
+  border-radius: 50%;
+  animation: glass-spin-pulse 2s ease-in-out infinite;
+  box-shadow: 0 4px 15px rgba(111, 66, 193, 0.15); /* Kraftigere skygge */
+}
+
+.glass-loader-text {
+  margin-top: 25px; /* Litt mer avstand til den store spinneren */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #4a4a4a;
+  font-weight: 600; /* Fetere tekst */
+  font-size: 1rem; /* Større tekst (var 0.75rem) */
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  animation: glass-fade-text 3s ease-in-out infinite;
+}
+
+/* Kombinert rotasjon og din pulse-effekt */
+@keyframes glass-spin-pulse {
+  0% {
+    transform: rotate(0deg) scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.05);
+    opacity: 1;
+    box-shadow: 0 0 35px rgba(111, 66, 193, 0.5); /* Mer intens glød på peak */
+  }
+  100% {
+    transform: rotate(360deg) scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+@keyframes glass-fade-text {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Klasse som legges på foreldre-elementet når loader er aktiv lokalt */
+.glass-loader-parent-active {
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 200px; /* Økt minimumshøyde for å gi plass til spinneren */
+}

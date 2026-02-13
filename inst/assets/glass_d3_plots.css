@@ -1,0 +1,500 @@
+/* ==========================================================================
+   GLASS D3 PLOTS CSS v1.0 — Styling for Biological Variation D3 Charts
+   ========================================================================== */
+
+/* ---- Container ---- */
+.gd3-plot-container {
+  background: white;
+  border-radius: 12px;
+  overflow: auto;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  outline: none;
+  position: relative;
+}
+
+/* No vertical scroll mode: let height grow, only horizontal scroll */
+.gd3-plot-container.no-vscroll {
+  overflow-y: hidden;
+  overflow-x: auto;
+  height: auto !important;
+}
+
+.gd3-plot-container:hover {
+  border-color: rgba(96, 92, 168, 0.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* ---- SVG Root ---- */
+.gd3-svg {
+  display: block;
+  overflow: visible;
+  max-width: none;
+  font-family: 'Source Sans Pro', 'Segoe UI', -apple-system, sans-serif;
+}
+
+/* ---- Titles ---- */
+.gd3-title {
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  fill: #000;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.gd3-subtitle {
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  fill: #555;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* ---- Axis ---- */
+.gd3-axis path,
+.gd3-axis line {
+  stroke: #333;
+  stroke-width: 1px;
+}
+
+.gd3-axis text {
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  font-size: 10.5px;
+  fill: #333;
+}
+
+.gd3-axis-label {
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  fill: #000;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* ---- Facet Strip ---- */
+.gd3-strip-bg {
+  fill: #605CA8;
+  stroke: none;
+}
+
+.gd3-strip-text {
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  fill: white;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+/* ---- Legend ---- */
+.gd3-legend-title {
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  fill: #333;
+  dominant-baseline: hanging;
+}
+
+.gd3-legend-text {
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  font-size: 10px;
+  fill: #333;
+  dominant-baseline: central;
+}
+
+/* ---- Population Band (green shading for CVI plots) ---- */
+.gd3-pop-band {
+  fill: #28A745;
+  fill-opacity: 0.10;
+}
+
+.gd3-pop-line {
+  stroke: #1a702e;
+  stroke-width: 1.2px;
+  stroke-dasharray: none;
+}
+
+/* ---- Reference Lines (RCV plots) ---- */
+.gd3-ref-line {
+  stroke: #605CA8;
+  stroke-width: 1.5px;
+  stroke-dasharray: 6,3;
+}
+
+/* ---- Error Bars ---- */
+.gd3-errbar {
+  stroke: #333;
+  stroke-width: 1.2px;
+}
+
+.gd3-errbar-cap {
+  stroke: #333;
+  stroke-width: 1.2px;
+}
+
+/* ---- Data Points ---- */
+.gd3-point {
+  cursor: pointer;
+  transition: r 0.15s ease, stroke-width 0.15s ease;
+}
+
+.gd3-point:hover {
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+}
+
+/* ---- Ribbons (RCV, prediction bands) ---- */
+.gd3-ribbon {
+  pointer-events: none;
+}
+
+/* ---- Density Plots ---- */
+.gd3-density-fill {
+  fill: #28A745;
+  fill-opacity: 0.6;
+  stroke: none;
+}
+
+.gd3-density-line {
+  fill: none;
+  stroke: #605CA8;
+  stroke-width: 1.5px;
+}
+
+.gd3-mean-line {
+  stroke: #605CA8;
+  stroke-width: 1.8px;
+  stroke-dasharray: none;
+}
+
+.gd3-cri-line {
+  stroke: #999;
+  stroke-width: 0.9px;
+  stroke-dasharray: 4,3;
+}
+
+/* ---- Histogram ---- */
+.gd3-hist-bar {
+  fill: #28A745;
+  fill-opacity: 0.6;
+  stroke: #333;
+  stroke-width: 0.5px;
+}
+
+/* ---- Zoom Capture ---- */
+.gd3-zoom-rect {
+  fill: transparent;
+  pointer-events: all;
+  cursor: grab;
+}
+
+.gd3-zoom-rect:active {
+  cursor: grabbing;
+}
+
+.gd3-hover-rect {
+  pointer-events: all;
+}
+
+/* ---- Tooltip ---- */
+.gd3-tooltip {
+  position: fixed;
+  text-align: left;
+  padding: 8px 10px;
+  font: 12px/1.4 'Source Sans Pro', 'Segoe UI', sans-serif;
+  background: #605CA8;
+  color: white;
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  max-width: 300px;
+  white-space: nowrap;
+}
+
+.gd3-tip-muted {
+  opacity: 0.75;
+}
+
+/* ---- Download Toolbar (Integrated within plot container) ---- */
+.gd3-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(96, 92, 168, 0.05) 0%,
+    rgba(167, 40, 138, 0.03) 100%
+  );
+  border-bottom: 1px solid rgba(96, 92, 168, 0.10);
+  border-radius: 0;
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  color: #311b92;
+  flex-wrap: wrap;
+  min-height: 42px;
+}
+
+.gd3-toolbar-label {
+  font-weight: 700;
+  font-size: 11px;
+  color: #4527a0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- DPI Select (Glass Dropdown Style) --- */
+.gd3-toolbar-select {
+  position: relative;
+  background-color: #ffffff;
+  color: #444;
+  padding: 6px 12px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid rgba(96, 92, 168, 0.25);
+  border-radius: 20px;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(96, 92, 168, 0.08);
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23605CA8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  min-width: 80px;
+}
+
+.gd3-toolbar-select:hover {
+  border-color: rgba(96, 92, 168, 0.45);
+  box-shadow: 0 4px 12px rgba(96, 92, 168, 0.15);
+  transform: translateY(-1px);
+}
+
+.gd3-toolbar-select:focus {
+  border-color: #605CA8;
+  box-shadow: 0 0 0 3px rgba(96, 92, 168, 0.12),
+              0 4px 12px rgba(96, 92, 168, 0.15);
+}
+
+/* --- Toolbar Buttons (Glass Button Style — Split Capsule) --- */
+.gd3-toolbar-btn {
+  display: inline-flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  height: 32px;
+  min-width: auto;
+  margin: 0;
+  padding: 0;
+  border-radius: 50px;
+  border: none;
+  outline: none;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #7571b8 0%, #605CA8 50%, #4d4a8e 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 3px 8px rgba(96, 92, 168, 0.3);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  text-decoration: none;
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  color: white;
+}
+
+.gd3-toolbar-btn-icon {
+  background-color: #ffffff;
+  color: #605CA8;
+  width: 32px;
+  min-width: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: inset -2px 0 4px rgba(96, 92, 168, 0.1);
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.gd3-toolbar-btn-label {
+  background: transparent;
+  color: #ffffff;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.gd3-toolbar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    0 6px 16px rgba(96, 92, 168, 0.4);
+  filter: brightness(1.08);
+}
+
+.gd3-toolbar-btn:hover .gd3-toolbar-btn-icon {
+  color: #4d4a8e;
+}
+
+.gd3-toolbar-btn:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 2px 4px rgba(96, 92, 168, 0.3);
+  filter: brightness(0.95);
+}
+
+/* --- Reset Button (White/Gray variant) --- */
+.gd3-toolbar-btn-reset {
+  margin-left: auto;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 50%),
+    linear-gradient(135deg, #f4f4f8 0%, #e4e4e9 50%, #d8d8de 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.85),
+    0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.gd3-toolbar-btn-reset .gd3-toolbar-btn-icon {
+  background-color: #ffffff;
+  color: #605CA8;
+  box-shadow: inset -1px 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.gd3-toolbar-btn-reset .gd3-toolbar-btn-label {
+  color: #605CA8;
+  text-shadow: none;
+}
+
+.gd3-toolbar-btn-reset:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    0 6px 16px rgba(0, 0, 0, 0.18);
+  filter: brightness(1.02);
+}
+
+.gd3-toolbar-btn-reset:hover .gd3-toolbar-btn-icon {
+  color: #4d4a8e;
+}
+
+/* --- Scroll Toggle Button --- */
+.gd3-toolbar-btn-scroll {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 50%),
+    linear-gradient(135deg, #f4f4f8 0%, #e4e4e9 50%, #d8d8de 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.85),
+    0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.gd3-toolbar-btn-scroll .gd3-toolbar-btn-icon {
+  background-color: #ffffff;
+  color: #605CA8;
+  box-shadow: inset -1px 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.gd3-toolbar-btn-scroll .gd3-toolbar-btn-label {
+  color: #605CA8;
+  text-shadow: none;
+}
+
+.gd3-toolbar-btn-scroll.active {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #7571b8 0%, #605CA8 50%, #4d4a8e 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 3px 8px rgba(96, 92, 168, 0.3);
+}
+
+.gd3-toolbar-btn-scroll.active .gd3-toolbar-btn-icon {
+  background-color: #ffffff;
+  color: #605CA8;
+}
+
+.gd3-toolbar-btn-scroll.active .gd3-toolbar-btn-label {
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+/* ==========================================================================
+   GLASS D3 PLOT — SCROLLBAR (Purple Glass)
+   ========================================================================== */
+
+/* Webkit (Chrome, Edge, Safari) */
+.gd3-plot-container::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+  background: transparent;
+}
+
+.gd3-plot-container::-webkit-scrollbar-track {
+  background: rgba(209, 196, 233, 0.20);
+  border-radius: 7px;
+}
+
+.gd3-plot-container::-webkit-scrollbar-thumb {
+  background:
+    linear-gradient(180deg, #b39ddb 0%, #7e57c2 100%);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+  transition: all 0.3s ease;
+}
+
+.gd3-plot-container::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(180deg, #9575cd 0%, #605CA8 100%);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    0 0 10px rgba(96, 92, 168, 0.35);
+}
+
+.gd3-plot-container::-webkit-scrollbar-corner {
+  background: rgba(209, 196, 233, 0.12);
+}
+
+/* Firefox */
+.gd3-plot-container {
+  scrollbar-width: auto;
+  scrollbar-color: #b39ddb rgba(209, 196, 233, 0.18);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .gd3-toolbar {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+  .gd3-toolbar-btn {
+    height: 28px;
+  }
+  .gd3-toolbar-btn-icon {
+    width: 28px;
+    min-width: 28px;
+    font-size: 10px;
+  }
+  .gd3-toolbar-btn-label {
+    padding: 0 8px 0 5px;
+    font-size: 10px;
+  }
+}

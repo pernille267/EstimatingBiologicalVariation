@@ -1,0 +1,214 @@
+/* ==========================================================================
+   GLASS DIAGNOSTICS - v1.0
+   Theme: Collapsible Headers | Gradient Status Boxes | Source Sans Pro
+   ========================================================================== */
+
+.glass-diag-container {
+  margin-bottom: 30px;
+  font-family: 'Source Sans Pro', sans-serif;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  border: 1px solid rgba(96, 92, 168, 0.1);
+  overflow: hidden;
+}
+
+/* --- HEADER --- */
+.glass-diag-header {
+  /* Matching glassFileInput header style */
+  background: linear-gradient(180deg, rgba(96, 92, 168, 0.06) 0%, rgba(255, 255, 255, 0.6) 100%);
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(96, 92, 168, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  user-select: none;
+}
+
+.glass-diag-header:hover {
+  background: linear-gradient(180deg, rgba(96, 92, 168, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%);
+}
+
+/* Title Area (Icon + Text) */
+.glass-diag-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.glass-diag-icon {
+  color: #605CA8;
+  font-size: 18px;
+  background: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(96, 92, 168, 0.15);
+}
+
+.glass-diag-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+/* Summary Area (Top Right) */
+.glass-diag-summary {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Summary Colors */
+.glass-diag-summary.success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #28A745;
+  border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.glass-diag-summary.warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #d39e00;
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.glass-diag-summary.fail {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+/* Chevron Toggle */
+.glass-diag-toggle {
+  margin-left: 15px;
+  color: #adb5bd;
+  transition: transform 0.3s ease;
+}
+
+.glass-diag-container.collapsed .glass-diag-toggle {
+  transform: rotate(-90deg);
+}
+
+/* --- BODY (Collapsible) --- */
+.glass-diag-body {
+  padding: 20px;
+  max-height: 1000px; /* Arbitrary limit for CSS transition */
+  opacity: 1;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass-diag-container.collapsed .glass-diag-body {
+  padding-top: 0;
+  padding-bottom: 0;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+/* --- INDIVIDUAL ITEMS (The Glass Boxes) --- */
+.glass-diag-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: 1px solid transparent; /* Placeholder for layout stability */
+  backdrop-filter: blur(2px); /* Subtle blur if supported */
+  transition: transform 0.2s ease;
+}
+
+.glass-diag-item:last-child {
+  margin-bottom: 0;
+}
+
+.glass-diag-item:hover {
+  transform: translateX(4px);
+}
+
+/* Item Content */
+.glass-diag-item-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.glass-diag-item-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.glass-diag-item-icon {
+  font-size: 16px;
+}
+
+/* --- THEMES --- */
+
+/* 1. Success (Green Gradient) */
+.glass-diag-item.success {
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(233, 245, 234, 0.6) 100%
+  );
+
+  /* Crisp colored border */
+  border: 1px solid rgba(40, 167, 69, 0.3);
+
+  /* A subtle inner glow helps the glass effect */
+  box-shadow:
+    0 2px 5px rgba(0,0,0,0.02),
+    inset 0 0 0 1px rgba(255,255,255, 0.5);
+}
+.glass-diag-item.success .glass-diag-item-icon { color: #28A745; }
+.glass-diag-item.success .glass-diag-item-text { color: #155724; }
+.glass-diag-item.success .glass-diag-badge {
+  background-color: #28A745;
+  color: white;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.4);
+}
+
+/* 2. Failure (Red Gradient) */
+.glass-diag-item.fail {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.08) 0%, rgba(220, 53, 69, 0.15) 100%);
+  border-color: rgba(220, 53, 69, 0.2);
+}
+.glass-diag-item.fail .glass-diag-item-icon { color: #dc3545; }
+.glass-diag-item.fail .glass-diag-item-text { color: #721c24; }
+
+/* 3. Unknown / Black Glass (Dark Gradient) */
+.glass-diag-item.unknown {
+  background: linear-gradient(135deg, rgba(52, 58, 64, 0.05) 0%, rgba(52, 58, 64, 0.1) 100%);
+  border-color: rgba(52, 58, 64, 0.15);
+}
+.glass-diag-item.unknown .glass-diag-item-icon { color: #6c757d; }
+.glass-diag-item.unknown .glass-diag-item-text { color: #343a40; }
+
+/* 4. Warning (Yellow Gradient) */
+.glass-diag-item.warning {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.08) 0%, rgba(255, 193, 7, 0.15) 100%);
+  border-color: rgba(255, 193, 7, 0.3);
+}
+.glass-diag-item.warning .glass-diag-item-icon { color: #d39e00; }
+.glass-diag-item.warning .glass-diag-item-text { color: #856404; }
+
+/* Status Badge (Right side of item) */
+.glass-diag-badge {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}

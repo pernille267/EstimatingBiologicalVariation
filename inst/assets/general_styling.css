@@ -1,0 +1,160 @@
+/* ==========================================================================
+   1. GLOBAL TYPOGRAPHY & BRANDING
+   ========================================================================== */
+
+/* Standard overskrifter og fonter */
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 600;
+  color: #605CA8; /* Brand Purple */
+}
+
+.p, p {
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+/* Hovedtittel brukt i enkelte headere */
+.main-title {
+  color: #605CA8;
+  font-size: 28px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   2. PAGE HEADER (The "Command Center" Bar)
+   ========================================================================== */
+/* Brukes i mod_file_upload_ui og mod_results_ui */
+
+/* Main Container with Brand Purple Gradient + Glossy 3D Pop */
+.page-header {
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 40%),
+    linear-gradient(180deg, #7571b8 0%, #605CA8 40%, #4d4a8e 100%);
+  padding: 10px 25px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.2),
+    0 4px 14px rgba(96, 92, 168, 0.25);
+}
+
+/* Header Title Typography & Layout */
+.page-header h1 {
+  margin: 0;
+  margin-right: auto; /* Pushes button to far right */
+  color: white;
+  font-weight: 600;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+/* Main Icon Styling (Frosted Bubble Effect inside H1) */
+.page-header h1 i {
+  font-size: 20px;
+  color: white;
+  margin-right: 15px;
+  background: rgba(255,255,255,0.15);
+  padding: 10px;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* ==========================================================================
+   3. LAYOUT CONTAINERS
+   ========================================================================== */
+/* Klasser som brukes manuelt i div() wrappers i R-koden */
+
+.parameter-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.parameter-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.parameter-section h5 {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.upload-section {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+/* Sikrer at innholdet i upload-section fyller bredden,
+   selv om selve input-stilingen nå gjøres av glassFileInput */
+.upload-section .shiny-input-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ==========================================================================
+   4. STATUS INDICATORS & NOTIFICATIONS
+   ========================================================================== */
+
+/* Diagnostic Status Badges */
+/* Brukes i mod_file_upload_server for å vise totalstatus */
+.diagnostic-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  margin-left: 20px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.diagnostic-status-badge.status-ok {
+  background: #e9f5ea;
+  color: #258e3e;
+  border: none;
+}
+
+.diagnostic-status-badge.status-fail {
+  background: #fdecea;
+  color: #c0392b;
+  border: none;
+}
+
+.diagnostic-status-badge.status-warning {
+  background: #fff8e1;
+  color: #d35400;
+  border: none;
+}
+
+/* Warning Notes */
+/* Brukes i mod_file_upload UI for advarsler */
+.input-warning-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #c48200;
+  background-color: #fdf8e4;
+  border-left: 4px solid #ffc107;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+}

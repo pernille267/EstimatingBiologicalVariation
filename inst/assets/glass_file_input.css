@@ -1,0 +1,305 @@
+/* ==========================================================================
+   GLASS FILE INPUT - v9.0 (Compact, Seamless, Circular, DnD)
+   ========================================================================== */
+
+.glass-file-binding {
+  margin-bottom: 25px;
+  font-family: 'Source Sans Pro', sans-serif;
+  position: relative;
+  outline: none;
+}
+
+/* --- 1. THE HEADER ROW (Compact & Seamless) --- */
+.glass-header-row {
+  /* Gradient Background */
+  background: linear-gradient(180deg, rgba(96, 92, 168, 0.06) 0%, rgba(255, 255, 255, 0.6) 100%);
+
+  /* CRAMPED: Smaller padding than before */
+  padding: 8px 12px;
+
+  /* BORDER LOGIC: Blend with container below */
+  border: 1px solid rgba(96, 92, 168, 0.15); /* Slightly darker to match input border */
+  border-bottom: none; /* No border at bottom to merge */
+
+  /* RADIUS: Only round top corners */
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+
+  /* NO GAP */
+  margin-bottom: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+/* --- 2. TITLE WRAPPER --- */
+.glass-label-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- 3. THE ICON (Circle & Smaller & Static) --- */
+.label-icon {
+  color: #605CA8;
+  background: #ffffff;
+
+  /* SMALLER DIMENSIONS */
+  width: 32px;
+  height: 32px;
+
+  /* CIRCLE SHAPE */
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px; /* Smaller icon size */
+
+  /* Static Shadow */
+  box-shadow: 0 2px 5px rgba(96, 92, 168, 0.15);
+}
+
+/* NO HOVER ANIMATION REQUESTED */
+.glass-header-row:hover .label-icon {
+  /* Just a slight color shift to show aliveness, NO movement */
+  color: #4d4a8e;
+  box-shadow: 0 2px 5px rgba(96, 92, 168, 0.2);
+}
+
+/* --- 4. THE LABEL TEXT --- */
+.label-text {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #605CA8;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* --- 5. HELP ICON --- */
+.glass-file-help-icon {
+  color: #adb5bd;
+  cursor: help;
+  font-size: 15px;
+  position: relative;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+.glass-file-help-icon:hover {
+  color: #605CA8;
+}
+
+.glass-file-help-icon::after {
+  content: attr(data-glass-help);
+  position: absolute;
+  bottom: 135%;
+  right: 0;
+  width: max-content;
+  max-width: 250px;
+  background-color: #605CA8;
+  color: #fff;
+  text-transform: none;
+  font-weight: 400;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(5px);
+  transition: all 0.2s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(96, 92, 168, 0.3);
+  white-space: normal;
+  text-align: center;
+}
+.glass-file-help-icon:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+
+/* --- 6. INPUT CONTAINER (Seamless Attachment) --- */
+.glass-file-container {
+  display: flex;
+  align-items: stretch;
+  background-color: #f8f9fa;
+
+  border: 1px solid rgba(96, 92, 168, 0.15); /* Match header border color */
+  border-top: 1px solid rgba(96, 92, 168, 0.1); /* Subtle divider line */
+
+  /* RADIUS: Only round bottom corners */
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+
+  position: relative;
+  height: 46px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+  overflow: visible;
+}
+.glass-file-container:hover {
+  background-color: #ffffff;
+  /* Glow effects */
+  border-color: #b8e6c4;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15);
+}
+
+/* --- DRAG AND DROP STATE --- */
+.glass-file-container.drag-over {
+  background-color: #e8f5e9; /* Light green tint */
+  border: 2px dashed #28A745; /* Dashed green border */
+  box-shadow: inset 0 0 10px rgba(40, 167, 69, 0.1);
+  transform: scale(1.01); /* Slight pulse */
+}
+
+/* --- 7. BUTTON & TEXT ZONES --- */
+.glass-file-btn {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+  border-right: 1px solid #dce1e6;
+  color: #28A745;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  user-select: none;
+  /* Corner logic handled by container, but we keep rounding here for safety or set to 0 top-left */
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 10;
+}
+.glass-file-btn:hover {
+  background: linear-gradient(135deg, #ffffff 0%, #d4edda 100%);
+  color: #155724;
+  box-shadow: inset 0 0 20px rgba(40, 167, 69, 0.05);
+  border-right-color: #c3e6cb;
+}
+.glass-file-btn:active {
+  background: #c3e6cb;
+  transform: translateY(1px);
+}
+.glass-file-btn .btn-icon { margin-right: 8px; }
+
+.glass-file-text-zone {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  min-width: 0;
+  position: relative;
+  cursor: default;
+  /* Corner logic */
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 8px;
+}
+.glass-file-filename {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #6c757d;
+  font-style: italic;
+  font-size: 14px;
+}
+.glass-file-text-zone.has-file .glass-file-filename {
+  color: #2c3e50;
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* --- 8. TOOLTIPS & PROGRESS --- */
+.glass-file-text-zone::after {
+  content: attr(data-tooltip-empty);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  background-color: #343a40;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.glass-file-text-zone::before {
+  content: '';
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  margin-bottom: -5px;
+  border: 6px solid transparent;
+  border-top-color: #343a40;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 1000;
+}
+.glass-file-text-zone:hover::after,
+.glass-file-text-zone:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
+}
+.glass-file-text-zone[data-state="filled"]::after {
+  content: attr(data-tooltip-filled);
+  background-color: #28A745;
+}
+.glass-file-text-zone[data-state="filled"]::before {
+  border-top-color: #28A745;
+}
+
+.glass-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: transparent;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 20;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow: hidden;
+}
+.glass-progress-track.active,
+.glass-progress-track.finished { opacity: 1; }
+.glass-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #28A745, #85e097, #28A745);
+  background-size: 200% 100%;
+  animation: glassShimmer 1.5s infinite linear;
+  transition: width 0.1s linear;
+}
+.glass-progress-track.finished .glass-bar-fill {
+  width: 100% !important;
+  background: #28A745;
+  animation: none;
+}
+@keyframes glassShimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}

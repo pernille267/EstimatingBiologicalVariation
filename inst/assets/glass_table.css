@@ -1,0 +1,304 @@
+/* ==========================================================================
+   GLASS TABLE - v10.0 (Native Table Layout)
+   ========================================================================== */
+
+.glass-table-container {
+  width: 100%;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #ffffff 0%, #f9f9fc 100%);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  border: 1px solid rgba(96, 92, 168, 0.15);
+  font-family: 'Source Sans Pro', sans-serif;
+  position: relative;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+
+/* Round only the bottom corners (flat top to sit flush under a toolbar) */
+.glass-table-container.glass-table-round-bottom {
+  border-radius: 0 0 12px 12px;
+  border-top: none;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- CAPTION --- */
+.glass-table-caption {
+  padding: 20px 25px;
+  background-color: rgba(96, 92, 168, 0.06);
+  color: #4a4a6a;
+  font-size: 16px;
+  font-weight: 600;
+  border-left: 5px solid #605CA8;
+  flex-shrink: 0;
+}
+
+/* --- LAYOUT WRAPPER --- */
+.glass-table-main {
+  display: flex;
+  width: 100%;
+  position: relative;
+  /* Ensure the sidebar and table stretch to match heights */
+  align-items: stretch;
+}
+
+/* --- LEFT: SIDEBAR (The Score Area) --- */
+.glass-table-sidebar-col {
+  width: 140px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(96, 92, 168, 0.06);
+  border-right: 1px solid rgba(96, 92, 168, 0.1);
+  border-left: 5px solid #605CA8;
+  z-index: 5;
+}
+
+/* Spacer to match the sticky header height */
+.glass-sidebar-header {
+  height: 55px; /* Matches .glass-th height */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+.glass-sidebar-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Centers the "Perfect 9" vertically */
+  padding: 20px;
+  gap: 15px;
+}
+
+/* --- RIGHT: DATA SCROLL AREA --- */
+.glass-table-data-col {
+  flex-grow: 1;
+  overflow: auto; /* Handles scrolling */
+  max-height: 550px;
+  background-color: #ffffff;
+  position: relative;
+}
+
+/* --- THE TABLE --- */
+.glass-table {
+  width: 100%;
+  border-collapse: separate; /* Required for border-radius on headers */
+  border-spacing: 0;
+}
+
+/* --- STICKY HEADER --- */
+.glass-th {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #605CA8; /* Brand Purple Background */
+  color: white;
+  padding: 10px 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 16px;
+  white-space: nowrap;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.1); /* Subtle depth */
+  cursor: default;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+/* Rounded Corners for Header (Fixing Issue #2) */
+.glass-th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.glass-th.sortable { cursor: pointer; }
+.glass-th:hover { background-color: #706cb5; }
+
+/* Sort Icons */
+.glass-sort-icon {
+  margin-left: 8px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* --- TABLE BODY --- */
+.glass-tr {
+  background-color: rgba(255, 255, 255, 0.7);
+  transition: background 0.1s;
+}
+
+.glass-tr:nth-child(even) {
+  background-color: rgba(248, 247, 252, 0.6);
+}
+
+/* Row Highlight (Outliers) */
+.glass-tr.highlight > td {
+  background-color: rgba(255, 248, 225, 0.9);
+  border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+/* --- CELLS (Restoring Interactions) --- */
+.glass-td {
+  padding: 8px 15px;
+  font-size: 16px;
+  color: #5f5f7a;
+  font-weight: 400;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(96, 92, 168, 0.06);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+/* 3. CELL HOVER EFFECT (The "Pop") */
+.glass-td:hover {
+  background-color: #ffffff;
+  color: #605CA8;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  z-index: 5; /* Pop above neighbors */
+  border-radius: 6px;
+}
+
+/* 4. FIRST COLUMN EMPHASIS (Purple & Bold) */
+.glass-td:first-child {
+  font-weight: 700;
+  color: #4d4a8e; /* Deep Purple */
+  font-size: 16px;
+}
+
+/* Alignment Utilities */
+.align-center { text-align: center; }
+.align-left { text-align: left; }
+.align-right { text-align: right; }
+
+/* --- BADGES (Sidebar Content) --- */
+/* These styles ensure the sidebar HTML renders beautifully */
+.glass-score-circle {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: white;
+  font-size: 26px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  border: 4px solid rgba(255,255,255,0.9);
+}
+
+.glass-diag-badge-pill {
+  padding: 6px 14px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: white;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+}
+
+/* ==========================================================================
+   SCOPED CRYSTAL CAPSULE SCROLLBAR (Usable Width)
+   Applies ONLY to .glass-table-data-col
+   ========================================================================== */
+
+/* 1. Track */
+.glass-table-data-col::-webkit-scrollbar {
+  width: 14px;  /* SIGNIFICANTLY WIDER FOR USABILITY */
+  height: 14px; /* Consistent height for horizontal scrolling */
+  background: transparent;
+}
+
+.glass-table-data-col::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 7px; /* Increased radius to match width */
+}
+
+/* 2. Thumb (Normal) */
+.glass-table-data-col::-webkit-scrollbar-thumb {
+  background: rgba(96, 92, 168, 0.4); /* Brand Purple @ 40% Opacity */
+  border-radius: 10px;
+  border: 3px solid transparent; /* Larger border creates the 'floating' effect inside the wider track */
+  background-clip: content-box;
+  transition: all 0.3s ease;
+}
+
+/* 3. Thumb (Hover) */
+.glass-table-data-col::-webkit-scrollbar-thumb:hover {
+  background: #605CA8; /* Solid Brand Purple */
+  border: 2px solid transparent; /* Slightly expands on hover but keeps some padding */
+  box-shadow: 0 0 10px rgba(96, 92, 168, 0.5);
+}
+
+/* 4. Firefox Fallback (Scoped) */
+.glass-table-data-col {
+  scrollbar-width: auto; /* Revert to standard width on Firefox */
+  scrollbar-color: rgba(96, 92, 168, 0.5) transparent;
+}
+
+/* ==========================================================================
+   GLASS PAGINATION - v1.0
+   ========================================================================== */
+
+.glass-pagination-container {
+  padding: 15px 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid rgba(96, 92, 168, 0.1);
+  background: rgba(255, 255, 255, 0.5); /* Subtle footer background */
+  flex-shrink: 0;
+}
+
+/* The Button Base */
+.glass-page-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(96, 92, 168, 0.2);
+  color: #605CA8;
+  padding: 6px 14px;
+  border-radius: 20px; /* Pill shape */
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  outline: none;
+  min-width: 35px; /* Uniform width for numbers */
+}
+
+/* Hover Effect (Float & Glow) */
+.glass-page-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: #ffffff;
+  box-shadow: 0 5px 15px rgba(96, 92, 168, 0.25);
+  border-color: #605CA8;
+  color: #605CA8;
+}
+
+/* Active Page (Solid Purple) */
+.glass-page-btn.active {
+  background: #605CA8;
+  color: white;
+  border-color: #605CA8;
+  box-shadow: 0 4px 10px rgba(96, 92, 168, 0.4);
+}
+
+/* Disabled State (e.g., Prev button on page 1) */
+.glass-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  background: rgba(200, 200, 210, 0.3);
+  border-color: transparent;
+}
+
+/* The Dots (...) */
+.glass-page-dots {
+  color: #aaa;
+  font-weight: 700;
+  padding: 0 5px;
+  user-select: none;
+}
+

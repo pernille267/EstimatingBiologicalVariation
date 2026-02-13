@@ -1,0 +1,166 @@
+/* --- Glass Header Indicator CSS (Solid Button Style) --- */
+
+/* 1. NYTT: Container for å gruppere dem tett sammen */
+.glass-header-group {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Her justerer du avstanden MELLOM indikatorene (tett!) */
+  margin-right: 25px; /* Avstand fra hele gruppen til neste element (Docs) */
+  padding-right: 15px;
+  border-right: 1px solid rgba(255,255,255,0.2); /* Valgfritt: En liten skillelinje */
+}
+
+.glass-header-indicator {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 40px; /* Sirkulær for single icons */
+  padding: 0 10px;
+  margin-right: 0;
+  border-radius: 20px; /* Pille-form */
+
+  /* Glass + Gradient Base Props */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+
+  /* Text & Icon Color - Alltid Hvit */
+  color: #fff;
+  font-weight: 600;
+
+  cursor: help;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Ensure all icons inside are white */
+.glass-header-indicator i {
+  color: #fff !important;
+}
+
+/* Hover Effect (Løfter seg litt) */
+.glass-header-indicator:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* --- Hidden State --- */
+.glass-header-indicator.hidden {
+  opacity: 0;
+  transform: scale(0.8);
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  pointer-events: none;
+}
+
+/* --- Type: Filter (Purple Gradient) --- */
+/* Matcher "Analyze" knappen */
+.glass-header-indicator.filter {
+  background: linear-gradient(135deg, #605CA8, #9a68c0);
+}
+
+/* --- Type: Reference Method (Purple Gradient) --- */
+.glass-header-indicator.reference {
+  background: linear-gradient(135deg, #605CA8, #9a68c0);
+  width: 40px; /* Tvinger sirkel */
+  padding: 0;
+  border-radius: 50%;
+}
+
+.glass-indicator-text-icon {
+  font-family: 'Georgia', serif;
+  font-weight: 900;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* --- Type: Diagnostics (Variable Gradients) --- */
+/* Default / Success (Grønn Gradient) */
+.glass-header-indicator.diagnostics {
+  background: linear-gradient(135deg, #28A745, #5dd879);
+  width: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* Diagnostics Status Colors */
+.glass-header-indicator.diagnostics.success {
+  background: linear-gradient(135deg, #28A745, #5dd879); /* Grønn */
+}
+
+.glass-header-indicator.diagnostics.warning {
+  background: linear-gradient(135deg, #ffc107, #ffdb72); /* Gul/Amber */
+  /* For gul bakgrunn kan hvit tekst bli vanskelig å lese, men du ba om hvit.
+     Vi legger på en liten text-shadow for kontrast */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.glass-header-indicator.diagnostics.error {
+  background: linear-gradient(135deg, #dc3545, #ff6b6b); /* Rød */
+}
+
+.glass-header-indicator.diagnostics.info {
+  background: linear-gradient(135deg, #17a2b8, #5bc0de); /* Blå / Info */
+}
+
+/* Hide groups when all child indicators are hidden */
+.glass-header-group:not(:has(.glass-header-indicator:not(.hidden))) {
+  display: none;
+}
+
+/* --- Icon Spacing for Filter --- */
+.glass-indicator-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.indicator-icon-main { font-size: 1.1em; }
+.indicator-icon-sub { font-size: 0.8em; opacity: 0.9; }
+
+/* --- Tooltip (Beholdes mørk for kontrast) --- */
+.glass-indicator-tooltip {
+  visibility: hidden;
+  background-color: rgba(30, 30, 30, 0.95);
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px 12px;
+  position: absolute;
+  z-index: 1000;
+  top: 135%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 250px;
+  font-size: 0.85rem;
+  font-weight: normal;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  white-space: normal;
+}
+
+.glass-indicator-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent rgba(30, 30, 30, 0.95) transparent;
+}
+
+.glass-header-indicator:hover .glass-indicator-tooltip {
+  visibility: visible;
+  opacity: 1;
+}

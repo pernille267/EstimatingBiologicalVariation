@@ -1,0 +1,210 @@
+/* ==========================================================================
+   GLASS DATA EXPLORATION — Custom Styles
+   ========================================================================== */
+
+/* ---- Hint text ---- */
+.explore-hint {
+  color: #888;
+  font-size: 0.85rem;
+  margin: 8px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.explore-hint i {
+  color: #A7288A;
+  font-size: 1rem;
+}
+
+/* ---- Clickable table rows ---- */
+.explore-clickable-table .glass-tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  user-select: none;
+}
+.explore-clickable-table .glass-tr:hover {
+  background-color: rgba(96, 92, 168, 0.08) !important;
+  transform: translateX(2px);
+}
+
+/* --- Exclude hover (non-excluded rows, all exclude/toggle contexts) --- */
+.explore-clickable-table[data-action="exclude"] .glass-tr:hover,
+.explore-clickable-table[data-action="toggle"] .glass-tr:not(.explore-row-excluded):hover {
+  background-color: rgba(220, 25, 50, 0.06) !important;
+}
+.explore-clickable-table[data-action="exclude"] .glass-tr:hover::after,
+.explore-clickable-table[data-action="toggle"] .glass-tr:not(.explore-row-excluded):hover::after {
+  content: "\f057";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(220, 25, 50, 0.4);
+  font-size: 0.85rem;
+}
+
+/* --- Restore hover (excluded rows in toggle, or restore tables) --- */
+.explore-clickable-table[data-action="restore"] .glass-tr:hover,
+.explore-clickable-table[data-action="toggle"] .glass-tr.explore-row-excluded:hover {
+  background-color: rgba(40, 167, 69, 0.12) !important;
+}
+.explore-clickable-table[data-action="restore"] .glass-tr:hover::after,
+.explore-clickable-table[data-action="toggle"] .glass-tr.explore-row-excluded:hover::after {
+  content: "\f2ea";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(40, 167, 69, 0.5);
+  font-size: 0.85rem;
+}
+.explore-clickable-table .glass-tr {
+  position: relative;
+}
+
+/* ---- Excluded row persistent highlight ---- */
+.explore-row-excluded {
+  background-color: rgba(220, 53, 69, 0.08) !important;
+  border-left: 3px solid rgba(220, 53, 69, 0.5);
+}
+.explore-row-excluded .glass-td {
+  color: #aaa;
+  text-decoration: line-through;
+  text-decoration-color: rgba(220, 53, 69, 0.35);
+}
+.explore-clickable-table[data-action="toggle"] .glass-tr.explore-row-excluded:hover .glass-td {
+  color: #666;
+  text-decoration: none;
+}
+
+/* ---- Row flash animations ---- */
+.explore-row-flash {
+  animation: row-flash 0.6s ease-out;
+}
+@keyframes row-flash {
+  0% { background-color: rgba(167, 40, 138, 0.2) !important; }
+  100% { background-color: transparent !important; }
+}
+
+.explore-clickable-table[data-action="exclude"] .explore-row-flash,
+.explore-clickable-table[data-action="toggle"] .glass-tr:not(.explore-row-excluded).explore-row-flash {
+  animation: row-flash-exclude 0.6s ease-out;
+}
+@keyframes row-flash-exclude {
+  0% {
+    background-color: rgba(220, 25, 50, 0.25) !important;
+    transform: translateX(10px);
+  }
+  50% { transform: translateX(-2px); }
+  100% {
+    background-color: transparent !important;
+    transform: translateX(0);
+  }
+}
+
+.explore-clickable-table[data-action="restore"] .explore-row-flash,
+.explore-clickable-table[data-action="toggle"] .glass-tr.explore-row-excluded.explore-row-flash {
+  animation: row-flash-restore 0.6s ease-out;
+}
+@keyframes row-flash-restore {
+  0% {
+    background-color: rgba(40, 167, 69, 0.25) !important;
+    transform: translateX(-10px);
+  }
+  50% { transform: translateX(2px); }
+  100% {
+    background-color: transparent !important;
+    transform: translateX(0);
+  }
+}
+
+/* ---- No exclusions message ---- */
+.explore-no-exclusions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  color: #28a745;
+  font-size: 0.95rem;
+  background: rgba(40, 167, 69, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(40, 167, 69, 0.15);
+  margin: 10px 0;
+}
+.explore-no-exclusions i {
+  font-size: 1.3rem;
+}
+
+/* ---- Placeholder for coming-soon tabs ---- */
+.explore-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  color: #666;
+}
+.explore-placeholder-icon {
+  font-size: 3rem;
+  color: #A7288A;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+.explore-placeholder h3 {
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+  color: #444;
+}
+.explore-placeholder p {
+  max-width: 400px;
+  margin-bottom: 20px;
+  color: #888;
+}
+
+/* ---- Exclusion counter container ---- */
+.explore-exclusion-counter {
+  margin-bottom: 0;
+}
+
+/* ---- Scatter excluded points ---- */
+.gd3-scatter-pt {
+  transition: opacity 0.2s ease;
+}
+.gd3-scatter-pt:hover {
+  z-index: 10;
+}
+
+/* ---- ANOVA bar styling ---- */
+.gd3-bar-bg {
+  rx: 4;
+}
+
+/* ---- Section spacing ---- */
+.explore-section-gap {
+  margin-top: 24px;
+}
+
+/* ---- Legacy toolbar styles (kept for potential reuse) ---- */
+.explore-scatter-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.explore-scatter-toolbar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.explore-toolbar-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #666;
+  white-space: nowrap;
+  margin: 0;
+}

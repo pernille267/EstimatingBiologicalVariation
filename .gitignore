@@ -1,17 +1,48 @@
-# RStudio temporary files
-.Rproj.user
+# ── RStudio / R session ──────────────────────────────────────────────
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
-
-# Shiny user-specific files
-rsconnect/
 *.Rproj
 
-# Data files that might be uploaded by users
-# If you have a folder for uploads, add it here, e.g.,
-# www/uploads/
+# ── VS Code ─────────────────────────────────────────────────────────
+.vscode/
 
-# R packages
+# ── Compiled object files & shared libraries (src/) ─────────────────
+src/*.o
+src/*.so
+src/*.dll
+src/*.dylib
+src/*.cpp.bak
+
+# ── Pre-compiled Stan model caches (top-level & inst/stan) ──────────
+# These are large binary artefacts rebuilt at install time.
+stan_model_*_compiled.rds
+stan_model_*.rds
+inst/stan/stan_model_*_compiled.rds
+inst/stan/stan_model_*.rds
+
+# ── R package build artefacts ────────────────────────────────────────
+*.tar.gz
+*.Rcheck/
+Meta/
+doc/
+docs/
+
+# ── Dependency managers ─────────────────────────────────────────────
 /renv/
+renv.lock
 /packrat/
+
+# ── Shiny / deployment ─────────────────────────────────────────────
+rsconnect/
+
+# ── OS files ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Misc ────────────────────────────────────────────────────────────
+*.log
+*.bak
+*~

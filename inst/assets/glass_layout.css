@@ -1,0 +1,646 @@
+/* ==========================================================================
+   GLASS LAYOUT ENGINE v3.2 (Tinted Crystal Edition)
+   ========================================================================== */
+
+/* 1. GLOBAL RESET */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --sidebar-width: 80px;
+  --header-height: 70px;
+
+  /* BACKGROUND: Slightly darker to make the glass pop */
+  --bg-color: #f0f2f8;
+
+  /* THE MIDDLE GROUND: "Tinted Crystal"
+     Not solid white, not dirty purple. A crisp, cool white with
+     a hint of lavender transparency. */
+  --glass-surface-bg: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(240, 240, 255, 0.90) 100%
+  );
+
+  /* SEPARATION: A distinct border color to define the edges */
+  --glass-edge: 1px solid rgba(96, 92, 168, 0.15);
+
+  /* SEPARATION: Shadow to lift the shell above the content */
+  --glass-shadow: 0 4px 20px rgba(96, 92, 168, 0.08);
+
+  --brand-purple: #605CA8;
+  --text-dark: #2c3e50;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Source Sans Pro', sans-serif;
+  background-color: var(--bg-color);
+
+  /* Deep Orb Background - This provides the contrast for the glass */
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(96, 92, 168, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 90% 90%, rgba(40, 167, 69, 0.08) 0%, transparent 50%);
+  background-attachment: fixed;
+
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* --- THE GRID SHELL --- */
+.glass-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-rows: var(--header-height) 1fr;
+  grid-template-areas:
+    "brand header"
+    "sidebar content";
+  height: 100%;
+  width: 100%;
+}
+
+/* --- 1. BRAND AREA (Top Left) --- */
+.glass-brand {
+  grid-area: brand;
+  background: var(--glass-surface-bg);
+  /* Distinct borders to separate from content area */
+  border-bottom: var(--glass-edge);
+  border-right: var(--glass-edge);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30; /* Highest layer */
+}
+
+.glass-brand img {
+  max-width: 45px;
+  height: auto;
+}
+
+/* --- 2. SIDEBAR (Left) --- */
+.glass-sidebar {
+  grid-area: sidebar;
+  background: var(--glass-surface-bg);
+
+  /* KEY CHANGE: Separation from Content */
+  border-right: var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 30px;
+  gap: 20px;
+  z-index: 20; /* Above content */
+}
+
+/* Navigation Item */
+.glass-nav-item {
+  width: 48px;
+  min-height: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8898aa;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease, margin-bottom 0.3s ease;
+  position: relative;
+
+  /* Unselected items are transparent to let the glass background show */
+  background: transparent;
+}
+
+/* Push siblings down when the sub-indicator is visible */
+.glass-nav-item.active.has-sub-selection {
+  margin-bottom: 45px;
+}
+
+.glass-nav-item:hover {
+  color: var(--brand-purple);
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 10px rgba(96, 92, 168, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Active State - Glossy 3D Pop */
+.glass-nav-item.active {
+  /* Glossy overlay + Purple gradient (V5 style) */
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 40%),
+    linear-gradient(135deg, #7571b8 0%, #605CA8 50%, #4d4a8e 100%);
+  color: white;
+  
+  /* 3D Pop Shadow */
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.2),
+    0 4px 14px rgba(96, 92, 168, 0.35);
+}
+
+/* Tooltip (Unchanged, works well) */
+.glass-nav-item::after {
+  content: attr(data-title);
+  position: absolute;
+  left: 65px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-10px);
+  background: var(--brand-purple);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 100;
+  box-shadow: 0 4px 10px rgba(96, 92, 168, 0.2);
+}
+
+.glass-nav-item::before {
+  content: '';
+  position: absolute;
+  left: 59px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-10px);
+  border: 6px solid transparent;
+  border-right-color: var(--brand-purple);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.glass-nav-item:hover::after,
+.glass-nav-item:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* --- 3. TOP BAR (Header) --- */
+.glass-header {
+  grid-area: header;
+  background: var(--glass-surface-bg);
+
+  /* KEY CHANGE: Separation from Content */
+  border-bottom: var(--glass-edge);
+  box-shadow: 0 2px 15px rgba(96, 92, 168, 0.05);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  z-index: 25; /* High z-index to cast shadow on content */
+}
+
+.glass-app-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brand-purple);
+  letter-spacing: 0.5px;
+  /* Make title pop */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.glass-header-extras {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+/* Version Badge (Enhanced) */
+.app-version {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 800;
+  color: var(--brand-purple);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(96, 92, 168, 0.2);
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+/* User Profile Mini */
+.user-profile-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+}
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-purple);
+  border: 1px solid rgba(96, 92, 168, 0.15);
+  box-shadow: 0 2px 5px rgba(96, 92, 168, 0.1);
+}
+
+/* --- 4. CONTENT AREA (The Router) --- */
+.glass-content-area {
+  grid-area: content;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 15px !important;
+  width: auto;
+  max-width: 100%;
+  background-color: transparent;
+}
+
+/* Grid System */
+.glass-row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px; /* Tight gap - spacer bar fits in between */
+  width: 100%;
+  /* No margin-bottom: spacers handle spacing */
+  align-items: stretch; /* Cards in row stretch to same height */
+  max-width: 100%;
+}
+
+/* ==========================================================================
+   GLASS SPACERS - Visual connectors between cards
+   ========================================================================== */
+
+/* Horizontal Spacer (between vertically stacked cards) */
+.glass-spacer-h {
+  height: 4px;
+  margin: 1px 40px;
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    rgba(96, 92, 168, 0.08) 20%,
+    rgba(96, 92, 168, 0.12) 50%,
+    rgba(96, 92, 168, 0.08) 80%,
+    transparent 100%
+  );
+  border-radius: 2px;
+}
+
+/* Vertical Spacer - ONLY applied when .glass-row-spacers class is present */
+/* Use glassRow(..., spacers = TRUE) to enable */
+.glass-row.glass-row-spacers > [class*="glass-col-"] {
+  position: relative;
+}
+
+.glass-row.glass-row-spacers > [class*="glass-col-"] + [class*="glass-col-"]::before {
+  content: '';
+  position: absolute;
+  left: -3px; /* Center in the 6px gap */
+  top: 40px;
+  bottom: 40px;
+  width: 4px;
+  background: linear-gradient(180deg, 
+    transparent 0%,
+    rgba(96, 92, 168, 0.08) 20%,
+    rgba(96, 92, 168, 0.12) 50%,
+    rgba(96, 92, 168, 0.08) 80%,
+    transparent 100%
+  );
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Column classes - flex containers so children stretch to fill */
+.glass-col-12, .glass-col-9, .glass-col-8, .glass-col-6,
+.glass-col-5, .glass-col-4, .glass-col-3, .glass-col-2 {
+  display: flex;
+  flex-direction: column;
+}
+
+.glass-col-12 { grid-column: span 12; }
+.glass-col-9  { grid-column: span 9; }
+.glass-col-8  { grid-column: span 8; }
+.glass-col-6  { grid-column: span 6; }
+.glass-col-5  { grid-column: span 5; }
+.glass-col-4  { grid-column: span 4; }
+.glass-col-3  { grid-column: span 3; }
+.glass-col-2  { grid-column: span 2; }
+
+/* ==========================================================================
+   COLUMN LABEL HEADERS
+   ========================================================================== */
+/* Column Label Header Container */
+.glass-col-label-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 14px 5px;
+  margin-bottom: 20px;
+  user-select: none;
+  min-height: 44px;
+}
+
+/* Label Icon - Purple-Tinted 3D Glossy Style */
+.glass-col-label-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(240,240,255,0.9) 100%),
+    linear-gradient(135deg, rgba(96, 92, 168, 0.08) 0%, rgba(96, 92, 168, 0.12) 100%);
+  color: #605CA8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    inset 0 -1px 2px rgba(96, 92, 168, 0.08),
+    0 2px 8px rgba(96, 92, 168, 0.15),
+    0 0 0 1px rgba(96, 92, 168, 0.08);
+}
+
+/* Label Text - Purple & Prominent */
+.glass-col-label-text {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #605CA8;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+}
+
+/* Label Position Variants */
+.glass-col-label-left {
+  justify-content: flex-start;
+}
+
+.glass-col-label-center {
+  justify-content: center;
+}
+
+.glass-col-label-right {
+  justify-content: flex-end;
+}
+
+/* Underline Variant - Purple accent (thin like card headers) */
+.glass-col-label-underline {
+  border-bottom: 1px solid rgba(96, 92, 168, 0.25);
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+/* Cards inside columns stretch to fill the column height */
+.glass-col-12 > .glass-card,
+.glass-col-9  > .glass-card,
+.glass-col-8  > .glass-card,
+.glass-col-6  > .glass-card,
+.glass-col-5  > .glass-card,
+.glass-col-4  > .glass-card,
+.glass-col-3  > .glass-card,
+.glass-col-2  > .glass-card,
+.glass-col-12 > .glass-result-card,
+.glass-col-9  > .glass-result-card,
+.glass-col-8  > .glass-result-card,
+.glass-col-6  > .glass-result-card,
+.glass-col-5  > .glass-result-card,
+.glass-col-4  > .glass-result-card,
+.glass-col-3  > .glass-result-card,
+.glass-col-2  > .glass-result-card {
+  flex: 1;
+}
+
+@media (max-width: 992px) {
+  .glass-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .glass-col-12, .glass-col-9, .glass-col-8,
+  .glass-col-6, .glass-col-5, .glass-col-4,
+  .glass-col-3, .glass-col-2 {
+    grid-column: span 1;
+  }
+}
+
+/* Page Animations */
+.glass-page {
+  display: none;
+  width: 100%;
+  animation: fadeScaleIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.glass-page.active {
+  display: block;
+}
+
+@keyframes fadeScaleIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Selve prikken (skjult som standard) */
+.glass-nav-notification {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  background-color: #28A745; /* Brand Green */
+  border-radius: 50%;
+  box-shadow: 0 0 0 rgba(40, 167, 69, 0.4);
+  opacity: 0; /* Skjult */
+  transform: scale(0);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  z-index: 10; /* Under tooltippen */
+}
+
+/* Når forelderen har klassen .has-notification, vis prikken med animasjon */
+.glass-nav-notification.has-notification {
+  opacity: 1;
+  transform: scale(1);
+  animation: glassPulse 2s infinite;
+}
+
+@keyframes glassPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+
+/* ==========================================================================
+   FLYOUT MENU (SUB-NAVIGATION)
+   ========================================================================== */
+.glass-nav-flyout {
+  position: absolute;
+  left: 70px; /* Offset from sidebar */
+  top: 0;
+  width: 180px;
+  
+  background: white; /* Fallback */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 245, 250, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  border: 1px solid rgba(96, 92, 168, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(96, 92, 168, 0.2);
+  
+  padding: 0; /* Removing padding so header can fill corners */
+  padding-bottom: 8px; /* Bottom padding for items */
+  
+  /* Hidden by default */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px) scale(0.95);
+  transform-origin: top left;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  z-index: 1000;
+  /* Prevent accidental clicks when hidden */
+  pointer-events: none;
+}
+
+/* BRIDGE: Connect the parent item to the flyout so mouse doesn't fall into the gap */
+.glass-nav-flyout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -25px; /* Cover the gap (70px offset - 48px width = 22px gap) */
+  width: 25px;
+  height: 100%;
+  background: transparent;
+}
+
+/* Drop Up Variant (via JS) */
+.glass-nav-flyout.drop-up {
+  top: auto;
+  bottom: 0;
+  transform-origin: bottom left;
+}
+
+/* Show on hover of parent item */
+.glass-nav-item:hover .glass-nav-flyout {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Suppress standard tooltip if flyout exists */
+.glass-nav-item:has(.glass-nav-flyout)::after {
+  display: none !important;
+}
+
+/* Flyout Title */
+.flyout-header {
+  padding: 8px 12px;
+  font-size: 13px; /* Match tooltip */
+  font-weight: 600;
+  
+  /* Match tooltip styling */
+  background: var(--brand-purple);
+  color: white;
+  
+  /* Rounded top corners depending on direction? For now just top of box */
+  border-radius: 11px 11px 0 0; /* Slightly less than parent 12px to fit snug? Or match. 12px. */
+  border-bottom: none;
+  margin-bottom: 4px;
+}
+
+/* Flyout Items */
+.flyout-item {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.flyout-item:hover {
+  background: rgba(96, 92, 168, 0.08);
+  color: #605CA8;
+  padding-left: 20px; /* Slight nudge effect */
+}
+
+/* ==========================================================================
+   SUB-SELECTION INDICATOR (Arrow + Icon below sidebar item)
+   ========================================================================== */
+.glass-sub-indicator {
+  position: absolute;
+  top: 50px; /* Align with bottom of nav item */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 5; /* Below flyouts but above background */
+}
+
+/* Show when parent is active and has a sub-selection */
+.glass-nav-item.active.has-sub-selection .glass-sub-indicator {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* The Line connecting nav item to sub-icon */
+.glass-sub-indicator::before {
+  content: '';
+  width: 2px;
+  height: 15px; /* Adjust distance */
+  background: rgba(96, 92, 168, 0.4);
+  margin-bottom: 0;
+}
+
+/* The Sub-Icon Container */
+.glass-sub-icon-bucket {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid rgba(96, 92, 168, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  color: #605CA8;
+  font-size: 12px;
+  box-shadow: 0 2px 5px rgba(96, 92, 168, 0.1);
+}
+
+
+.flyout-item i {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  opacity: 0.7;
+}
+
+.flyout-item:hover i {
+  opacity: 1;
+  transform: scale(1.1);
+}

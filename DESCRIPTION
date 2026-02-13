@@ -1,0 +1,40 @@
+Package: EstimatingBiologicalVariation
+Type: Package
+Title: Estimating Biological Variation with Bayesian Models
+Version: 0.1.0
+Authors@R: person("Pernille", "Fauskanger", role = c("aut", "cre"),
+    email = "pernille.fauskanger@noklus.no")
+Description: A Shiny application for estimating biological variation
+    components (analytical, within-individual, and between-individual)
+    using Bayesian hierarchical models fitted via Stan. Includes
+    interactive data exploration, prior elicitation, MCMC diagnostics,
+    and rich D3-based visualisations. Ships with Rcpp routines for fast
+    variance-component estimation (ANOVA and bootstrap CIs) and Stan data
+    preparation.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.3
+Depends:
+    R (>= 4.1.0)
+Imports:
+    shiny (>= 1.7.0),
+    rstan (>= 2.21.0),
+    data.table,
+    readxl,
+    ggplot2,
+    DT,
+    writexl,
+    truncnorm,
+    purrr,
+    htmltools,
+    Rcpp
+LinkingTo:
+    Rcpp
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+URL: https://github.com/pernille267/EstimatingBiologicalVariation
+BugReports: https://github.com/pernille267/EstimatingBiologicalVariation/issues
+VignetteBuilder: knitr

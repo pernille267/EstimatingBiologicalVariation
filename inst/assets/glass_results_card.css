@@ -1,0 +1,122 @@
+/* ==========================================================================
+   GLASS RESULT CARD
+   Theme: Data-Focused | Toolbar Header | Green Accents
+   ========================================================================== */
+
+.glass-result-card {
+  background: #ffffff;
+  border-radius: 12px;
+  /* Slightly crispier shadow for data containers */
+  box-shadow: 0 2px 15px rgba(0,0,0,0.04);
+  border: 1px solid rgba(40, 167, 69, 0.15); /* Faint Green Border */
+  margin-bottom: 25px;
+  overflow: visible; /* Allow dropdowns/tooltips to escape */
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* --- HEADER --- */
+.glass-result-header {
+  padding: 12px 25px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 12px 12px 0 0;
+  min-height: 60px;
+}
+
+/* Title Section */
+.glass-result-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.glass-result-icon {
+  color: #28A745; /* Brand Green */
+  background: rgba(40, 167, 69, 0.08);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.glass-result-title {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+/* --- TOOLBAR (The Magic Part) --- */
+/* This area is designed to hold buttons inline */
+.glass-result-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Force buttons inside the toolbar to be smaller/compact if needed */
+.glass-result-toolbar .glass-btn,
+.glass-result-toolbar .glass-download-btn {
+  height: 36px !important;       /* Smaller than main action buttons */
+  min-width: 100px;
+  padding: 0;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   TOOLBAR ALIGNMENT OVERRIDES (Fixing Dropdown Alignment)
+   ========================================================================== */
+
+/* 1. Reset Container Margins */
+/* This removes the 'margin-bottom: 5px' usually present on form inputs */
+.glass-result-toolbar .glass-dropdown-container {
+  margin-bottom: 0 !important;
+  vertical-align: middle;
+}
+
+/* 2. Match Dropdown Button dimensions to Toolbar Buttons */
+.glass-result-toolbar .glass-dropdown-btn {
+  height: 36px !important;       /* Exact same height as .glass-btn above */
+  font-size: 14px !important;    /* Match font size */
+  padding-top: 0 !important;     /* Remove padding that might offset text */
+  padding-bottom: 0 !important;
+  padding-left: 15px;
+  padding-right: 10px;
+
+  display: flex;                 /* Use Flexbox to center text vertically */
+  align-items: center;           /* Critical for vertical alignment */
+  justify-content: space-between;
+  line-height: 1 !important;     /* Prevent line-height from pushing text down */
+}
+
+/* Ensure the label inside the button is centered */
+.glass-result-toolbar .glass-dropdown-btn span {
+  display: inline-block;
+  margin-top: 1px; /* Optical correction for Source Sans Pro */
+}
+
+/* --- BODY --- */
+.glass-result-body {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 0 0 12px 12px;
+}
+
+/* --- STATUS BAR (Optional Footer) --- */
+.glass-result-footer {
+  background: #f9f9f9;
+  padding: 10px 25px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 13px;
+  color: #888;
+  border-radius: 0 0 12px 12px;
+}

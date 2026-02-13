@@ -1,0 +1,141 @@
+/* ==========================================================================
+   GLASS BADGE - v1.0
+   ========================================================================== */
+
+:root {
+  --gb-green: #28A745;
+  --gb-orange: #FF9800;
+  --gb-blue: #03A9F4;
+  --gb-red: #F44336;
+  --gb-purple: #605CA8;
+  --gb-yellow: #FFEE8C;
+  --gb-gray: #607D8B;
+  --gb-gold: #FFC107;
+}
+
+.glass-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  cursor: default;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  user-select: none;
+  border: 1px solid transparent;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  white-space: nowrap;
+}
+
+/* --- Sizes --- */
+.gb-size-sm { padding: 2px 8px; font-size: 11px; }
+.gb-size-md { padding: 4px 12px; font-size: 13px; }
+.gb-size-lg { padding: 6px 16px; font-size: 16px; }
+
+/* --- Shapes --- */
+.gb-shape-pill   { border-radius: 50px; }
+.gb-shape-circle { border-radius: 50%; width: 2em; height: 2em; padding: 0; }
+.gb-shape-square { border-radius: 6px; }
+
+/* CSS Star (Simplified for badge use) */
+.gb-shape-star {
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  width: 2.5em; height: 2.5em; padding: 0;
+  border-radius: 0; /* Clip path handles shape */
+}
+
+/* CSS Hexagon */
+.gb-shape-hexagon {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  width: 3em; height: 2.5em; padding: 0;
+  border-radius: 0;
+}
+
+/* --- Color Themes --- */
+/* Mixin-like logic for colors: bg is 20% opacity, border is 30%, text is 100% */
+
+.gb-color-green  { background: rgba(76, 175, 80, 0.15); color: var(--gb-green); border-color: rgba(76, 175, 80, 0.3); }
+.gb-color-orange { background: rgba(255, 152, 0, 0.15); color: var(--gb-orange); border-color: rgba(255, 152, 0, 0.3); }
+.gb-color-blue   { background: rgba(3, 169, 244, 0.15); color: var(--gb-blue); border-color: rgba(3, 169, 244, 0.3); }
+.gb-color-red    { background: rgba(244, 67, 54, 0.15); color: var(--gb-red); border-color: rgba(244, 67, 54, 0.3); }
+.gb-color-purple { background: rgba(156, 39, 176, 0.15); color: var(--gb-purple); border-color: rgba(156, 39, 176, 0.3); }
+.gb-color-yellow   { background: rgba(0, 150, 136, 0.15); color: var(--gb-teal); border-color: rgba(0, 150, 136, 0.3); }
+.gb-color-gray   { background: rgba(96, 125, 139, 0.15); color: var(--gb-gray); border-color: rgba(96, 125, 139, 0.3); }
+.gb-color-gold   { background: rgba(255, 193, 7, 0.15); color: #F57F17; border-color: rgba(255, 193, 7, 0.3); }
+
+/* Custom Color Support via CSS Variable */
+.gb-color-custom {
+  background: color-mix(in srgb, var(--gb-custom-color), transparent 85%);
+  color: var(--gb-custom-color);
+  border-color: color-mix(in srgb, var(--gb-custom-color), transparent 70%);
+}
+
+/* --- Interactions (Hover/Active) --- */
+.glass-badge:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  filter: brightness(1.1);
+  z-index: 10;
+}
+
+/* --- Glow Animation --- */
+@keyframes gb-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(var(--gb-glow-color, 0,0,0), 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(var(--gb-glow-color, 0,0,0), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--gb-glow-color, 0,0,0), 0); }
+}
+
+.gb-glow {
+  animation: gb-pulse 2s infinite;
+}
+
+/* Specific Glow Colors mapping */
+.gb-color-green.gb-glow { --gb-glow-color: 76, 175, 80; }
+.gb-color-red.gb-glow   { --gb-glow-color: 244, 67, 54; }
+/* ... (others can be added, or browser defaults to shadow color) */
+
+
+/* --- Tooltip Popup --- */
+/* The tooltip text container, initially hidden */
+.gb-tooltip {
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(40, 40, 50, 0.95);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s;
+  pointer-events: none;
+  min-width: 120px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 100;
+}
+
+.gb-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(40, 40, 50, 0.95) transparent transparent transparent;
+}
+
+/* Tooltip Visible State */
+.glass-badge.gb-tooltip-active .gb-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}

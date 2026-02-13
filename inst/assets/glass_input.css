@@ -1,0 +1,276 @@
+/* ==========================================================================
+   GLASS INPUTS (Text & Numeric)
+   Theme: Gradient Header | Validation States | Tooltips
+   ========================================================================== */
+
+.glass-input-binding {
+  margin-bottom: 20px;
+  font-family: 'Source Sans Pro', sans-serif;
+  position: relative;
+  width: 100%;
+}
+
+/* --- HEADER (Label + Icon) --- */
+.glass-input-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 8px 5px;
+  margin-bottom: 0;
+  user-select: none;
+  min-height: 40px; /* Ensures consistent height across all components */
+}
+
+.glass-input-label-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+  color: #495057;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    inset 0 -1px 2px rgba(0,0,0,0.05),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.glass-input-label-text {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #495057;
+  line-height: 1.2;
+}
+
+/* --- RANGE TEXT (New: 5 - 50) --- */
+.glass-input-range-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #adb5bd;
+  background-color: rgba(96, 92, 168, 0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto; /* Pushes it to the far right of the header container */
+}
+
+/* --- HELP ICON (Top Right) --- */
+.glass-input-help-icon {
+  position: absolute;
+  top: 5px;
+  right: 0;
+  font-size: 15px;
+  color: #adb5bd;
+  cursor: help;
+  z-index: 10;
+  transition: color 0.2s;
+}
+.glass-input-help-icon:hover { color: #605CA8; }
+
+/* Help Tooltip */
+.glass-input-help-icon::after {
+  content: attr(data-help);
+  position: absolute;
+  bottom: 135%;
+  right: -5px;
+  background: #605CA8;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  width: max-content;
+  max-width: 250px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(5px);
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(96, 92, 168, 0.3);
+  z-index: 100;
+  line-height: 1.4;
+  font-weight: 400;
+}
+.glass-input-help-icon:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* --- INPUT CONTAINER --- */
+.glass-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid #28A745; /* Default Green Border like Dropdown */
+  border-radius: 8px;
+  padding: 0 15px;
+  height: 44px; /* Consistent height */
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.glass-input-wrapper:hover {
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+  transform: translateY(-1px);
+}
+
+.glass-input-wrapper.focused {
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+  border-color: #218838;
+}
+
+/* The Native Input Field */
+.glass-native-input {
+  border: none;
+  background: transparent;
+  flex-grow: 1;
+  font-size: 15px;
+  color: #495057;
+  outline: none;
+  width: 100%;
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+.glass-native-input::placeholder {
+  color: #adb5bd;
+  font-style: italic;
+}
+
+/* Unit Text (Right side) */
+.glass-input-unit {
+  color: #605CA8; /* Changed to purple to stand out like in sketch */
+  font-size: 14px;
+  font-weight: 700;
+  margin-left: 8px;
+  user-select: none;
+  text-transform: uppercase;
+}
+
+/* --- STATE TOOLTIPS (Empty / Filled) on the Wrapper --- */
+.glass-input-wrapper::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 115%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-5px);
+  background-color: #343a40;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.2s;
+  z-index: 50;
+}
+
+.glass-input-wrapper:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* --- WARNING / INVALID STATE (Numeric) --- */
+.glass-input-wrapper.warning {
+  border-color: #dc3545; /* Red */
+  background-color: #fff8f8;
+}
+
+.glass-input-wrapper.warning:hover,
+.glass-input-wrapper.warning.focused {
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+}
+
+.glass-input-wrapper.warning .glass-native-input {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* The Warning Message Box (Pops up below) */
+.glass-input-warning-msg {
+  display: none; /* Hidden by default */
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #fdecea;
+  border-left: 4px solid #dc3545;
+  color: #721c24;
+  font-size: 13px;
+  border-radius: 4px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.glass-input-warning-msg.show {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- DISABLED STATE --- */
+.glass-input-binding.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  filter: grayscale(0.8);
+}
+
+.glass-input-binding.disabled .glass-input-wrapper {
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+}
+
+/* ==========================================================================
+   COLOR VARIANTS - Purple & Green
+   ========================================================================== */
+
+/* --- PURPLE VARIANT --- */
+.glass-input-wrapper.purple {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
+  border-color: rgba(96, 92, 168, 0.25);
+}
+
+.glass-input-wrapper.purple:hover {
+  border-color: rgba(96, 92, 168, 0.4);
+  box-shadow: 0 4px 12px rgba(96, 92, 168, 0.15);
+}
+
+.glass-input-wrapper.purple.focused {
+  border-color: #605CA8;
+  background: linear-gradient(145deg, #ffffff 0%, #fafaff 100%);
+  box-shadow: 0 4px 12px rgba(96, 92, 168, 0.25),
+              0 0 0 3px rgba(96, 92, 168, 0.08);
+}
+
+.glass-input-wrapper.purple .glass-input-unit {
+  color: #605CA8;
+}
+
+.glass-input-wrapper.green {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fff9 100%);
+  border-color: rgba(40, 167, 69, 0.25);
+}
+
+.glass-input-wrapper.green:hover {
+  border-color: rgba(40, 167, 69, 0.4);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+}
+
+.glass-input-wrapper.green.focused {
+  border-color: #28A745;
+  background: linear-gradient(145deg, #ffffff 0%, #fafffa 100%);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25),
+              0 0 0 3px rgba(40, 167, 69, 0.08);
+}
+
+.glass-input-wrapper.green .glass-input-unit {
+  color: #28A745;
+}

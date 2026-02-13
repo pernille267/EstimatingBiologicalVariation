@@ -1,0 +1,110 @@
+/* --- Glass Notification CSS --- */
+
+:root {
+  --glass-notify-info-bg: rgba(100, 149, 237, 0.15); /* CornflowerBlue tint */
+  --glass-notify-info-border: rgba(100, 149, 237, 0.4);
+  --glass-notify-info-text: #2c3e50;
+
+  --glass-notify-warning-bg: rgba(255, 193, 7, 0.15); /* Amber tint */
+  --glass-notify-warning-border: rgba(255, 193, 7, 0.5);
+  --glass-notify-warning-text: #856404;
+
+  --glass-notify-error-bg: rgba(220, 53, 69, 0.15); /* Red tint */
+  --glass-notify-error-border: rgba(220, 53, 69, 0.4);
+  --glass-notify-error-text: #721c24;
+}
+
+.glass-notification {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 0;
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- State: Hidden --- */
+.glass-notification.hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+  height: 0;
+  margin-bottom: 0;
+  border: none;
+  pointer-events: none;
+}
+
+/* --- Types --- */
+.glass-notification.info {
+  background: linear-gradient(135deg, rgba(255,255,255,0.6), var(--glass-notify-info-bg));
+  border-left: 5px solid var(--glass-notify-info-border);
+  color: var(--glass-notify-info-text);
+}
+
+.glass-notification.warning {
+  background: linear-gradient(135deg, rgba(255,255,255,0.6), var(--glass-notify-warning-bg));
+  border-left: 5px solid var(--glass-notify-warning-border);
+  color: var(--glass-notify-warning-text);
+}
+
+.glass-notification.error {
+  background: linear-gradient(135deg, rgba(255,255,255,0.6), var(--glass-notify-error-bg));
+  border-left: 5px solid var(--glass-notify-error-border);
+  color: var(--glass-notify-error-text);
+}
+
+/* --- Header Section --- */
+.glass-notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 15px 5px 15px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.glass-notification-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.5px;
+}
+
+.glass-notification-close {
+  cursor: pointer;
+  font-weight: bold;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.glass-notification-close:hover {
+  opacity: 1;
+}
+
+/* --- Body Section --- */
+.glass-notification-body {
+  padding: 10px 15px 15px 15px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+/* --- Progress Bar (Timer) --- */
+.glass-notification-timer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: rgba(0,0,0,0.1);
+  width: 0%;
+  transition: width linear;
+}

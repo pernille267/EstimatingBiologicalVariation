@@ -1,0 +1,170 @@
+/* ==========================================================================
+   CUSTOM GLASS TABSET ("True Tab" Style)
+   Theme: Anchored Navigation | Glowing Underline
+   ========================================================================== */
+
+.glass-tabset-container {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+/* --- 1. Navigation Strip --- */
+.glass-tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 30px;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: 2px solid #f0f0f0;
+  position: relative;
+}
+
+/* --- 2. Tab Button --- */
+.glass-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 12px 5px;
+  margin-bottom: -2px;
+  min-width: 80px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #8898aa; /* Muted Grey */
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.glass-tab-btn i {
+  margin-right: 8px;
+  font-size: 1.1em;
+  color: #8898aa;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+/* --- 3. The Underline Indicator (Default Purple) --- */
+.glass-tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #605CA8 0%, #9e64c2 100%); /* Purple */
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  transform: scaleX(0);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* --- HOVER STATE (Default Purple) --- */
+.glass-tab-btn:hover { color: #605CA8; }
+.glass-tab-btn:hover i { color: #605CA8; transform: translateY(-1px); }
+.glass-tab-btn:hover::after { opacity: 0.4; transform: scaleX(0.6); }
+
+/* --- ACTIVE STATE (Default Purple) --- */
+.glass-tab-btn.active { color: #605CA8; }
+.glass-tab-btn.active i { color: #605CA8; }
+.glass-tab-btn.active::after { opacity: 1; transform: scaleX(1); }
+
+
+/* ==========================================================================
+   THEME OVERRIDE: GREEN
+   Apply class .theme-green to the container to switch colors
+   ========================================================================== */
+
+.glass-tabset-container.theme-green .glass-tab-btn::after {
+  background: linear-gradient(90deg, #28A745 0%, #34ce57 100%); /* Green Gradient */
+}
+
+.glass-tabset-container.theme-green .glass-tab-btn:hover {
+  color: #28A745;
+}
+.glass-tabset-container.theme-green .glass-tab-btn:hover i {
+  color: #28A745;
+}
+
+.glass-tabset-container.theme-green .glass-tab-btn.active {
+  color: #28A745;
+}
+.glass-tabset-container.theme-green .glass-tab-btn.active i {
+  color: #28A745;
+}
+
+/* --- 4. Content Area --- */
+.glass-tab-content-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 10px;
+}
+
+.glass-tab-pane {
+  display: none;
+  animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.glass-tab-pane.active { display: block; }
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   BOXED VARIATION ("Crystal Container")
+   Use when tabset is standalone on the background (not inside a card)
+   ========================================================================== */
+
+.glass-tabset-boxed .glass-tab-nav {
+  /* The Crystal Look */
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 240, 255, 0.90) 100%);
+  border: 1px solid rgba(96, 92, 168, 0.15);
+
+  /* ENDRING: Skygge KUN oppover (-5px) og til sidene. Ingen skygge nedover. */
+  box-shadow: 0 -5px 15px rgba(96, 92, 168, 0.05),
+              5px 0 15px rgba(96, 92, 168, 0.02),
+              -5px 0 15px rgba(96, 92, 168, 0.02);
+
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none; /* Viktig: Ingen kantlinje i bunn */
+
+  padding: 10px 20px;
+  margin-bottom: 0px;
+  position: relative;
+
+  /* ENDRING: Z-index må være høyere enn kortet under for å dekke kortets topp-kant */
+  z-index: 5;
+}
+
+/* Adjust button spacing inside the box */
+.glass-tabset-boxed .glass-tab-btn {
+  margin-bottom: 0;
+  padding: 10px 15px;
+}
+
+/* Ensure the active underline sits flush with the bottom */
+.glass-tabset-boxed .glass-tab-btn::after {
+  bottom: -10px; /* Pushes line exactly to the edge */
+  height: 3px;
+}
+
+/* Optional: Tweaks for the content wrapper immediately following a boxed nav */
+.glass-tabset-boxed .glass-tab-content-wrapper {
+  /* Hvis kortet under har en border-radius i toppen, kan det se rart ut
+     hvis vi ikke justerer det. Men ofte ser det fint ut at fanen
+     sitter "på toppen" av et avrundet kort.
+     Vi sikrer bare at det ikke er noe padding som skyver det ned. */
+  padding-top: 0;
+}
+
+/* Headless Mode: Hide Navigation Bar */
+.glass-tabset-container.headless > .glass-tab-nav {
+  display: none !important;
+}

@@ -1,0 +1,300 @@
+/* ==========================================================================
+   GLASS DASHBOARD CARD (REFINED)
+   Theme: Glass Gradient Header | Micro-Interactions | Smooth Collapse
+   ========================================================================== */
+
+.glass-card {
+  background: #ffffff;
+  border-radius: 12px;
+  /* Softer, deeper shadow for a floating effect */
+  box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+  border: 1px solid rgba(96, 92, 168, 0.1); /* Subtle purple tint on border */
+  /* No margin-bottom: spacers handle spacing between cards */
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* --- HEADER (THE GLASS LOOK) --- */
+.glass-card-header {
+  /* The Gradient: Faint purple at top fading to white */
+  background: linear-gradient(180deg, rgba(96, 92, 168, 0.06) 0%, rgba(255, 255, 255, 0.6) 100%);
+  padding: 15px 25px;
+  border-bottom: 1px solid rgba(96, 92, 168, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+
+  /* Smooth transition for the hover state */
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* --- RIGHT SIDE CONTAINER (Toolbar + Toggle) --- */
+.glass-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- TOOLBAR --- */
+.glass-card-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Make toolbar buttons compact */
+.glass-card-toolbar .glass-btn {
+  height: 32px;
+  min-width: 90px;
+  padding: 0;
+  font-size: 13px;
+  margin: 0;
+}
+
+.glass-card-toolbar .glass-btn-label {
+  font-size: 1em;
+}
+
+/* --- INTERACTIVE STATES ("Sparkles") --- */
+
+/* Make sure cursor shows pointer if collapsible */
+.glass-card.collapsible .glass-card-header {
+  cursor: pointer;
+}
+
+/* Non-collapsible cards should have default cursor - comes after to override any inherited pointer */
+.glass-card:not(.collapsible) .glass-card-header {
+  cursor: default !important;
+}
+
+/* Hover Effect: Deepen the glass, add glow */
+.glass-card.collapsible .glass-card-header:hover {
+  /* Slightly stronger purple gradient */
+  background: linear-gradient(180deg, rgba(96, 92, 168, 0.12) 0%, rgba(255, 255, 255, 0.8) 100%);
+  /* Inner light glow to make it feel like glass */
+  box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.9);
+}
+
+/* --- TITLE WRAPPER --- */
+.glass-card-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* --- THE ICON BUBBLE --- */
+.glass-card-icon {
+  color: #605CA8;
+  background: #ffffff; /* Pure white bg to pop against the gradient */
+  padding: 8px;
+  border-radius: 10px; /* Slightly softer curve */
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+
+  /* Subtle shadow for the icon itself */
+  box-shadow: 0 2px 8px rgba(96, 92, 168, 0.15);
+
+  /* Prepare for animation */
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy transition */
+}
+
+/* Hover Animation: Icon lifts and rotates slightly */
+.glass-card.collapsible .glass-card-header:hover .glass-card-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 12px rgba(96, 92, 168, 0.25);
+  background: #ffffff;
+  color: #4d4a8e; /* Darker purple */
+}
+
+/* --- THE TITLE TEXT --- */
+.glass-card-title {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #605CA8; /* BRAND PURPLE (Requested Change) */
+  margin: 0;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.8); /* Etched glass text effect */
+}
+
+/* --- THE TOGGLE CHEVRON --- */
+.glass-card-toggle {
+  color: #adb5bd;
+  font-size: 14px;
+  transition: all 0.3s ease;
+
+  /* Circle container for the chevron */
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+/* Hover Animation: Chevron turns purple and gets a background */
+.glass-card.collapsible .glass-card-header:hover .glass-card-toggle {
+  color: #605CA8;
+  background-color: rgba(255,255,255,0.5);
+  transform: scale(1.1);
+}
+
+/* Rotate when collapsed (override hover transform slightly) */
+.glass-card.collapsed .glass-card-toggle {
+  transform: rotate(-180deg);
+}
+
+.glass-card.collapsed .glass-card-header:hover .glass-card-toggle {
+  transform: rotate(-180deg) scale(1.1);
+}
+
+/* --- BODY & ANIMATION --- */
+.glass-card-body {
+  padding: 25px;
+  background-color: #ffffff;
+  max-height: 2000px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height 0.5s ease-in-out,
+              opacity 0.4s ease-in-out,
+              padding 0.4s ease,
+              transform 0.4s ease;
+}
+
+.glass-card.collapsed .glass-card-body {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  transform: translateY(-10px);
+  border: none;
+}
+
+/* --- DISABLED STATE --- */
+.glass-card.disabled {
+  pointer-events: none;
+  filter: grayscale(0.8) opacity(0.7);
+}
+
+/* ==========================================================================
+   ATTACHED MODE (Use when placing directly under a boxed tabset)
+   ========================================================================== */
+
+.glass-card.attached-top {
+  /* Flatten top corners to lock into the tabset above */
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+
+  /* Remove top border since the tabset border handles it */
+  border-top: none;
+
+  /* Remove top shadow to avoid dark line between tabs and card */
+  /* Keep shadow on sides and bottom only */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+
+  /* Ensure it touches the element above */
+  margin-top: 0;
+}
+
+/* Adjust header radius as well */
+.glass-card.attached-top .glass-card-header {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* ==========================================================================
+   NESTED MODE (Card inside another glassCard)
+   Looks like a section divider, not a standalone card.
+   ========================================================================== */
+
+.glass-card.glass-card-nested {
+  /* No floating-card effect */
+  border-radius: 0;
+  box-shadow: none;
+
+  /* Subtle top separator; no left/right/bottom border */
+  border: none;
+  border-top: 1px solid rgba(96, 92, 168, 0.10);
+
+  /* Full width of whatever container it's in */
+  width: 100%;
+  margin: 0;
+}
+
+/* -------------------------------------------------------------------
+   Ancestor padding removal:
+   When a nested card lives inside a parent glassCard body (possibly
+   through intermediate wrappers like tab panes), strip the parent
+   body's padding so the nested card truly touches the edges.
+   ------------------------------------------------------------------- */
+.glass-card-body:has(.glass-card-nested) {
+  padding: 0;
+}
+
+/* The tab content wrapper between body and nested card also needs 0 padding */
+.glass-card-body:has(.glass-card-nested) .glass-tab-content-wrapper {
+  padding: 0;
+}
+
+/* When a nested card is the very last visible thing, no bottom border */
+.glass-card.glass-card-nested:last-child {
+  border-bottom: none;
+}
+
+/* --- Nested Header: subtler to show hierarchy --- */
+.glass-card.glass-card-nested > .glass-card-header {
+  background: linear-gradient(180deg, rgba(96, 92, 168, 0.03) 0%, rgba(255, 255, 255, 0.4) 100%);
+  padding: 12px 25px;
+  border-bottom: 1px solid rgba(96, 92, 168, 0.06);
+  border-radius: 0;
+}
+
+/* Smaller title to show hierarchy */
+.glass-card.glass-card-nested .glass-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #7a77b5; /* Softer purple to feel subordinate */
+}
+
+/* Smaller icon bubble */
+.glass-card.glass-card-nested .glass-card-icon {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  padding: 6px;
+  box-shadow: 0 1px 4px rgba(96, 92, 168, 0.10);
+}
+
+/* Subtler hover for nested cards */
+.glass-card.glass-card-nested.collapsible .glass-card-header:hover {
+  background: linear-gradient(180deg, rgba(96, 92, 168, 0.07) 0%, rgba(255, 255, 255, 0.6) 100%);
+  box-shadow: none;
+}
+
+/* Nested body keeps horizontal padding for content alignment */
+.glass-card.glass-card-nested > .glass-card-body {
+  padding: 20px 25px;
+}
+
+/* -------------------------------------------------------------------
+   Sibling content near nested cards:
+   Re-add padding for elements that are NOT nested cards and do NOT
+   contain nested cards (e.g., wizard nav buttons).
+   Elements that WRAP nested cards (like a glassRow) must stay flush.
+   ------------------------------------------------------------------- */
+.glass-card-body:has(.glass-card-nested) > *:not(.glass-card-nested):not(.glass-tabset-container):not(:has(.glass-card-nested)) {
+  padding-left: 25px;
+  padding-right: 25px;
+}
+
+/* Same for content inside tab panes */
+.glass-card-body:has(.glass-card-nested) .glass-tab-pane > *:not(.glass-card-nested):not(:has(.glass-card-nested)) {
+  padding-left: 25px;
+  padding-right: 25px;
+}

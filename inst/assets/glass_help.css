@@ -1,0 +1,126 @@
+/* ==========================================================================
+   GLASS HELP CARD
+   Theme: Clean Documentation | Timeline Steps | Info Boxes
+   ========================================================================== */
+
+.glass-help-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(96, 92, 168, 0.08);
+  margin-bottom: 30px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.02);
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+/* --- 1. Tip Box --- */
+.glass-help-tip {
+  background: linear-gradient(to right, #f4f0f8, #ffffff);
+  border-left: 4px solid #605CA8;
+  padding: 15px 25px;
+  color: #555;
+  font-size: 15px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.glass-help-tip i {
+  color: #605CA8;
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+/* --- 2. Headers --- */
+.glass-help-header {
+  background-color: #ffffff;
+  padding: 20px 25px 10px 25px; /* Bottom padding reduced to connect with section */
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: -0.3px;
+}
+
+.glass-help-section {
+  padding: 25px 30px;
+  position: relative;
+}
+
+/* --- 3. Steps (Timeline Style) --- */
+.glass-help-step {
+  display: flex;
+  position: relative;
+  padding-bottom: 25px;
+}
+
+/* Vertical Connector Line */
+.glass-help-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 15px; /* Center of 32px circle (approx) */
+  top: 32px;
+  bottom: 0;
+  width: 2px;
+  background-color: #e9ecef;
+  z-index: 0;
+}
+
+.glass-help-step-number {
+  width: 32px;
+  height: 32px;
+  background-color: #ffffff;
+  border: 2px solid #605CA8;
+  color: #605CA8;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 20px;
+  z-index: 1;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Remove border for icon-based steps if needed, handled by R inline styles usually */
+.glass-help-step-number i {
+  font-size: 14px;
+}
+
+.glass-help-step-content {
+  color: #444;
+  font-size: 15px;
+  line-height: 1.6;
+  padding-top: 2px;
+}
+
+/* --- 4. Info Boxes --- */
+.glass-help-info-box {
+  background-color: #fbfbfc;
+  border: 1px solid #eee;
+  border-left-width: 4px; /* Color set inline by R */
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 15px;
+}
+
+.glass-help-info-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: #555;
+}
+
+.glass-help-info-item:last-child {
+  margin-bottom: 0;
+}
+
+.glass-help-info-item i {
+  margin-right: 12px;
+  margin-top: 5px;
+  font-size: 10px; /* Smaller dots */
+}

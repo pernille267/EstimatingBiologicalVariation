@@ -1,0 +1,505 @@
+/* ==========================================================================
+   GLASS SELECTIZE INPUT - Premium Multi-Select Component
+   Theme: Luxurious Glass | Smooth Animations | Modern Chips
+   ========================================================================== */
+
+.glass-selectize-wrapper {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+/* --- LABEL HEADER --- */
+.glass-selectize-label-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 8px 5px;
+  margin-bottom: 0;
+  user-select: none;
+  min-height: 40px; /* Ensures consistent height across all components */
+}
+
+/* Label Icon - 3D Glossy Style matching Radio Buttons */
+.glass-selectize-label-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+  color: #495057;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    inset 0 -1px 2px rgba(0,0,0,0.05),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* Label Text - Bold & Clean */
+.glass-selectize-label-text {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #495057;
+  line-height: 1.2;
+}
+
+/* --- CONTAINER --- */
+.glass-selectize-container {
+  position: relative;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
+  border: 2px solid rgba(96, 92, 168, 0.15);
+  border-radius: 12px;
+  padding: 8px 12px;
+  min-height: 45px;
+  cursor: text;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(96, 92, 168, 0.04),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  /* CRITICAL: Ensure clicks work */
+  pointer-events: auto !important;
+  /* Flexbox layout for inline items and input */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.glass-selectize-container:hover {
+  border-color: rgba(96, 92, 168, 0.3);
+  box-shadow: 0 4px 12px rgba(96, 92, 168, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.glass-selectize-container.focused {
+  border-color: #605CA8;
+  background: linear-gradient(145deg, #ffffff 0%, #fafaff 100%);
+  box-shadow: 0 6px 20px rgba(96, 92, 168, 0.12),
+              0 0 0 4px rgba(96, 92, 168, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* --- CHIPS / SELECTED ITEMS --- */
+.glass-selectize-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  /* CRITICAL: Ensure the items area is clickable */
+  pointer-events: auto;
+  cursor: text;
+  /* Inline layout: items take only needed space */
+  flex: 0 0 auto;
+}
+
+.glass-selectize-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #605CA8 0%, #7b77c4 100%);
+  color: white;
+  padding: 4px 10px 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(96, 92, 168, 0.25);
+  animation: chipAppear 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.2s ease;
+}
+
+.glass-selectize-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(96, 92, 168, 0.35);
+}
+
+.glass-selectize-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 10px;
+}
+
+.glass-selectize-chip-remove:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: rotate(90deg);
+}
+
+@keyframes chipAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* --- INPUT FIELD --- */
+.glass-selectize-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  /* CRITICAL: Ensure the wrapper is clickable */
+  pointer-events: auto;
+  cursor: text;
+  min-width: 0;
+}
+
+.glass-selectize-input {
+  flex: 1 1 auto;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
+  color: #2c3e50;
+  padding: 4px 0;
+  min-width: 80px;
+  /* CRITICAL: Ensure input is clickable and focusable */
+  pointer-events: auto;
+  cursor: text;
+}
+
+/* When items are selected, allow flexible sizing */
+.glass-selectize-input.has-selections {
+  flex: 1 1 auto;
+  min-width: 100px;
+}
+
+/* Hide placeholder when container is narrow */
+.glass-selectize-input.hide-placeholder::placeholder {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* --- OVERFLOW COLLAPSE MODE --- */
+/* When too many chips overflow, collapse into a summary badge */
+.glass-selectize-overflow-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #605CA8 0%, #7b77c4 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(96, 92, 168, 0.25);
+  cursor: default;
+  white-space: nowrap;
+  animation: chipAppear 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.glass-selectize-wrapper.green .glass-selectize-overflow-badge {
+  background: linear-gradient(135deg, #28A745 0%, #34ce57 100%);
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.25);
+}
+
+.glass-selectize-container.overflow-collapsed .glass-selectize-items {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+/* Overflow tooltip showing all selected items */
+.glass-selectize-overflow-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid rgba(96, 92, 168, 0.15);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(96, 92, 168, 0.18);
+  z-index: 1002;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.glass-selectize-overflow-tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.glass-selectize-input::placeholder {
+  color: #adb5bd;
+  font-style: italic;
+  transition: opacity 0.2s ease;
+}
+
+.glass-selectize-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #adb5bd;
+  font-size: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border-radius: 6px;
+  /* CRITICAL: Ensure arrow is clickable */
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+
+.glass-selectize-arrow:hover {
+  background: rgba(96, 92, 168, 0.1);
+  color: #605CA8;
+}
+
+.glass-selectize-container.focused .glass-selectize-arrow {
+  transform: rotate(180deg);
+  color: #605CA8;
+}
+
+/* --- DROPDOWN MENU --- */
+.glass-selectize-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid rgba(96, 92, 168, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(96, 92, 168, 0.15),
+              0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-selectize-dropdown.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+/* Custom Scrollbar */
+.glass-selectize-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.glass-selectize-dropdown::-webkit-scrollbar-track {
+  background: rgba(96, 92, 168, 0.05);
+  border-radius: 4px;
+}
+
+.glass-selectize-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(96, 92, 168, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.glass-selectize-dropdown::-webkit-scrollbar-thumb:hover {
+  background: rgba(96, 92, 168, 0.5);
+}
+
+/* --- OPTIONS --- */
+.glass-selectize-option {
+  padding: 12px 16px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-selectize-option::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    rgba(96, 92, 168, 0.05) 0%, 
+    rgba(96, 92, 168, 0.02) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.glass-selectize-option:hover::before {
+  opacity: 1;
+}
+
+.glass-selectize-option:hover {
+  border-left-color: #605CA8;
+  background: rgba(96, 92, 168, 0.03);
+}
+
+.glass-selectize-option.selected {
+  background: linear-gradient(90deg, 
+    rgba(96, 92, 168, 0.12) 0%, 
+    rgba(96, 92, 168, 0.06) 100%);
+  border-left-color: #605CA8;
+  font-weight: 600;
+  color: #605CA8;
+}
+
+.glass-selectize-option.selected::after {
+  content: '✓';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #605CA8;
+}
+
+.glass-selectize-option.highlighted {
+  background: linear-gradient(90deg, 
+    rgba(96, 92, 168, 0.08) 0%, 
+    rgba(96, 92, 168, 0.04) 100%);
+  border-left-color: #7b77c4;
+}
+
+/* --- EMPTY STATE --- */
+.glass-selectize-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #adb5bd;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* --- DISABLED STATE --- */
+.glass-selectize-container.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: #f5f5f5;
+}
+
+/* --- HELP ICON --- */
+.glass-selectize-help-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 16px;
+  color: #adb5bd;
+  cursor: help;
+  transition: color 0.2s ease;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.glass-selectize-help-icon:hover {
+  color: #605CA8;
+}
+
+.glass-selectize-help-icon:hover .glass-selectize-tooltip-popup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.glass-selectize-tooltip-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  border: 2px solid rgba(96, 92, 168, 0.15);
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 24px rgba(96, 92, 168, 0.15);
+  min-width: 200px;
+  max-width: 300px;
+  font-size: 13px;
+  color: #2c3e50;
+  line-height: 1.5;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-5px);
+  transition: all 0.2s ease;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   COLOR VARIANTS - Green & Purple
+   ========================================================================== */
+
+/* --- GREEN VARIANT --- */
+.glass-selectize-wrapper.green .glass-selectize-container {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fff9 100%);
+  border-color: rgba(40, 167, 69, 0.2);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.04),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.glass-selectize-wrapper.green .glass-selectize-container:hover {
+  border-color: rgba(40, 167, 69, 0.35);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.glass-selectize-wrapper.green .glass-selectize-container.focused {
+  border-color: #28A745;
+  background: linear-gradient(145deg, #ffffff 0%, #fafffa 100%);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.12),
+              0 0 0 4px rgba(40, 167, 69, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.glass-selectize-wrapper.green .glass-selectize-chip {
+  background: linear-gradient(135deg, #28A745 0%, #34ce57 100%);
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.25);
+}
+
+.glass-selectize-wrapper.green .glass-selectize-chip:hover {
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.35);
+}
+
+.glass-selectize-wrapper.green .glass-selectize-dropdown {
+  border-color: rgba(40, 167, 69, 0.15);
+  box-shadow: 0 8px 24px rgba(40, 167, 69, 0.12);
+}
+
+.glass-selectize-wrapper.green .glass-selectize-option.selected {
+  background: linear-gradient(90deg, 
+    rgba(40, 167, 69, 0.12) 0%, 
+    rgba(40, 167, 69, 0.06) 100%);
+  border-left-color: #28A745;
+  color: #28A745;
+}
+
+.glass-selectize-wrapper.green .glass-selectize-option.selected::after {
+  color: #28A745;
+}
+
+.glass-selectize-wrapper.green .glass-selectize-option.highlighted {
+  background: linear-gradient(90deg, 
+    rgba(40, 167, 69, 0.08) 0%, 
+    rgba(40, 167, 69, 0.04) 100%);
+  border-left-color: #34ce57;
+}
+
+.glass-selectize-wrapper.green .glass-selectize-help-icon:hover {
+  color: #28A745;
+}
+

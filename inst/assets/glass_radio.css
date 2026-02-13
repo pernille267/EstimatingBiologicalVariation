@@ -1,0 +1,385 @@
+/* ==========================================================================
+   CUSTOM GLASS RADIO GROUP (glassRadioButtons.R)
+   Theme: Glossy 3D Pop | Green Brand (#28A745) | Accessible Selection Indicators
+   Accessibility: Uses checkmark icon + bold + scale + color for selection
+   ========================================================================== */
+
+/* --- Integrated Input Label for RadioButtons --- */
+.glass-radio-btn-label-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 8px 5px;
+  margin-bottom: 0;
+  user-select: none;
+  min-height: 40px; /* Ensures consistent height across all components */
+}
+
+/* Label Icon */
+.glass-radio-btn-label-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+  color: #495057;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    inset 0 -1px 2px rgba(0,0,0,0.05),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* Label Text */
+.glass-radio-btn-label-text {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #495057;
+  line-height: 1.2;
+}
+
+/* The Container */
+.glass-radio-group {
+  display: flex;
+  height: 44px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Individual Radio Chip (Unselected State)
+   ========================================================================== */
+.glass-radio-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  padding: 8px 20px;
+  min-width: 80px;
+
+  /* Unselected: White with green border */
+  background: #ffffff;
+  border: 2px solid rgba(40, 167, 69, 0.35);
+  color: #28A745;
+
+  border-radius: 50px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  /* Prep for checkmark */
+  position: relative;
+}
+
+/* Hidden checkmark icon for unselected */
+.glass-radio-btn::before {
+  content: "";
+  display: none;
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 11px;
+  margin-right: 2px;
+}
+
+/* ==========================================================================
+   HOVER STATE (Unselected)
+   ========================================================================== */
+.glass-radio-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(40, 167, 69, 0.5);
+  background: #f4faf5;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.18);
+}
+
+/* ==========================================================================
+   SELECTED STATE
+   Accessibility: Checkmark + Bold + Scale + Filled background
+   ========================================================================== */
+.glass-radio-btn.selected {
+  /* Glossy 3D Green Gradient (V5 style) */
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 40%),
+    linear-gradient(135deg, #34ce57 0%, #28A745 50%, #1e7e34 100%);
+  color: #ffffff;
+  border-color: rgba(40, 167, 69, 0.53);
+  font-weight: 700;
+
+  /* Slightly larger to emphasize selection */
+  transform: scale(1.02);
+
+  /* 3D Pop Shadow */
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.2),
+    0 4px 14px rgba(40, 167, 69, 0.35);
+
+  /* Text shadow for depth */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+/* Show checkmark icon when selected (accessibility) */
+.glass-radio-btn.selected::before {
+  content: "\f00c"; /* FontAwesome checkmark */
+  display: inline-block;
+}
+
+.glass-radio-btn.selected:hover {
+  filter: brightness(1.08);
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    0 8px 20px rgba(40, 167, 69, 0.4);
+}
+
+/* ==========================================================================
+   DISABLED STATE
+   ========================================================================== */
+.glass-radio-group.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.glass-radio-btn.disabled {
+  border-color: #d0d0d0;
+  color: #999;
+  background: #f5f5f5;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.glass-radio-btn.disabled.selected {
+  background: linear-gradient(135deg, #a0a0a0 0%, #888888 100%);
+  color: #ffffff;
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   PURPLE VARIANT (Optional)
+   ========================================================================== */
+.glass-radio-group.purple .glass-radio-btn {
+  border-color: rgba(96, 92, 168, 0.3);
+  color: #605CA8;
+}
+
+.glass-radio-group.purple .glass-radio-btn:hover {
+  border-color: rgba(96, 92, 168, 0.5);
+  background: #f8f7fc;
+  box-shadow: 0 4px 12px rgba(96, 92, 168, 0.18);
+}
+
+.glass-radio-group.purple .glass-radio-btn.selected {
+  color: #ffffff;
+  border-color: transparent;
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 40%),
+    linear-gradient(135deg, #7571b8 0%, #605CA8 50%, #4d4a8e 100%);
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.2),
+    0 4px 14px rgba(96, 92, 168, 0.35);
+}
+
+.glass-radio-group.purple .glass-radio-btn.selected:hover {
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    0 8px 20px rgba(96, 92, 168, 0.4);
+}
+
+.glass-radio-group.purple .glass-radio-btn-label-icon {
+  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+  color: #495057;
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    inset 0 -1px 2px rgba(0,0,0,0.05),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* ==========================================================================
+   TOOLTIP AND HELP TEXT
+   ========================================================================== */
+
+/* ==========================================================================
+   SMALL SIZE VARIANT (.glass-radio-sm)
+   Compact buttons for toolbars and tight layouts.
+   ========================================================================== */
+.glass-radio-group.glass-radio-sm {
+  gap: 6px;
+  height: auto;
+  margin-bottom: 0;
+}
+
+.glass-radio-group.glass-radio-sm .glass-radio-btn {
+  padding: 5px 12px;
+  min-width: auto;
+  font-size: 12px;
+  gap: 5px;
+  border-radius: 18px;
+  border-width: 1.5px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.glass-radio-group.glass-radio-sm .glass-radio-btn .glass-radio-btn-icon {
+  font-size: 12px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.glass-radio-group.glass-radio-sm .glass-radio-btn:hover {
+  transform: translateY(-1px);
+}
+
+.glass-radio-group.glass-radio-sm .glass-radio-btn.selected {
+  transform: scale(1.0);
+}
+
+.glass-radio-group.glass-radio-sm .glass-radio-btn.selected:hover {
+  transform: scale(1.0) translateY(-1px);
+}
+
+/* Hide the large checkmark pseudo-element in sm variant  */
+.glass-radio-group.glass-radio-sm .glass-radio-btn.selected::before {
+  font-size: 9px;
+  margin-right: 1px;
+}
+
+/* ==========================================================================
+   TOOLTIP AND HELP TEXT (original block continues)
+   ========================================================================== */
+
+/* ==========================================================================
+   ICON-ONLY MODE — Compact buttons with hover tooltips
+   ========================================================================== */
+.glass-radio-btn.icon-only {
+  padding: 6px 10px;
+  min-width: auto;
+}
+
+.glass-radio-btn-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: linear-gradient(135deg, #605CA8 0%, #4d4a8e 100%);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(96, 92, 168, 0.3);
+}
+
+.glass-radio-btn-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #4d4a8e transparent transparent transparent;
+}
+
+.glass-radio-btn:hover .glass-radio-btn-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Green variant tooltip */
+.glass-radio-group:not(.purple) .glass-radio-btn-tooltip {
+  background: linear-gradient(135deg, #28A745 0%, #1e7e34 100%);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+.glass-radio-group:not(.purple) .glass-radio-btn-tooltip::after {
+  border-color: #1e7e34 transparent transparent transparent;
+}
+
+/* ==========================================================================
+   TOOLTIP AND HELP TEXT
+   ========================================================================== */
+
+/* The Trigger Icon */
+.glass-radio-btn-help-icon {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  font-size: 15px;
+  color: #adb5bd;
+  cursor: help;
+  z-index: 10;
+  transition: color 0.3s ease;
+  padding: 5px;
+}
+
+.glass-radio-btn-help-icon:hover {
+  color: #28A745;
+}
+
+/* The Tooltip Popup */
+.glass-radio-btn-tooltip-popup {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: auto;
+  right: -10px;
+
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 40%),
+    linear-gradient(135deg, #34ce57 0%, #28A745 50%, #1e7e34 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.2),
+    0 6px 16px rgba(40, 167, 69, 0.35);
+
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+  width: max-content;
+  max-width: 250px;
+
+  z-index: 1000;
+  transform: translateY(5px);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  pointer-events: none;
+}
+
+/* Show state */
+.glass-radio-btn-help-icon:hover .glass-radio-btn-tooltip-popup {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0px);
+}
+
+/* Arrow */
+.glass-radio-btn-tooltip-popup::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  bottom: auto;
+  right: 15px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #28A745 transparent transparent transparent;
+}
+
+

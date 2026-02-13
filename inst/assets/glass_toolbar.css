@@ -1,0 +1,247 @@
+/* ==========================================================================
+   GLASS TOOLBAR — Lightweight Horizontal Strip
+   A title on the left · controls on the right · no card nesting
+   ========================================================================== */
+
+.glass-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(96, 92, 168, 0.05) 0%,
+    rgba(167, 40, 138, 0.03) 100%
+  );
+  border: 1px solid rgba(96, 92, 168, 0.10);
+  border-radius: 10px;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-height: 48px;
+}
+
+/* ---- Rounding variants ---- */
+.glass-toolbar.glass-toolbar-round-top {
+  border-radius: 10px 10px 0 0;
+}
+.glass-toolbar.glass-toolbar-round-none {
+  border-radius: 0;
+}
+
+/* ---- Borderless ---- */
+.glass-toolbar.glass-toolbar-borderless {
+  border: none;
+}
+
+/* ---- Green colour variant ---- */
+.glass-toolbar.glass-toolbar-green {
+  background: linear-gradient(
+    135deg,
+    rgba(40, 167, 69, 0.05) 0%,
+    rgba(40, 167, 69, 0.02) 100%
+  );
+  border-color: rgba(40, 167, 69, 0.12);
+}
+
+/* ====== LEFT: Title area ====== */
+.glass-toolbar-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.glass-toolbar-icon {
+  color: #605CA8;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  box-shadow: 0 1px 5px rgba(96, 92, 168, 0.12);
+  flex-shrink: 0;
+}
+
+.glass-toolbar-green .glass-toolbar-icon {
+  color: #28A745;
+  box-shadow: 0 1px 5px rgba(40, 167, 69, 0.12);
+}
+
+.glass-toolbar-title-stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.glass-toolbar-title-text {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #605CA8;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.glass-toolbar-green .glass-toolbar-title-text {
+  color: #28A745;
+}
+
+.glass-toolbar-subtitle {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #888;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* ====== RIGHT: Controls area ====== */
+.glass-toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Strip margins off child components when inside toolbar */
+.glass-toolbar-controls .glass-selectize-wrapper {
+  margin-bottom: 0;
+}
+.glass-toolbar-controls .glass-selectize-label-header {
+  display: none;
+}
+.glass-toolbar-controls .glass-radio-btn-label-header {
+  display: none;
+}
+.glass-toolbar-controls .glass-radio-group {
+  margin-bottom: 0;
+}
+.glass-toolbar-controls > div {
+  margin-bottom: 0 !important;
+}
+
+/* ====== Selectize inline mode inside toolbar ====== */
+/* Make the "add subject…" input sit to the right of chips, not below */
+.glass-toolbar-controls .glass-selectize-container {
+  flex-wrap: nowrap;
+  min-height: 30px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border-width: 1.5px;
+  align-items: center;
+}
+.glass-toolbar-controls .glass-selectize-items {
+  flex-wrap: nowrap;
+}
+.glass-toolbar-controls .glass-selectize-input-wrapper {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.glass-toolbar-controls .glass-selectize-input {
+  min-width: 30px;
+  font-size: 12px;
+  padding: 2px 0;
+}
+.glass-toolbar-controls .glass-selectize-input.has-selections {
+  min-width: 30px;
+}
+.glass-toolbar-controls .glass-selectize-chip {
+  padding: 2px 8px 2px 10px;
+  font-size: 12px;
+  border-radius: 14px;
+}
+.glass-toolbar-controls .glass-selectize-chip-remove {
+  width: 14px;
+  height: 14px;
+  font-size: 9px;
+}
+.glass-toolbar-controls .glass-selectize-arrow {
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+}
+
+/* Overflow badge in toolbar selectize */
+.glass-toolbar-controls .glass-selectize-overflow-badge {
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 14px;
+}
+.glass-toolbar-controls .glass-selectize-overflow-tooltip {
+  bottom: calc(100% + 6px);
+}
+.glass-toolbar-controls .glass-selectize-overflow-tooltip .glass-selectize-chip {
+  padding: 2px 8px 2px 10px;
+  font-size: 12px;
+  border-radius: 14px;
+}
+
+/* ====== Small icon-only radio buttons inside toolbar ====== */
+.glass-toolbar-controls .glass-radio-group.glass-radio-sm {
+  gap: 4px;
+  height: auto;
+  align-items: center;
+}
+.glass-toolbar-controls .glass-radio-group.glass-radio-sm .glass-radio-btn {
+  padding: 5px 10px;
+  min-width: auto;
+  font-size: 12px;
+  gap: 4px;
+  border-radius: 16px;
+  border-width: 1.5px;
+  /* Match the selectize container height */
+  height: 30px;
+  box-sizing: border-box;
+}
+.glass-toolbar-controls .glass-radio-group.glass-radio-sm .glass-radio-btn .glass-radio-btn-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* ====== Pairing with content below (e.g. D3 plot) ====== */
+/* When toolbar uses round-top, pair with the element below */
+.glass-toolbar.glass-toolbar-round-top + .gd3-plot-container {
+  border: 1px solid rgba(96, 92, 168, 0.10);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  background: #ffffff;
+}
+/* Remove top border-radius on the inner gd3-toolbar when nested under glassToolbar */
+.glass-toolbar.glass-toolbar-round-top + .gd3-plot-container .gd3-toolbar {
+  border-radius: 0;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  background: linear-gradient(
+    135deg,
+    rgba(96, 92, 168, 0.04) 0%,
+    rgba(167, 40, 138, 0.02) 100%
+  );
+}
+.glass-toolbar-green.glass-toolbar-round-top + .gd3-plot-container {
+  border-color: rgba(40, 167, 69, 0.12);
+}
+.glass-toolbar-green.glass-toolbar-round-top + .gd3-plot-container .gd3-toolbar {
+  background: linear-gradient(
+    135deg,
+    rgba(40, 167, 69, 0.04) 0%,
+    rgba(40, 167, 69, 0.02) 100%
+  );
+  border-bottom-color: rgba(40, 167, 69, 0.10);
+}
+
+/* ====== Responsive: stack on narrow screens ====== */
+@media (max-width: 600px) {
+  .glass-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .glass-toolbar-controls {
+    width: 100%;
+  }
+}

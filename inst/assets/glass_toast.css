@@ -1,0 +1,480 @@
+/* ==========================================================================
+   GLASS TOAST NOTIFICATION SYSTEM
+   Theme: Elegant frosted glass with purple/green brand accents
+   ========================================================================== */
+
+.glass-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 12px;
+  max-width: 380px;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   BASE TOAST STYLING
+   ========================================================================== */
+
+.glass-toast {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  padding-right: 42px;
+  border-radius: 14px;
+  
+  /* Dark frosted glass base */
+  background: linear-gradient(
+    135deg,
+    rgba(30, 27, 45, 0.92) 0%,
+    rgba(45, 40, 65, 0.88) 100%
+  );
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  /* Refined border with gradient glow */
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  
+  /* Layered shadow for depth */
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  line-height: 1.5;
+  
+  /* Entry animation */
+  transform: translateX(calc(100% + 40px));
+  opacity: 0;
+  overflow: hidden;
+  
+  transition: 
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Top highlight line - creates glass edge effect */
+.glass-toast::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.15) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Subtle ambient glow */
+.glass-toast::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 15px;
+  background: linear-gradient(
+    135deg,
+    rgba(167, 139, 250, 0.12) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(110, 231, 183, 0.08) 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.glass-toast:hover::after {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   VISIBILITY STATES
+   ========================================================================== */
+
+.glass-toast.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.glass-toast.removing {
+  transform: translateX(calc(100% + 40px)) scale(0.96);
+  opacity: 0;
+  transition: 
+    transform 0.35s cubic-bezier(0.5, 0, 0.75, 0),
+    opacity 0.25s ease;
+}
+
+/* ==========================================================================
+   ICON STYLING
+   ========================================================================== */
+
+.glass-toast-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 16px;
+  position: relative;
+  
+  /* Frosted icon container */
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-toast:hover .glass-toast-icon {
+  transform: scale(1.05);
+}
+
+/* ==========================================================================
+   CONTENT STYLING
+   ========================================================================== */
+
+.glass-toast-content {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.glass-toast-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #ffffff;
+  letter-spacing: 0.01em;
+}
+
+.glass-toast-message {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  word-wrap: break-word;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   CLOSE BUTTON
+   ========================================================================== */
+
+.glass-toast-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1;
+  
+  transition: all 0.2s ease;
+}
+
+.glass-toast-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+.glass-toast-close:active {
+  transform: scale(0.95);
+}
+
+/* ==========================================================================
+   PROGRESS BAR
+   ========================================================================== */
+
+.glass-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 0 0 14px 14px;
+  width: 100%;
+  transform-origin: left;
+  opacity: 0.8;
+}
+
+.glass-toast-progress.animating {
+  animation: toast-progress-shrink linear forwards;
+}
+
+@keyframes toast-progress-shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+.glass-toast:hover .glass-toast-progress {
+  animation-play-state: paused !important;
+}
+
+/* ==========================================================================
+   TYPE VARIANTS - PURPLE/GREEN THEME
+   ========================================================================== */
+
+/* --- MESSAGE (Brand Purple #605CA8) --- */
+.glass-toast.type-message {
+  background: linear-gradient(
+    135deg,
+    rgba(96, 92, 168, 0.92) 0%,
+    rgba(130, 120, 190, 0.85) 50%,
+    rgba(96, 92, 168, 0.88) 100%
+  );
+  border-color: rgba(160, 155, 210, 0.5);
+  box-shadow: 
+    0 4px 24px rgba(96, 92, 168, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 40px rgba(96, 92, 168, 0.25);
+}
+
+.glass-toast.type-message .glass-toast-icon {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #2d2d3a !important;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.glass-toast.type-message .glass-toast-icon i {
+  color: #2d2d3a !important;
+}
+
+.glass-toast.type-message .glass-toast-title {
+  color: #1a1a2e !important;
+}
+
+.glass-toast.type-message .glass-toast-message {
+  color: rgba(30, 30, 50, 0.9) !important;
+  font-weight: 600 !important;
+}
+
+.glass-toast.type-message .glass-toast-close {
+  color: rgba(30, 30, 50, 0.6);
+}
+
+.glass-toast.type-message .glass-toast-close:hover {
+  color: #1a1a2e;
+}
+
+.glass-toast.type-message .glass-toast-progress {
+  background: rgba(30, 30, 50, 0.4);
+}
+
+/* --- SUCCESS (Brand Green #28A745) --- */
+.glass-toast.type-success {
+  background: linear-gradient(
+    135deg,
+    rgba(40, 167, 69, 0.92) 0%,
+    rgba(52, 206, 87, 0.85) 50%,
+    rgba(40, 167, 69, 0.88) 100%
+  );
+  border-color: rgba(100, 200, 120, 0.5);
+  box-shadow: 
+    0 4px 24px rgba(40, 167, 69, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 40px rgba(40, 167, 69, 0.25);
+}
+
+.glass-toast.type-success .glass-toast-icon {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #1a3d2a !important;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.glass-toast.type-success .glass-toast-icon i {
+  color: #1a3d2a !important;
+}
+
+.glass-toast.type-success .glass-toast-title {
+  color: #1a3d2a !important;
+}
+
+.glass-toast.type-success .glass-toast-message {
+  color: rgba(26, 61, 42, 0.9) !important;
+  font-weight: 600 !important;
+}
+
+.glass-toast.type-success .glass-toast-close {
+  color: rgba(26, 61, 42, 0.6);
+}
+
+.glass-toast.type-success .glass-toast-close:hover {
+  color: #1a3d2a;
+}
+
+.glass-toast.type-success .glass-toast-progress {
+  background: rgba(26, 61, 42, 0.4);
+}
+
+/* --- WARNING (Amber accent) --- */
+.glass-toast.type-warning {
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.glass-toast.type-warning .glass-toast-icon {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%);
+  border-color: rgba(251, 191, 36, 0.3);
+  color: #fcd34d !important;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(251, 191, 36, 0.15);
+}
+
+.glass-toast.type-warning .glass-toast-icon i {
+  color: #fcd34d !important;
+}
+
+.glass-toast.type-warning .glass-toast-progress {
+  background: linear-gradient(90deg, #fcd34d, #f59e0b);
+}
+
+/* --- ERROR (Red accent) --- */
+.glass-toast.type-error {
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.glass-toast.type-error .glass-toast-icon {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.2) 0%, rgba(239, 68, 68, 0.15) 100%);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #fca5a5 !important;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(248, 113, 113, 0.15);
+}
+
+.glass-toast.type-error .glass-toast-icon i {
+  color: #fca5a5 !important;
+}
+
+.glass-toast.type-error .glass-toast-progress {
+  background: linear-gradient(90deg, #fca5a5, #ef4444);
+}
+
+/* ==========================================================================
+   HOVER EFFECTS
+   ========================================================================== */
+
+.glass-toast:hover {
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 0 40px rgba(167, 139, 250, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-toast.type-message:hover {
+  border-color: rgba(160, 155, 210, 0.7);
+  box-shadow: 
+    0 8px 32px rgba(96, 92, 168, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 0 60px rgba(96, 92, 168, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.glass-toast.type-success:hover {
+  border-color: rgba(100, 200, 120, 0.7);
+  box-shadow: 
+    0 8px 32px rgba(40, 167, 69, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 0 60px rgba(40, 167, 69, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.glass-toast.type-warning:hover {
+  border-color: rgba(251, 191, 36, 0.5);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 0 40px rgba(251, 191, 36, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-toast.type-error:hover {
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 0 40px rgba(248, 113, 113, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================================================
+   ACTION BUTTON
+   ========================================================================== */
+
+.glass-toast-action {
+  margin-top: 10px;
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.glass-toast-action:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.glass-toast-action:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   STACKING BEHAVIOR
+   ========================================================================== */
+
+.glass-toast-container .glass-toast.visible:nth-child(n+2) {
+  opacity: 0.92;
+}
+
+.glass-toast-container .glass-toast.visible:nth-child(n+3) {
+  opacity: 0.75;
+}
+
+.glass-toast-container .glass-toast.visible:nth-child(n+4) {
+  opacity: 0.55;
+}
