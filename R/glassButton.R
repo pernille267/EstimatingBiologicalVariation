@@ -23,7 +23,7 @@
 #'
 #' @importFrom htmltools tagList tags htmlDependency
 #' @export
-glassButton <- function(inputId, label, icon = NULL, width = NULL,
+glassButton <- function(inputId, label, icon = NULL, width = NULL, # nolint
                         color = "purple", size = "md", icon_only = FALSE,
                         icon_only_action = "expand",
                         disabled = FALSE,

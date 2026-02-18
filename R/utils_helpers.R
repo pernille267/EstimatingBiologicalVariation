@@ -21,7 +21,9 @@
 #' @param label A short label such as \code{"setup::map_data"}
 #' @return A timer object (list) or \code{NULL}
 bv_timer_start <- function(label) {
-  if (!isTRUE(getOption("bv.perf"))) return(invisible(NULL))
+  if (!isTRUE(getOption("bv.perf"))) {
+    return(invisible(NULL))
+  }
   list(label = label, t0 = proc.time()[["elapsed"]])
 }
 
@@ -31,12 +33,16 @@ bv_timer_start <- function(label) {
 #'   If \code{NULL} (perf disabled) this is a silent no-op.
 #' @return Invisible elapsed seconds (or \code{NULL})
 bv_timer_end <- function(timer) {
-  if (is.null(timer)) return(invisible(NULL))
+  if (is.null(timer)) {
+    return(invisible(NULL))
+  }
   elapsed <- proc.time()[["elapsed"]] - timer$t0
   pad <- max(1, 45 - nchar(timer$label))
   message(
-    sprintf("[BV PERF] %s %s %.3fs",
-            timer$label, strrep(".", pad), elapsed)
+    sprintf(
+      "[BV PERF] %s %s %.3fs",
+      timer$label, strrep(".", pad), elapsed
+    )
   )
   invisible(elapsed)
 }
@@ -61,15 +67,16 @@ guess_columns <- function(col_names) {
     subject_id_col = c(
       "subject", "subjid", "patient", "patid", "cpr",
       "id", "identifier", "participant", "subjectid", "person",
-      "individual", "person_id", "participant_id", "subject_identifier", "unique_id",
+      "individual", "person_id", "participant_id",
+      "subject_identifier", "unique_id",
       "person", "pasient", "deltaker", "forsøksperson", "cprnummer",
       "personnummer", "subjekt", "menneske", "hvem", "individ"
     ),
     sample_id_col = c(
       "sample", "sampid", "specimenid", "sampleid", "specimen_id",
       "sample_id", "visit", "time", "timepoint", "visitid",
-      "specimen_number", "visit_number", "sample_name", "sample_code", "accession",
-      "prøve", "prøveid", "prøvenummer", "besøk", "tidspunkt",
+      "specimen_number", "visit_number", "sample_name", "sample_code",
+      "accession", "prøve", "prøveid", "prøvenummer", "besøk", "tidspunkt",
       "prøve_id", "prøve_nr", "besøk_nr", "prøvenavn", "prøvekode"
     ),
     replicate_id_col = c(
@@ -77,7 +84,8 @@ guess_columns <- function(col_names) {
       "replicateid", "replicate_id", "measurement_no", "runid", "dublet",
       "technical_replicate", "bio_replicate", "repetition", "seq", "sequence",
       "replikat", "duplikat", "kjøring", "replikatid", "replikat_id",
-      "måling_nr", "teknisk_replikat", "biologisk_replikat", "gjentakelse", "sekvens"
+      "måling_nr", "teknisk_replikat", "biologisk_replikat",
+      "gjentakelse", "sekvens"
     ),
     analyte_col = c(
       "analyte", "analysis", "test", "component", "parameter",
@@ -124,7 +132,6 @@ guess_columns <- function(col_names) {
   # Function to find the first match for a set of patterns
   find_match <- function(patterns_list, cols) {
     for (p in patterns_list) {
-      # Use word boundaries (\\b) to match whole words and avoid partial matches (e.g., 'rep' in 'report')
       match_idx <- grep(paste0("\\b", p, "\\b"), cols, ignore.case = TRUE)
       if (length(match_idx) > 0) {
         return(cols[match_idx[1]])
@@ -137,7 +144,7 @@ guess_columns <- function(col_names) {
         return(cols[match_idx[1]])
       }
     }
-    return(NULL)
+    NULL
   }
 
   # Iterate through roles and find matches
@@ -149,7 +156,7 @@ guess_columns <- function(col_names) {
     }
   }
 
-  return(guesses)
+  guesses
 }
 
 #' Resolve analyte name synonyms to canonical names
@@ -169,7 +176,7 @@ get_canonical_analyte_name <- function(input_value, synonym_map) {
     }
   }
 
-  return(NULL) # Return NULL if no match is found
+  NULL # Return NULL if no match is found
 }
 
 #' Parse Stan warnings and provide user-friendly advice
@@ -179,10 +186,14 @@ get_canonical_analyte_name <- function(input_value, synonym_map) {
 #' @param current_adapt_delta Current adapt_delta value
 #' @param current_max_treedepth Current max_treedepth value
 #' @return List of HTML tags with advice for each warning type
-parse_stan_warnings <- function(warnings, current_iter, current_adapt_delta, current_max_treedepth) {
+parse_stan_warnings <- function(warnings,
+                                current_iter,
+                                current_adapt_delta,
+                                current_max_treedepth) {
   advice_list <- list()
 
-  # Combine all captured warning messages into a single string for easier searching
+  # Combine all captured warning messages into a single
+  # string for easier searching
   all_warnings_text <- paste(warnings, collapse = " \n ")
 
   # 1. Check for R-hat warnings (Convergence)

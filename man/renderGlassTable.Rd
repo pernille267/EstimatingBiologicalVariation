@@ -14,7 +14,9 @@ renderGlassTable(
   excluded_rows = NULL,
   highlight_cells = NULL,
   sortable = TRUE,
-  rounded = "all"
+  rounded = "all",
+  downloadable = FALSE,
+  download_filename = "table_export"
 )
 }
 \arguments{
@@ -34,7 +36,7 @@ renderGlassTable(
 as excluded (red styling).}
 
 \item{highlight_cells}{A list where names are specific
-cell values (strings) that may may appear, and the list 
+cell values (strings) that may may appear, and the list
 list values are the HTML replacement.}
 
 \item{sortable}{Logical.}
@@ -42,8 +44,16 @@ list values are the HTML replacement.}
 \item{rounded}{Character. Where to round corners:
 \code{"all"} (default) or \code{"bottom"}
 (flat top, rounded bottom).}
+
+\item{downloadable}{Logical. If \code{TRUE}, render CSV and
+Excel download buttons in a toolbar above the table.}
+
+\item{download_filename}{Character. Base filename (without
+extension) used when downloading. Defaults to
+\code{"table_export"}.}
 }
 \description{
-NEED ADD: Search functionality (client-side) and integrated
-download button in the future.
+Renders a styled data table with optional sidebar, sorting,
+pagination, and integrated download buttons for CSV and Excel
+export. Exported data is stripped of any HTML markup.
 }

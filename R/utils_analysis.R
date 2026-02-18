@@ -1,6 +1,26 @@
 # Analysis Utility Functions
 # ------------------------------------------------------------------------------
 
+#' Format a numeric value for display in BV tables
+#'
+#' Rounds to 2 decimal places. If the value is positive but less than 0.005
+#' (i.e., would round to 0.00), it is displayed as "< 0.01" instead.
+#'
+#' @param x Numeric vector of values to format.
+#' @return Character vector of formatted values.
+#' @keywords internal
+format_bv_value <- function(x) {
+  vapply(x, function(val) {
+    if (is.na(val)) {
+      return(NA_character_)
+    }
+    if (val > 0 & val < 0.005) {
+      return("< 0.01")
+    }
+    formatC(round(val, 2), format = "f", digits = 2)
+  }, character(1))
+}
+
 #' Run Bayesian analysis using a compiled Stan model
 #'
 #' Shared utility function used by both NTT and NTTDFGAM model modules.
@@ -21,7 +41,11 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
       app_state$replicate_id_col
     )
 
-    glassIncProgress(0.1, detail = "Preparing data...", step = "Step 1/8")
+    glassIncProgress(
+      value = 0.1,
+      detail = "Preparing data...",
+      step = "Step 1/9"
+    )
 
     # Prepare data for Stan
     data_for_stan <- data.table::copy(app_state$analysis_data)
@@ -57,7 +81,11 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
       log_transformed = app_state$log_transformed
     )
 
-    glassIncProgress(0.2, detail = "Setting up sampler...", step = "Step 2/8")
+    glassIncProgress(
+      value = 0.2,
+      detail = "Setting up sampler...",
+      step = "Step 2/9"
+    )
 
     # Create starting values
     hypers <- process_stan_data_priors(
@@ -74,7 +102,11 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
 
     initfunc.stan <- function() hypers
 
-    glassIncProgress(0.3, detail = "Running MCMC sampler...", step = "Step 3/8")
+    glassIncProgress(
+      value = 0.3,
+      detail = "Running MCMC sampler...",
+      step = "Step 3/9"
+    )
 
     # Calculate iteration parameters
     total_iter <- app_state$num_iterations
@@ -94,7 +126,7 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
           warmup = warmup_iter,
           init = initfunc.stan,
           thin = 1,
-          seed = 123,
+          seed = app_state$seed,
           cores = app_state$num_cores,
           control = list(
             adapt_delta = app_state$adapt_delta,
@@ -118,7 +150,11 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
       )
     }
 
-    glassIncProgress(0.70, detail = "Processing results...", step = "Step 4/8")
+    glassIncProgress(
+      value = 0.70,
+      detail = "Processing results...",
+      step = "Step 4/9"
+    )
 
     # Parse warnings
     parsed_advice <- parse_stan_warnings(
@@ -128,7 +164,11 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
       current_max_treedepth = app_state$max_treedepth
     )
 
-    glassIncProgress(0.80, detail = "Extracting posteriors...", step = "Step 5/8")
+    glassIncProgress(
+      value = 0.80,
+      detail = "Extracting posteriors...",
+      step = "Step 5/9"
+    )
 
     # Extract results
     relevant_pars <- c(
@@ -136,16 +176,6 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
       "sigma_A", "sigma_G", "sigma_I_pred",
       "sigma_I", "sigma_I_sd", "sigma_i",
       "G", "lp__"
-    )
-
-    # Parameters/transformed parameters only (exclude generated quantities)
-    # so that R-hat diagnostics match Stan's own reported R-hat.
-    # Generated quantities (sigma_I_pred, df_I, df_A, sigma_I) are excluded
-    # because Stan's C++ diagnostics don't check them, and sigma_I_pred uses
-    # normal_rng() which can inflate R-hat dramatically.
-    diagnostic_pars <- c(
-      "beta", "sigma_A", "sigma_G",
-      "sigma_I_sd", "sigma_i", "G"
     )
 
     trace_plot_obj <- rstan::traceplot(
@@ -164,12 +194,12 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
     }
     trace_fit <- trace_plot_obj$data
 
-    trace_and_posterior_plotting_data <- calculate_trace_and_posterior_plotting_data(
+    trace_and_posterior_plotting_data <- calculate_trace_and_posterior_plotting_data( # nolint
       trace_fit = trace_fit,
       log_transformed = app_state$log_transformed
     )
 
-    nonpermuted_extracted_fit <- extract(
+    nonpermuted_extracted_fit <- rstan::extract(
       object = fit,
       pars = relevant_pars[relevant_pars != "lp__"],
       permute = FALSE,
@@ -198,7 +228,7 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
     glassIncProgress(
       value = 0.85,
       detail = "Building output tables...",
-      step = "Step 6/8"
+      step = "Step 6/9"
     )
 
     extracted_fit <- rstan::extract(fit)
@@ -211,6 +241,36 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
       )
     }
 
+    # Build priors list for table output
+    priors_list <- list(
+      beta = app_state$hyper_beta,
+      cvi = app_state$hyper_cvi,
+      cva = app_state$hyper_cva,
+      cvg = app_state$hyper_cvg,
+      dfi = app_state$hyper_dfi,
+      dfa = app_state$hyper_dfa,
+      hbhr = app_state$hyper_hbhr,
+      beta_weakness = app_state$hyper_beta_weakness,
+      cvi_weakness = app_state$hyper_cvi_weakness,
+      cva_weakness = app_state$hyper_cva_weakness,
+      cvg_weakness = app_state$hyper_cvg_weakness,
+      dfi_weakness = app_state$hyper_dfi_weakness,
+      dfa_weakness = app_state$hyper_dfa_weakness,
+      hbhr_weakness = app_state$hyper_hbhr_weakness
+    )
+
+    # Build stan_options list for table output
+    stan_options_list <- list(
+      iterations = total_iter,
+      warmup = warmup_iter,
+      burn_fraction = app_state$burn_in_fraction,
+      chains = app_state$num_chains,
+      cores = app_state$num_cores,
+      adapt_delta = app_state$adapt_delta,
+      max_treedepth = app_state$max_treedepth,
+      seed = app_state$seed
+    )
+
     processed_stan_output <- process_stan_output(
       fit = extracted_fit,
       log_transformed = app_state$log_transformed,
@@ -218,10 +278,16 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
       material = app_state$material_name,
       sex = app_state$sex_name,
       group = app_state$group_name,
-      data = data_for_stan
+      data = data_for_stan,
+      priors = priors_list,
+      stan_options = stan_options_list
     )
 
-    glassIncProgress(0.90, detail = "Creating plots...", step = "Step 7/9")
+    glassIncProgress(
+      value = 0.90,
+      detail = "Creating plots...",
+      step = "Step 7/9"
+    )
 
     # Determine grouping aesthetics
     color_by_input <- NULL
@@ -231,30 +297,6 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
       }
     }
 
-    bayesian_output_plot <- plot_subject_specific_CVI(
-      processed_output = processed_stan_output,
-      color_by = color_by_input,
-      shape_by = NULL,
-      data = data_for_stan
-    )
-
-    bayesian_output_plot2 <- plot_subject_specific_CVI(
-      processed_output = processed_stan_output,
-      color_by = color_by_input,
-      shape_by = NULL,
-      data = data_for_stan,
-      against_concentration = TRUE
-    )
-
-    bayesian_output_plot3 <- plot_subject_specific_CVI(
-      processed_output = processed_stan_output,
-      color_by = color_by_input,
-      shape_by = NULL,
-      data = data_for_stan,
-      against_RCV = TRUE,
-      log_RCV = app_state$log_transformed
-    )
-
     glassIncProgress(
       value = 0.95,
       detail = "Extracting sampler diagnostics...",
@@ -263,10 +305,13 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
 
     # Extract sampler diagnostics for the overview panel
     sampler_params_list <- rstan::get_sampler_params(fit, inc_warmup = FALSE)
-    n_divergent <- sum(sapply(sampler_params_list, function(x) sum(x[, "divergent__"])))
+    n_divergent <- sum(
+      sapply(sampler_params_list, function(x) sum(x[, "divergent__"]))
+    )
     total_post_warmup <- sum(sapply(sampler_params_list, nrow))
-    n_max_td <- sum(sapply(sampler_params_list, function(x)
-      sum(x[, "treedepth__"] >= app_state$max_treedepth)))
+    n_max_td <- sum(sapply(sampler_params_list, function(x) {
+      sum(x[, "treedepth__"] >= app_state$max_treedepth)
+    }))
 
     # For sampler diagnostics display, exclude generated quantities
     # (sigma_I_pred, df_I, df_A, sigma_I) so that the reported max R-hat
@@ -279,6 +324,17 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
     rhats_vec <- diag_rhat_and_n_eff[, "Rhat"]
     n_effs_vec <- diag_rhat_and_n_eff[, "n_eff"]
 
+    # Extract bulk and tail ESS from parameter_diagnostics
+    diag_param_names <- parameter_diagnostics$parameter
+    diag_param_rows <- !diag_param_names %in% generated_qty_names
+    diag_params_dt <- parameter_diagnostics[diag_param_rows]
+    low_bulk_ess_params <- diag_params_dt$parameter[
+      !is.na(diag_params_dt$bulk_n_eff) & diag_params_dt$bulk_n_eff < 100
+    ]
+    low_tail_ess_params <- diag_params_dt$parameter[
+      !is.na(diag_params_dt$tail_n_eff) & diag_params_dt$tail_n_eff < 100
+    ]
+
     sampler_diagnostics <- list(
       n_divergent = n_divergent,
       total_post_warmup = total_post_warmup,
@@ -289,6 +345,8 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
       chains_mixed = all(rhats_vec < 1.05, na.rm = TRUE),
       poor_rhat_params = rownames(diag_rhat_and_n_eff)[!is.na(rhats_vec) & rhats_vec >= 1.05],
       low_neff_params = rownames(diag_rhat_and_n_eff)[!is.na(n_effs_vec) & n_effs_vec < 100],
+      low_bulk_ess_params = low_bulk_ess_params,
+      low_tail_ess_params = low_tail_ess_params,
       n_chains = app_state$num_chains,
       n_iterations = total_iter,
       n_warmup = warmup_iter
@@ -296,12 +354,25 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
 
     glassIncProgress(0.98, detail = "Finalising...", step = "Step 9/9")
 
+    # Build Stan Diagnostics table (Table 7) now that diagnostics are available
+    low_bulk <- if (length(low_bulk_ess_params) > 0) "Yes" else "No"
+    low_tail <- if (length(low_tail_ess_params) > 0) "Yes" else "No"
+    mixed <- if (isTRUE(sampler_diagnostics$chains_mixed)) "Yes" else "No"
+    processed_stan_output$Stan_Diagnostics <- data.table::data.table(
+      "Measurand" = app_state$analyte_name,
+      "Sex" = app_state$sex_name,
+      "Material" = app_state$material_name,
+      "Group" = app_state$group_name,
+      "Divergent Transitions" = as.integer(n_divergent),
+      "Exceed Maximum Treedepth" = as.integer(n_max_td),
+      "Low Bulk Effective Sample Size" = low_bulk,
+      "Low Tail Effective Sample Size" = low_tail,
+      "Mixed" = mixed
+    )
+
     # Return results
     list(
       table = processed_stan_output[[1]],
-      plot = bayesian_output_plot,
-      plot2 = bayesian_output_plot2,
-      plot3 = bayesian_output_plot3,
       results = processed_stan_output,
       additional_results = list(
         trace_and_posterior_plotting_data = trace_and_posterior_plotting_data,
@@ -326,82 +397,171 @@ run_bayesian_analysis <- function(model, model_name, app_state) {
 #'
 #' @param data A \code{data.table} with columns
 #'   \code{y}, \code{SubjectID}, \code{SampleID}.
+#' @param log_transformed Logical.  If \code{TRUE} the
+#'   \code{y} values are log-transformed and
+#'   CVs are derived via \code{\link{lognormal_sd_to_cv}}.
 #' @return A named list with \code{grand_summary},
 #'   \code{subject_summary}, and \code{sample_summary}.
 #' @keywords internal
-compute_descriptive_stats <- function(data) {
+compute_descriptive_stats <- function(data, log_transformed = FALSE) {
+  # Use data.table for efficient group-wise calculations
+  SubjectID <- SampleID <- Mean <- SD_i <- NULL
+  `CV_i (%)` <- y <- NULL
+
   data_copy <- data.table::copy(data)
 
-  grand_mean <- mean(data_copy$y, na.rm = TRUE)
-  grand_sd <- sd(data_copy$y, na.rm = TRUE)
+  # -- Per-subject variance components via C++ backend ---------
+  subject_levels <- as.integer(
+    as.factor(data_copy$SubjectID)
+  )
+  sample_levels <- as.integer(
+    as.factor(
+      paste0(data_copy$SubjectID, "___", data_copy$SampleID)
+    )
+  )
+  coded_data <- list(
+    SubjectID = subject_levels,
+    SampleID = sample_levels,
+    y = if (log_transformed) {
+      log(as.numeric(data_copy$y))
+    } else {
+      as.numeric(data_copy$y)
+    }
+  )
+
+  grand_mean <- mean(coded_data$y, na.rm = TRUE)
+  grand_median <- stats::median(coded_data$y, na.rm = TRUE)
+  grand_sd <- sd(coded_data$y, na.rm = TRUE)
   grand_cv <- if (grand_mean != 0) {
-    grand_sd / grand_mean * 100
+    if (log_transformed) {
+      lognormal_sd_to_cv(grand_sd)
+    } else {
+      grand_sd / grand_mean * 100
+    }
   } else {
     NA_real_
   }
+  grand_iqr <- stats::IQR(coded_data$y, na.rm = TRUE)
+  grand_min <- min(coded_data$y, na.rm = TRUE)
+  grand_max <- max(coded_data$y, na.rm = TRUE)
 
   n_observations <- nrow(data_copy)
   n_subjects <- data.table::uniqueN(data_copy$SubjectID)
   n_samples <- data.table::uniqueN(
     data_copy[, list(SubjectID, SampleID)]
   )
+  avg_samples_per_subject <- if (n_subjects > 0) {
+    n_samples / n_subjects
+  } else {
+    NA_real_
+  }
+  avg_replicates_per_sample <- if (n_samples > 0) {
+    n_observations / n_samples
+  } else {
+    NA_real_
+  }
 
   grand_summary <- data.table::data.table(
     Statistic = c(
-      "Grand Mean", "Overall SD",
+      "Grand Mean",
+      "Grand Median",
+      "Overall SD",
       "Overall CV (%)",
-      "N Observations", "N Subjects",
-      "N Samples"
+      "Overall IQR",
+      "Overall Minimum",
+      "Overall Maximum",
+      "N Observations",
+      "N Subjects",
+      "N Samples",
+      "Average Samples per Subject",
+      "Average Replicates per Sample"
     ),
     Value = c(
-      round(grand_mean, 4),
-      round(grand_sd, 4),
-      round(grand_cv, 2),
+      format_bv_value(grand_mean),
+      format_bv_value(grand_median),
+      format_bv_value(grand_sd),
+      format_bv_value(grand_cv),
+      format_bv_value(grand_iqr),
+      format_bv_value(grand_min),
+      format_bv_value(grand_max),
       n_observations,
       n_subjects,
-      n_samples
+      n_samples,
+      format_bv_value(avg_samples_per_subject),
+      format_bv_value(avg_replicates_per_sample)
     )
+  )
+
+  # -- Per-subject variance components via C++ backend ---------
+  vc_result <- tryCatch(
+    variance_components(
+      data = coded_data,
+      output_type = "sigma",
+      mult = 1.0,
+      level = 0.95,
+      cv_anova = FALSE
+    ),
+    error = function(e) NULL
   )
 
   subject_summary <- data_copy[
     ,
     list(
-      Mean = round(mean(y, na.rm = TRUE), 4),
-      SD = round(sd(y, na.rm = TRUE), 4),
-      `CV (%)` = round(
-        sd(y, na.rm = TRUE) /
-          mean(y, na.rm = TRUE) * 100,
-        2
+      Mean = mean(y, na.rm = TRUE),
+      SD = format_bv_value(sd(y, na.rm = TRUE)),
+      `SD_i` = format_bv_value(if (!is.null(vc_result)) {
+        vc_result$sigma_i[1]
+      } else {
+        NA_real_
+      }),
+      `CV (%)` = format_bv_value(
+        if (log_transformed) {
+          lognormal_sd_to_cv(sd(y, na.rm = TRUE))
+        } else {
+          sd(y, na.rm = TRUE) /
+            mean(y, na.rm = TRUE) * 100
+        }
       ),
-      N = .N,
-      `N Samples` = data.table::uniqueN(SampleID)
+      `CV_i (%)` = format_bv_value(if (!is.null(vc_result)) {
+        if (log_transformed) {
+          lognormal_sd_to_cv(vc_result$sigma_i[1])
+        } else {
+          vc_result$sigma_i[1] /
+            mean(y, na.rm = TRUE) * 100
+        }
+      } else {
+        NA_real_
+      }),
+      `N Observations` = .N,
+      `N Samples` = data.table::uniqueN(SampleID),
+      `Average Replicates per Sample` = if (.N > 0) {
+        .N / data.table::uniqueN(SampleID)
+      } else {
+        NA_real_
+      }
     ),
     by = SubjectID
   ]
   data.table::setorder(subject_summary, SubjectID)
 
-  sample_summary <- data_copy[
-    ,
-    list(
-      Mean = round(mean(y, na.rm = TRUE), 4),
-      SD = round(sd(y, na.rm = TRUE), 4),
-      `CV (%)` = round(
-        sd(y, na.rm = TRUE) /
-          mean(y, na.rm = TRUE) * 100,
-        2
-      ),
-      N = .N
-    ),
-    by = list(SubjectID, SampleID)
-  ]
-  data.table::setorder(
-    sample_summary, SubjectID, SampleID
-  )
+  # With their correct positions secured
+  # Fill in SD_i and CV_i (%) from variance components if available
+  if (!is.null(vc_result) &&
+    length(vc_result$sigma_i) == nrow(subject_summary)) {
+    subject_summary[, `SD_i` := format_bv_value(vc_result$sigma_i)]
+    subject_summary[, `CV_i (%)` := format_bv_value(
+      if (log_transformed) {
+        lognormal_sd_to_cv(vc_result$sigma_i)
+      } else {
+        vc_result$sigma_i / Mean * 100
+      }
+    )]
+    subject_summary[, Mean := format_bv_value(Mean)]
+  }
 
   list(
     grand_summary = grand_summary,
-    subject_summary = subject_summary,
-    sample_summary = sample_summary
+    subject_summary = subject_summary
   )
 }
 
@@ -470,22 +630,34 @@ compute_anova_estimates <- function(data,
   )
   sample_levels <- as.integer(
     as.factor(
-      paste0(data_copy$SubjectID, "___", data_copy$SampleID)
+      paste0(
+        data_copy$SubjectID,
+        "___",
+        data_copy$SampleID
+      )
     )
   )
   coded_data <- list(
     SubjectID = subject_levels,
     SampleID = sample_levels,
-    y = as.numeric(data_copy$y)
+    y = if (isTRUE(log_transformed)) {
+      log(as.numeric(data_copy$y))
+    } else {
+      as.numeric(data_copy$y)
+    }
   )
 
   # -- Validate parameter combinations --------
   if (log_transformed && cv_anova) {
     message(
       "[ANOVA] cv_anova is ignored for log-transformed ",
-      "data; using sigma-based approach."
+      "data; using cv_anova on identity scale data."
     )
-    cv_anova <- FALSE
+    cv_anova <- TRUE
+    # Transform back to identity scale for variance_components() since
+    # cv_anova is only relevant for identity-scale CV estimation.
+    coded_data$y <- exp(coded_data$y)
+    log_transformed <- FALSE
   }
 
   # -- Variance components (point + CI) --------
@@ -516,31 +688,36 @@ compute_anova_estimates <- function(data,
         # so CI bounds transform correctly.
         cva <- lognormal_sd_to_cv(vc_result$sigma_A[1])
         cva_lower <- round(
-          lognormal_sd_to_cv(vc_result$sigma_A[2]), 2
+          x = lognormal_sd_to_cv(vc_result$sigma_A[2]),
+          digits = 2
         )
         cva_upper <- round(
-          lognormal_sd_to_cv(vc_result$sigma_A[3]), 2
+          x = lognormal_sd_to_cv(vc_result$sigma_A[3]),
+          digits = 2
         )
 
         cvi <- lognormal_sd_to_cv(vc_result$sigma_I[1])
         cvi_lower <- round(
-          lognormal_sd_to_cv(vc_result$sigma_I[2]), 2
+          x = lognormal_sd_to_cv(vc_result$sigma_I[2]),
+          digits = 2
         )
         cvi_upper <- round(
-          lognormal_sd_to_cv(vc_result$sigma_I[3]), 2
+          x = lognormal_sd_to_cv(vc_result$sigma_I[3]),
+          digits = 2
         )
 
         cvg <- lognormal_sd_to_cv(vc_result$sigma_G[1])
         cvg_lower <- round(
-          lognormal_sd_to_cv(vc_result$sigma_G[2]), 2
+          x = lognormal_sd_to_cv(vc_result$sigma_G[2]),
+          digits = 2
         )
         cvg_upper <- round(
-          lognormal_sd_to_cv(vc_result$sigma_G[3]), 2
+          x = lognormal_sd_to_cv(vc_result$sigma_G[3]),
+          digits = 2
         )
 
         # Back-transform grand mean to identity scale
         beta_hat <- exp(vc_result$beta)
-
       } else if (cv_anova) {
         # === CV-ANOVA path (identity scale) ===
         # CV_A and CV_I via CV-ANOVA (direct CIs on CVs)
@@ -577,7 +754,6 @@ compute_anova_estimates <- function(data,
         cvg <- vc_standard$sigma_G[1]
         cvg_lower <- round(vc_standard$sigma_G[2], 2)
         cvg_upper <- round(vc_standard$sigma_G[3], 2)
-
       } else {
         # === Standard path (original behaviour) ===
         vc_result <- variance_components(
@@ -647,35 +823,16 @@ compute_anova_estimates <- function(data,
 
   # Build CV table with estimates, CIs, and variance/SD for each component
   cv_table <- data.table::data.table(
-    "Component " = c( # Use this column name for export table
-      "CV_A (Analytical)",
-      "CV_I (Within-Individual)",
-      "CV_G (Between-Individual)"
-    ),
-    "Component" = c( # Use this column name for display table
+    "Component" = c(
       "\\(\\mathrm{CV}_{\\mathrm{A}} (\\%)\\)",
       "\\(\\mathrm{CV}_{\\mathrm{I}} (\\%)\\)",
       "\\(\\mathrm{CV}_{\\mathrm{G}} (\\%)\\)"
     ),
-    `Estimate (%)` = round(
-      c(cva, cvi, cvg),
-      digits = 2
-    ),
-    `Lower 95%` = c(
-      cva_lower, cvi_lower, cvg_lower
-    ),
-    `Upper 95%` = c(
-      cva_upper, cvi_upper, cvg_upper
-    ),
-    Variance = round(
-      c(sda^2, sdi^2, sdg^2),
-      digits = 6
-    ),
-    SD = round(
-      c(sda, sdi, sdg), 
-      digits = 4
-    )
+    `Estimate (%)` = format_bv_value(c(cva, cvi, cvg)),
+    `Lower CI 95%` = format_bv_value(c(cva_lower, cvi_lower, cvg_lower)),
+    `Upper CI 95%` = format_bv_value(c(cva_upper, cvi_upper, cvg_upper))
   )
+
 
   df_total <- n_observations - 1
   ms_total <- ss_total / max(1, df_total)
@@ -689,14 +846,8 @@ compute_anova_estimates <- function(data,
       "Total BV"
     ),
     df = c(dfg_anova, dfi_anova, dfa_anova, df_total),
-    SS = round(
-      c(ssg_anova, ssi_anova, ssa_anova, ss_total),
-      digits = 4
-    ),
-    MS = round(
-      c(msg_anova, msi_anova, msa_anova, ms_total),
-      digits = 4
-    )
+    SS = format_bv_value(c(ssg_anova, ssi_anova, ssa_anova, ss_total)),
+    MS = format_bv_value(c(msg_anova, msi_anova, msa_anova, ms_total))
   )
 
   list(

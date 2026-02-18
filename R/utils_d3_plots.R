@@ -28,6 +28,42 @@ SQRT_2 <- sqrt(2)
 
 
 # ====================================================================
+# Helper: Convert a data.table to raw_data format for JS export
+# ====================================================================
+
+#' Convert a data.table to a raw_data list for D3 data export
+#'
+#' Produces a list with \code{headers} (column names) and
+#' \code{columns} (list of column vectors) suitable for JSON
+#' serialization to the JavaScript data export functions.
+#'
+#' @param dt A \code{data.table} or \code{data.frame}.
+#' @param columns Optional character vector of column names to
+#'   include. If \code{NULL}, all columns are included.
+#'
+#' @return A list with \code{headers} and \code{columns}.
+#' @keywords internal
+dt_to_raw_data <- function(dt, columns = NULL) {
+  if (is.null(dt) || nrow(dt) == 0L) {
+    return(NULL)
+  }
+  if (!is.null(columns)) {
+    columns <- intersect(columns, names(dt))
+    if (length(columns) == 0L) {
+      return(NULL)
+    }
+    dt <- dt[, columns, with = FALSE]
+  }
+  headers <- names(dt)
+  columns <- lapply(headers, function(col) {
+    v <- dt[[col]]
+    if (is.factor(v)) as.character(v) else v
+  })
+  list(headers = headers, columns = columns)
+}
+
+
+# ====================================================================
 # 1. Subject-Specific CVI (Dot-and-Whisker)
 # ====================================================================
 
@@ -50,15 +86,15 @@ SQRT_2 <- sqrt(2)
 #'   and \code{params}.
 #' @export
 prepare_subject_cvi_d3 <- function(
-    processed_output,
-    color_by = NULL,
-    data = NULL,
-    title = paste(
-      "Subject-Specific CVs",
-      "with 95% Credible Intervals"
-    ),
-    subtitle = NULL) {
-
+  processed_output,
+  color_by = NULL,
+  data = NULL,
+  title = paste(
+    "Subject-Specific CVs",
+    "with 95% Credible Intervals"
+  ),
+  subtitle = NULL
+) {
   subject_data <- data.table::copy(
     processed_output$Subject_Specific
   )
@@ -93,13 +129,22 @@ prepare_subject_cvi_d3 <- function(
     upr    = subject_data$`dCV_P(i)_upr`[1]
   )
 
+  # -- Raw data for CSV / XLSX export --
+  export_cols <- c(
+    "SubjectID", "mean_CV_P(i)", "median_CV_P(i)",
+    "CV_P(i)_lwr", "CV_P(i)_upr",
+    "dCV_P(i)_median", "dCV_P(i)_lwr", "dCV_P(i)_upr"
+  )
+  raw_data <- dt_to_raw_data(subject_data, export_cols)
+
   list(
     plot_type = "subject_cvi",
-    data      = list(
+    data = list(
       subjects = subjects,
-      pop_band = population_band
+      pop_band = population_band,
+      raw_data = raw_data
     ),
-    params    = list(title = title, subtitle = subtitle)
+    params = list(title = title, subtitle = subtitle)
   )
 }
 
@@ -118,9 +163,8 @@ prepare_subject_cvi_d3 <- function(
 resolve_subject_colors <- function(subject_data,
                                    raw_data,
                                    color_by) {
-
   n_subjects <- nrow(subject_data)
-  fallback   <- rep(DEFAULT_POINT_COLOR, n_subjects)
+  fallback <- rep(DEFAULT_POINT_COLOR, n_subjects)
 
   input_dt <- data.table::as.data.table(raw_data)
   has_columns <- color_by %in% names(input_dt) &&
@@ -165,13 +209,13 @@ resolve_subject_colors <- function(subject_data,
 #'   \code{params}.
 #' @export
 prepare_cvi_vs_concentration_d3 <- function(
-    processed_output,
-    title = paste(
-      "Subject-Specific CVs",
-      "vs. Concentration"
-    ),
-    subtitle = NULL) {
-
+  processed_output,
+  title = paste(
+    "Subject-Specific CVs",
+    "vs. Concentration"
+  ),
+  subtitle = NULL
+) {
   subject_data <- data.table::copy(
     processed_output$Subject_Specific
   )
@@ -197,13 +241,24 @@ prepare_cvi_vs_concentration_d3 <- function(
     upr    = subject_data$`dCV_P(i)_upr`[1]
   )
 
+  # -- Raw data for CSV / XLSX export --
+  export_cols <- c(
+    "SubjectID", "mean_CV_P(i)", "median_CV_P(i)",
+    "CV_P(i)_lwr", "CV_P(i)_upr",
+    "dCV_P(i)_median", "dCV_P(i)_lwr", "dCV_P(i)_upr",
+    "concentration_mean_P(i)", "concentration_median_P(i)",
+    "concentration_P(i)_lwr", "concentration_P(i)_upr"
+  )
+  raw_data <- dt_to_raw_data(subject_data, export_cols)
+
   list(
     plot_type = "cvi_vs_concentration",
-    data      = list(
+    data = list(
       subjects = subjects,
-      pop_band = population_band
+      pop_band = population_band,
+      raw_data = raw_data
     ),
-    params    = list(title = title, subtitle = subtitle)
+    params = list(title = title, subtitle = subtitle)
   )
 }
 
@@ -224,14 +279,14 @@ prepare_cvi_vs_concentration_d3 <- function(
 #'   \code{params}.
 #' @export
 prepare_cvi_vs_rcv_d3 <- function(
-    processed_output,
-    use_log_rcv = FALSE,
-    title = "Subject-Specific RCVs with Uncertainty",
-    subtitle = paste(
-      "Incorporated from",
-      "CV Credible Intervals"
-    )) {
-
+  processed_output,
+  use_log_rcv = FALSE,
+  title = "Subject-Specific RCVs with Uncertainty",
+  subtitle = paste(
+    "Incorporated from",
+    "CV Credible Intervals"
+  )
+) {
   subject_data <- data.table::copy(
     processed_output$Subject_Specific
   )
@@ -277,13 +332,22 @@ prepare_cvi_vs_rcv_d3 <- function(
     }
   )
 
+  # -- Raw data for CSV / XLSX export --
+  export_cols <- c(
+    "SubjectID", "median_CV_P(i)", "CV_P(i)_lwr", "CV_P(i)_upr",
+    "upper_rcv_median", "upper_rcv_lwr", "upper_rcv_upr",
+    "lower_rcv_median", "lower_rcv_lwr", "lower_rcv_upr"
+  )
+  raw_data <- dt_to_raw_data(subject_data, export_cols)
+
   list(
     plot_type = "cvi_vs_rcv",
-    data      = list(
+    data = list(
       subjects = subjects,
-      pop_rcv  = population_rcv
+      pop_rcv  = population_rcv,
+      raw_data = raw_data
     ),
-    params    = list(title = title, subtitle = subtitle)
+    params = list(title = title, subtitle = subtitle)
   )
 }
 
@@ -315,17 +379,17 @@ compute_log_rcv <- function(subject_data, cv_analytical) {
 
   subject_data[, `:=`(
     upper_rcv_median =
-      (exp( z_sqrt2 * sdlog_median) - 1) * 100,
-    upper_rcv_lwr    =
-      (exp( z_sqrt2 * sdlog_lower)  - 1) * 100,
-    upper_rcv_upr    =
-      (exp( z_sqrt2 * sdlog_upper)  - 1) * 100,
+      (exp(z_sqrt2 * sdlog_median) - 1) * 100,
+    upper_rcv_lwr =
+      (exp(z_sqrt2 * sdlog_lower) - 1) * 100,
+    upper_rcv_upr =
+      (exp(z_sqrt2 * sdlog_upper) - 1) * 100,
     lower_rcv_median =
       (exp(-z_sqrt2 * sdlog_median) - 1) * 100,
-    lower_rcv_lwr    =
-      (exp(-z_sqrt2 * sdlog_lower)  - 1) * 100,
-    lower_rcv_upr    =
-      (exp(-z_sqrt2 * sdlog_upper)  - 1) * 100
+    lower_rcv_lwr =
+      (exp(-z_sqrt2 * sdlog_lower) - 1) * 100,
+    lower_rcv_upr =
+      (exp(-z_sqrt2 * sdlog_upper) - 1) * 100
   )]
 
   subject_data
@@ -348,22 +412,22 @@ compute_standard_rcv <- function(subject_data,
   cv_a_sq <- cv_analytical^2
 
   subject_data[, `:=`(
-    upper_rcv_median =  z_sqrt2 * sqrt(
+    upper_rcv_median = z_sqrt2 * sqrt(
       cv_a_sq + `median_CV_P(i)`^2
     ),
-    upper_rcv_lwr    =  z_sqrt2 * sqrt(
+    upper_rcv_lwr = z_sqrt2 * sqrt(
       cv_a_sq + `CV_P(i)_lwr`^2
     ),
-    upper_rcv_upr    =  z_sqrt2 * sqrt(
+    upper_rcv_upr = z_sqrt2 * sqrt(
       cv_a_sq + `CV_P(i)_upr`^2
     ),
     lower_rcv_median = -z_sqrt2 * sqrt(
       cv_a_sq + `median_CV_P(i)`^2
     ),
-    lower_rcv_lwr    = -z_sqrt2 * sqrt(
+    lower_rcv_lwr = -z_sqrt2 * sqrt(
       cv_a_sq + `CV_P(i)_lwr`^2
     ),
-    lower_rcv_upr    = -z_sqrt2 * sqrt(
+    lower_rcv_upr = -z_sqrt2 * sqrt(
       cv_a_sq + `CV_P(i)_upr`^2
     )
   )]
@@ -389,7 +453,7 @@ compute_population_log_rcv <- function(cv_analytical,
   )
   z_sqrt2 <- Z_975 * SQRT_2
   list(
-    upper = (exp( z_sqrt2 * sdlog) - 1) * 100,
+    upper = (exp(z_sqrt2 * sdlog) - 1) * 100,
     lower = (exp(-z_sqrt2 * sdlog) - 1) * 100
   )
 }
@@ -404,8 +468,8 @@ compute_population_log_rcv <- function(cv_analytical,
 #' @keywords internal
 compute_population_standard_rcv <- function(cv_analytical,
                                             cv_individual) {
-  z_sqrt2    <- Z_975 * SQRT_2
-  combined   <- sqrt(cv_analytical^2 + cv_individual^2)
+  z_sqrt2 <- Z_975 * SQRT_2
+  combined <- sqrt(cv_analytical^2 + cv_individual^2)
   list(
     upper =  z_sqrt2 * combined,
     lower = -z_sqrt2 * combined
@@ -437,17 +501,18 @@ compute_population_standard_rcv <- function(cv_analytical,
 #'   \code{params}.
 #' @export
 prepare_trace_d3 <- function(
-    plotting_data,
-    parameter_set = "univariate",
-    title = NULL,
-    subtitle = NULL,
-    max_points_per_chain = 500L) {
-
+  plotting_data,
+  parameter_set = "univariate",
+  title = NULL,
+  subtitle = NULL,
+  max_points_per_chain = 500L
+) {
   resolved <- resolve_parameter_data(
-    plotting_data, parameter_set, chart_type = "trace"
+    plotting_data, parameter_set,
+    chart_type = "trace"
   )
-  trace_data    <- resolved$data
-  title         <- title %||% resolved$title
+  trace_data <- resolved$data
+  title <- title %||% resolved$title
   desired_order <- resolved$order
 
   panels <- lapply(desired_order, function(param_label) {
@@ -477,8 +542,8 @@ prepare_trace_d3 <- function(
 
   list(
     plot_type = "trace",
-    data      = list(panels = panels),
-    params    = list(
+    data = list(panels = panels),
+    params = list(
       title    = title,
       subtitle = subtitle,
       ncols    = 3L
@@ -499,9 +564,8 @@ prepare_trace_d3 <- function(
 #' @keywords internal
 build_thinned_traces <- function(parameter_data,
                                  max_points) {
-
   chain_ids <- unique(parameter_data$chain)
-  traces    <- list()
+  traces <- list()
 
   for (current_chain in chain_ids) {
     chain_data <- parameter_data[chain == current_chain]
@@ -547,21 +611,21 @@ build_thinned_traces <- function(parameter_data,
 #'   \code{params}.
 #' @export
 prepare_posterior_density_d3 <- function(
-    plotting_data,
-    parameter_set = "univariate",
-    title = NULL,
-    subtitle = NULL,
-    include_histogram = FALSE,
-    max_samples = 5000L) {
-
+  plotting_data,
+  parameter_set = "univariate",
+  title = NULL,
+  subtitle = NULL,
+  include_histogram = FALSE,
+  max_samples = 5000L
+) {
   resolved <- resolve_parameter_data(
     plotting_data, parameter_set,
     chart_type = "posterior"
   )
   posterior_data <- resolved$data
-  title          <- title %||% resolved$title
-  subtitle       <- subtitle %||% resolved$subtitle
-  desired_order  <- resolved$order
+  title <- title %||% resolved$title
+  subtitle <- subtitle %||% resolved$subtitle
+  desired_order <- resolved$order
 
   panels <- lapply(desired_order, function(param_label) {
     parameter_data <- posterior_data[
@@ -594,8 +658,8 @@ prepare_posterior_density_d3 <- function(
 
   list(
     plot_type = "posterior",
-    data      = list(panels = panels),
-    params    = list(
+    data = list(panels = panels),
+    params = list(
       title             = title,
       subtitle          = subtitle,
       ncols             = 3L,
@@ -627,7 +691,6 @@ prepare_posterior_density_d3 <- function(
 resolve_parameter_data <- function(plotting_data,
                                    parameter_set,
                                    chart_type) {
-
   univariate_order <- c(
     "beta", "df[I]", "df[A]", "CV[A]", "CV[G]",
     "dCV[P(i)]", "E(CV[I])", "SD(CV[I])"
@@ -648,7 +711,6 @@ resolve_parameter_data <- function(plotting_data,
       NULL
     }
     desired_order <- univariate_order
-
   } else if (parameter_set == "subject_cvs") {
     param_data <- data.table::copy(
       plotting_data$subject_specific_cvs
@@ -667,7 +729,6 @@ resolve_parameter_data <- function(plotting_data,
       param_data,
       pattern = "^CV\\[p\\(([0-9]+)\\)\\]$"
     )
-
   } else if (parameter_set == "h_set_points") {
     param_data <- data.table::copy(
       plotting_data$homeostatic_set_points
@@ -686,7 +747,6 @@ resolve_parameter_data <- function(plotting_data,
       param_data,
       pattern = "^mu\\[p\\(([0-9]+)\\)\\]$"
     )
-
   } else {
     stop(
       "Invalid parameter_set: '", parameter_set,
@@ -714,7 +774,7 @@ resolve_parameter_data <- function(plotting_data,
 #' @return A character vector of labels in numeric order.
 #' @keywords internal
 sort_parameter_labels <- function(param_data, pattern) {
-  labels  <- unique(param_data$parameter_label)
+  labels <- unique(param_data$parameter_label)
   indices <- as.numeric(gsub(pattern, "\\1", labels))
   labels[order(indices)]
 }
@@ -741,7 +801,7 @@ sort_parameter_labels <- function(param_data, pattern) {
 #' @param log_transformed Logical.
 #' @param model Character. \code{"NTT"} or \code{"NTTDFGAM"}.
 #' @param n_samples Number of Monte Carlo samples.
-#'   Defaults to 50 000.
+#'   Defaults to 10 000.
 #' @param title Chart title.
 #' @param subtitle Chart subtitle.
 #'
@@ -749,35 +809,35 @@ sort_parameter_labels <- function(param_data, pattern) {
 #'   \code{params}.
 #' @export
 prepare_prior_density_d3 <- function(
-    beta,
-    cvi = 10,
-    cva = 3,
-    cvg = 20,
-    dfi = 20,
-    dfa = 20,
-    hbhr = 50,
-    strength = c(1, 1, 1, 1, 1, 1, 0.667),
-    log_transformed = FALSE,
-    model = "NTT",
-    n_samples = 50000L,
-    title = "Prior Density Plots",
-    subtitle = NULL) {
-
+  beta,
+  cvi = 10,
+  cva = 3,
+  cvg = 20,
+  dfi = 20,
+  dfa = 20,
+  hbhr = 50,
+  strength = c(1, 1, 1, 1, 1, 1, 0.667),
+  log_transformed = FALSE,
+  model = "NTT",
+  n_samples = 50e3L,
+  title = "Prior Density Plots",
+  subtitle = NULL
+) {
   # -- Compute hyperparameters (same as Stan model) --
   hyperparams <- process_stan_data_priors(
     beta = beta,
-    cvi  = cvi * (dfi - 2) / dfi,
-    cva  = cva * (dfa - 2) / dfa,
-    cvg  = cvg,
-    dfi  = dfi,
-    dfa  = dfa,
+    cvi = cvi * (dfi - 2) / dfi,
+    cva = cva * (dfa - 2) / dfa,
+    cvg = cvg,
+    dfi = dfi,
+    dfa = dfa,
     hbhr = hbhr,
     strength = strength,
     log_transformed = log_transformed
   )
 
   hbhr_mean <- hbhr / 100
-  hbhr_sd   <- strength[7] * hbhr_mean
+  hbhr_sd <- strength[7] * hbhr_mean
 
   # -- Draw prior samples --
   prior_samples <- draw_prior_samples(
@@ -830,8 +890,8 @@ prepare_prior_density_d3 <- function(
 
   list(
     plot_type = "prior",
-    data      = list(panels = panels),
-    params    = list(
+    data = list(panels = panels),
+    params = list(
       title    = title,
       subtitle = subtitle,
       ncols    = 3L
@@ -861,11 +921,11 @@ draw_prior_samples <- function(hyperparams,
                                hbhr_sd,
                                log_transformed,
                                beta) {
-
   hp <- hyperparams
 
   beta_eff <- rnorm(
-    n_samples, mean = hp[[1]], sd = hp[[2]]
+    n_samples,
+    mean = hp[[1]], sd = hp[[2]]
   )
   cvi_mean_eff <- sample_truncnorm(
     n_samples, hp[[3]], hp[[4]]
@@ -890,10 +950,12 @@ draw_prior_samples <- function(hyperparams,
     ) + 2
   } else {
     dfi_eff <- sample_truncnorm(
-      n_samples, hp[[11]], hp[[12]], lower = 0
+      n_samples, hp[[11]], hp[[12]],
+      lower = 0
     ) + 2
     dfa_eff <- sample_truncnorm(
-      n_samples, hp[[13]], hp[[14]], lower = 0
+      n_samples, hp[[13]], hp[[14]],
+      lower = 0
     ) + 2
   }
 
@@ -940,7 +1002,6 @@ draw_prior_samples <- function(hyperparams,
 transform_prior_to_user_scale <- function(samples,
                                           log_transformed,
                                           beta) {
-
   dfi <- samples$dfi
   dfa <- samples$dfa
 
@@ -953,10 +1014,10 @@ transform_prior_to_user_scale <- function(samples,
     }
 
     cvi_mean <- logt_to_cv(samples$cvi_mean, dfi)
-    cvi_sd   <- logt_to_cv(samples$cvi_sd, dfi)
-    cvi      <- logt_to_cv(samples$cvi, dfi)
-    cva      <- logt_to_cv(samples$cva, dfa)
-    cvg      <- lognormal_to_cv(samples$cvg)
+    cvi_sd <- logt_to_cv(samples$cvi_sd, dfi)
+    cvi <- logt_to_cv(samples$cvi, dfi)
+    cva <- logt_to_cv(samples$cva, dfa)
+    cvg <- lognormal_to_cv(samples$cvg)
   } else {
     lst_to_sd <- function(sigma, df) {
       sigma * sqrt(df / (df - 2))
@@ -996,24 +1057,63 @@ transform_prior_to_user_scale <- function(samples,
 
 #' Build a Single Prior Panel Entry
 #'
+#' Computes a kernel density estimate on the R side and trims values
+#' above the 99.5th percentile to prevent extreme tails from
+#' distorting the density plot.
+#'
 #' @param parameter Parameter identifier string.
 #' @param label Display label for the panel.
 #' @param is_cv Logical; is this a CV parameter?
 #' @param values Numeric vector of samples.
-#' @param max_display Maximum values to include in output.
+#' @param n_density Number of equally spaced points at which the
+#'   density is evaluated (passed to \code{stats::density()}).
 #'
-#' @return A list suitable for the \code{panels} array.
+#' @return A list suitable for the \code{panels} array, containing
+#'   pre-computed density (\code{x}, \code{y}), \code{mean},
+#'   \code{cri025}, and \code{cri975}.
 #' @keywords internal
 build_prior_panel <- function(parameter,
                               label,
                               is_cv,
                               values,
-                              max_display = 5000L) {
+                              n_density = 256L) {
+  # Clean non-finite values
+  values <- values[is.finite(values)]
+  if (length(values) == 0L) {
+    return(list(
+      parameter = parameter,
+      label     = label,
+      is_cv     = is_cv,
+      values    = numeric(0)
+    ))
+  }
+
+  # Trim values above 99.5th percentile to prevent extreme tails
+  # from distorting the density plot
+  if (length(values) > 20L) {
+    upper_cutoff <- quantile(values, 0.995, names = FALSE)
+    values <- values[values <= upper_cutoff]
+  }
+
+  # Pre-compute summary statistics
+  val_mean   <- mean(values)
+  val_cri025 <- unname(quantile(values, 0.025))
+  val_cri975 <- unname(quantile(values, 0.975))
+
+  # Compute KDE on R side (orders of magnitude faster than JS)
+  dens <- stats::density(values, n = n_density)
+
   list(
     parameter = parameter,
     label     = label,
     is_cv     = is_cv,
-    values    = clean_finite_values(values, max_display)
+    density   = list(
+      x = as.numeric(dens$x),
+      y = as.numeric(dens$y)
+    ),
+    mean      = val_mean,
+    cri025    = val_cri025,
+    cri975    = val_cri975
   )
 }
 
@@ -1077,7 +1177,7 @@ sample_truncnorm <- function(n, mean, sd, lower = 0, upper = Inf) {
 #' @keywords internal
 sample_gamma_ms <- function(n, mean, sd) {
   shape <- mean^2 / sd^2
-  rate  <- mean / sd^2
+  rate <- mean / sd^2
   rgamma(n, shape = shape, rate = rate)
 }
 
@@ -1104,12 +1204,12 @@ sample_gamma_ms <- function(n, mean, sd) {
 #'   \code{params}.
 #' @export
 prepare_exploration_scatter_d3 <- function(
-    data,
-    excluded_rows = data.table::data.table(),
-    title = "Data Points \u2014 Click to Exclude / Include",
-    subtitle = "Each point is one measurement",
-    view_mode = "combined") {
-
+  data,
+  excluded_rows = data.table::data.table(),
+  title = "Data Points \u2014 Click to Exclude / Include",
+  subtitle = "Each point is one measurement",
+  view_mode = "combined"
+) {
   dt <- data.table::copy(data)
   dt[, obs_idx := .I]
 
@@ -1123,14 +1223,14 @@ prepare_exploration_scatter_d3 <- function(
     "#aec7e8", "#ffbb78", "#98df8a", "#ff9896", "#c5b0d5",
     "#c49c94", "#f7b6d2", "#c7c7c7", "#dbdb8d", "#9edae5"
   )
-  palette  <- rep(base_palette, length.out = length(subjects))
+  palette <- rep(base_palette, length.out = length(subjects))
   color_map <- stats::setNames(palette, subjects)
 
   # --- Mark excluded rows ---
   dt[, excluded := FALSE]
   if (!is.null(excluded_rows) &&
-      nrow(excluded_rows) > 0 &&
-      "SubjectID" %in% names(excluded_rows)) {
+    nrow(excluded_rows) > 0 &&
+    "SubjectID" %in% names(excluded_rows)) {
     excl <- data.table::copy(excluded_rows)
     excl[, .excl_flag := TRUE]
     dt <- merge(
@@ -1144,24 +1244,33 @@ prepare_exploration_scatter_d3 <- function(
     data.table::setorder(dt, obs_idx) # preserve original order
   }
 
-  points <- lapply(seq_len(nrow(dt)), function(i) {
-    row <- dt[i]
-    list(
-      idx         = row$obs_idx,
-      y           = row$y,
-      SubjectID   = as.character(row$SubjectID),
-      SampleID    = as.character(row$SampleID),
-      ReplicateID = as.character(row$ReplicateID),
-      excluded    = row$excluded,
-      color       = unname(color_map[as.character(row$SubjectID)])
-    )
-  })
+  # Columnar format: one vector per field — trivial to build and
+  # dramatically faster for jsonlite to serialise than list-per-row.
+  # The JS side pivots to row-objects on receipt.
+  sid_chr <- as.character(dt$SubjectID)
+  points <- list(
+    idx         = dt$obs_idx,
+    y           = dt$y,
+    SubjectID   = sid_chr,
+    SampleID    = as.character(dt$SampleID),
+    ReplicateID = as.character(dt$ReplicateID),
+    excluded    = dt$excluded,
+    color       = unname(color_map[sid_chr])
+  )
+
+  # -- Raw data for CSV / XLSX export --
+  export_cols <- intersect(
+    c("SubjectID", "SampleID", "ReplicateID", "y", "excluded"),
+    names(dt)
+  )
+  raw_data <- dt_to_raw_data(dt, export_cols)
 
   list(
     plot_type = "exploration_scatter",
-    data      = list(
+    data = list(
       points     = points,
-      grand_mean = mean(dt$y, na.rm = TRUE)
+      grand_mean = mean(dt$y, na.rm = TRUE),
+      raw_data   = raw_data
     ),
     params = list(
       title     = title,
@@ -1192,16 +1301,17 @@ prepare_exploration_scatter_d3 <- function(
 #'   \code{params}.
 #' @export
 prepare_descriptive_dotplot_d3 <- function(
-    data,
-    subject_means,
-    title = "Data Distribution by Subject",
-    subtitle = "Individual measurements with subject means") {
-
+  data,
+  subject_means,
+  title = "Data Distribution by Subject",
+  subtitle = "Individual measurements with subject means"
+) {
   dt <- data.table::copy(data)
 
   subjects <- unique(as.character(dt$SubjectID))
-  palette  <- rep(DEFAULT_GROUP_PALETTE,
-                  length.out = length(subjects))
+  palette <- rep(DEFAULT_GROUP_PALETTE,
+    length.out = length(subjects)
+  )
   color_map <- stats::setNames(palette, subjects)
 
   points <- lapply(seq_len(nrow(dt)), function(i) {
@@ -1223,13 +1333,21 @@ prepare_descriptive_dotplot_d3 <- function(
     )
   })
 
+  # -- Raw data for CSV / XLSX export --
+  export_cols <- intersect(
+    c("SubjectID", "SampleID", "ReplicateID", "y"),
+    names(dt)
+  )
+  raw_data <- dt_to_raw_data(dt, export_cols)
+
   list(
     plot_type = "descriptive_dotplot",
-    data      = list(
+    data = list(
       points        = points,
       subject_means = subj_means,
       grand_mean    = mean(dt$y, na.rm = TRUE),
-      grand_sd      = sd(dt$y, na.rm = TRUE)
+      grand_sd      = sd(dt$y, na.rm = TRUE),
+      raw_data      = raw_data
     ),
     params = list(title = title, subtitle = subtitle)
   )
@@ -1254,10 +1372,10 @@ prepare_descriptive_dotplot_d3 <- function(
 #'   \code{params}.
 #' @export
 prepare_anova_components_d3 <- function(
-    anova_results,
-    title = "ANOVA-based Variance Components",
-    subtitle = "Classical nested ANOVA estimates (CV %)") {
-
+  anova_results,
+  title = "ANOVA-based Variance Components",
+  subtitle = "Classical nested ANOVA estimates (CV %)"
+) {
   components <- list(
     list(
       label = "CV_A (Analytical)",
@@ -1282,9 +1400,33 @@ prepare_anova_components_d3 <- function(
     )
   )
 
+  # -- Raw data for CSV / XLSX export --
+  anova_dt <- data.table::data.table(
+    Component = c("CV_A", "CV_I", "CV_G"),
+    Value = c(
+      anova_results$CV_A,
+      anova_results$CV_I,
+      anova_results$CV_G
+    ),
+    Lower = c(
+      anova_results$CV_A_lower,
+      anova_results$CV_I_lower,
+      anova_results$CV_G_lower
+    ),
+    Upper = c(
+      anova_results$CV_A_upper,
+      anova_results$CV_I_upper,
+      anova_results$CV_G_upper
+    )
+  )
+  raw_data <- dt_to_raw_data(anova_dt)
+
   list(
     plot_type = "anova_components",
-    data      = list(components = components),
-    params    = list(title = title, subtitle = subtitle)
+    data = list(
+      components = components,
+      raw_data   = raw_data
+    ),
+    params = list(title = title, subtitle = subtitle)
   )
 }

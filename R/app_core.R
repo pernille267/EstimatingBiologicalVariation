@@ -8,25 +8,26 @@
 #' @importFrom shiny addResourcePath icon div tags tagList withMathJax
 #'   reactiveValues observe observeEvent isolate
 #' @importFrom data.table data.table
+#' @importFrom htmltools tagList tags htmlDependency
 #' @keywords internal
 #' @noRd
 app_ui <- function() {
-  addResourcePath(
+  shiny::addResourcePath(
     "assets",
     system.file("assets", package = "EstimatingBiologicalVariation")
   )
 
   glassPage(
     title = "Biological Variation Analysis",
-    branding = div(
+    branding = shiny::div(
       style = "display: flex; align-items: center; gap: 10px;",
-      icon("dna", style = "font-size: 24px;")
+      shiny::icon("dna", style = "font-size: 24px;")
     ),
     sidebar = glassSidebar(
       inputId = "sidebar_nav",
       glassNavItem(
         tabName = "setup",
-        icon = icon("cogs"),
+        icon = shiny::icon("cogs"),
         title = "Analysis Setup",
         active = TRUE,
         flyout_items = mod_setup_flyout_items("setup"),
@@ -34,22 +35,38 @@ app_ui <- function() {
       ),
       glassNavItem(
         tabName = "exploring",
-        icon = icon("heart-circle-plus"),
+        icon = shiny::icon("heart-circle-plus"),
         title = "Data Exploration",
         flyout_items = mod_data_exploration_flyout_items("exploration"),
         card_id = "exploration-explore_card"
       ),
       glassNavItem(
         tabName = "model1_results",
-        icon = icon("chart-bar"),
+        icon = shiny::icon("chart-bar"),
         title = "Bayesian Models",
         flyout_items = list(
-          glassFlyoutItem("model1_results", icon("chart-simple"), "NTT"),
-          glassFlyoutItem("model2_results", icon("chart-area"), "NTTDFGAM")
+          glassFlyoutItem(
+            "model1_results",
+            shiny::icon("chart-simple"),
+            "NTT"
+          ),
+          glassFlyoutItem(
+            "model2_results",
+            shiny::icon("chart-area"),
+            "NTTDFGAM"
+          )
         )
       ),
-      glassNavItem(tabName = "documentation", icon = icon("book"), title = "Documentation"),
-      glassNavItem(tabName = "debugging", icon = icon("bug"), title = "Debug Monitor")
+      glassNavItem(
+        tabName = "documentation", # nolint
+        icon = shiny::icon("book"),
+        title = "Documentation"
+      ),
+      glassNavItem(
+        tabName = "debugging",
+        icon = shiny::icon("bug"),
+        title = "Debug Monitor"
+      )
     ),
     header_items = tagList(
       tags$div(
@@ -90,16 +107,10 @@ app_ui <- function() {
         )
       )
     ),
-    withMathJax(),
+    shiny::withMathJax(),
     useGlassToast(),
     useGlassD3Plot(),
     useGlassAnalysisProgress(),
-    tags$head(
-      tags$script(src = "assets/glass_selectize.js"),
-      tags$link(rel = "stylesheet", type = "text/css", href = "assets/glass_selectize.css"),
-      tags$script(src = "assets/glass_table.js"),
-      tags$link(rel = "stylesheet", type = "text/css", href = "assets/glass_table.css")
-    ),
 
     # Module UI Routes
     glassRoute(title = "setup", mod_setup_ui("setup")),
@@ -124,14 +135,18 @@ app_server <- function(input, output, session) {
   # ---------------------------------------------------------------------------
   # Central Application State
   # ---------------------------------------------------------------------------
-  app_state <- reactiveValues(
+  app_state <- shiny::reactiveValues(
     # Data state
     uploaded_data_raw = NULL,
     uploaded_data_selected_sheet = NULL,
     filtered_data = NULL,
     analysis_data = NULL,
     mapped_data = NULL,
-    excluded_rows = data.table(SubjectID = character(0), SampleID = character(0), ReplicateID = character(0)),
+    excluded_rows = data.table::data.table(
+      SubjectID = character(0),
+      SampleID = character(0),
+      ReplicateID = character(0)
+    ),
 
     # Column mappings
     measurement_col = NULL,
@@ -183,22 +198,38 @@ app_server <- function(input, output, session) {
     adapt_delta = 0.9,
     max_treedepth = 12,
     num_cores = 4,
+    seed = as.integer(Sys.time()) %% .Machine$integer.max,
 
     # Stan models (loaded at startup)
     compiled_model_ntt = NULL,
     compiled_model_nttdfgam = NULL,
+    compiled_model_nnn = NULL,
+    compiled_model_ntn = NULL,
+    compiled_model_nnt = NULL,
 
     # Analysis results
     model_ntt_results = NULL,
     model_nttdfgam_results = NULL,
+    model_nnn_results = NULL,
+    model_ntn_results = NULL,
+    model_nnt_results = NULL,
     model_ntt_stale = FALSE,
     model_nttdfgam_stale = FALSE,
+    model_nnn_stale = FALSE,
+    model_ntn_stale = FALSE,
+    model_nnt_stale = FALSE,
 
     # Model status
     model_ntt_status = "not_run",
     model_nttdfgam_status = "not_run",
+    model_nnn_status = "not_run",
+    model_ntn_status = "not_run",
+    model_nnt_status = "not_run",
     model_ntt_error = NULL,
     model_nttdfgam_error = NULL,
+    model_nnn_error = NULL,
+    model_ntn_error = NULL,
+    model_nnt_error = NULL,
 
     # UI state
     current_wizard_step = "step1_upload",
@@ -206,33 +237,70 @@ app_server <- function(input, output, session) {
   )
 
   # ---------------------------------------------------------------------------
-  # Load Pre-compiled Stan Models
+  # Load Pre-compiled Stan Models (compile any missing ones automatically)
   # ---------------------------------------------------------------------------
   glassWithProgress(title = "Loading Stan Models...", {
     .t <- bv_timer_start("app::load_stan_models")
     stan_dir <- system.file("stan", package = "EstimatingBiologicalVariation")
-    model_file_1 <- file.path(stan_dir, "stan_model_1_compiled.rds")
-    model_file_2 <- file.path(stan_dir, "stan_model_2_compiled.rds")
 
     glassIncProgress(0.1, detail = "Checking for compiled model files...")
-    if (!file.exists(model_file_1) || !file.exists(model_file_2)) {
+
+    # Compile any missing models before loading
+    compile_status <- ensure_stan_models_compiled(
+      stan_dir = stan_dir,
+      force = FALSE,
+      verbose = TRUE
+    )
+
+    # Check that at least the required models compiled successfully
+    required_models <- c("NTT", "NTTDFGAM", "NNN", "NTN", "NNT")
+    missing <- required_models[
+      !(required_models %in% names(compile_status)) |
+        !compile_status[required_models]
+    ]
+    if (length(missing) > 0) {
       showGlassToast(
         message = paste0(
-          "One or both pre-compiled Stan model files (.rds) not found. ",
-          "Please run the model compilation step first."
+          "Failed to load or compile required Stan models: ",
+          paste(missing, collapse = ", "), ". ",
+          "Check the R console for compilation errors."
         ),
-        title = "Missing Stan Models",
+        title = "Stan Model Error",
         type = "error",
         duration = NULL
       )
-      stop("Missing compiled models")
+      stop("Missing compiled models: ", paste(missing, collapse = ", "))
     }
 
-    glassIncProgress(0.5, detail = "Loading Model 1 (NTT)...")
-    app_state$compiled_model_ntt <- readRDS(model_file_1)
+    glassIncProgress(0.3, detail = "Loading Model NTT...")
+    app_state$compiled_model_ntt <- load_or_compile_stan_model(
+      "NTT",
+      stan_dir
+    )
 
-    glassIncProgress(0.9, detail = "Loading Model 2 (NTTDFGAM)...")
-    app_state$compiled_model_nttdfgam <- readRDS(model_file_2)
+    glassIncProgress(0.5, detail = "Loading Model NNN...")
+    app_state$compiled_model_nnn <- load_or_compile_stan_model(
+      "NNN",
+      stan_dir
+    )
+
+    glassIncProgress(0.6, detail = "Loading Model NTN...")
+    app_state$compiled_model_ntn <- load_or_compile_stan_model(
+      "NTN",
+      stan_dir
+    )
+
+    glassIncProgress(0.7, detail = "Loading Model NNT...")
+    app_state$compiled_model_nnt <- load_or_compile_stan_model(
+      "NNT",
+      stan_dir
+    )
+
+    glassIncProgress(0.9, detail = "Loading Model NTTDFGAM...")
+    app_state$compiled_model_nttdfgam <- load_or_compile_stan_model(
+      "NTTDFGAM",
+      stan_dir
+    )
 
     glassIncProgress(1, detail = "Models loaded successfully!")
     bv_timer_end(.t)
@@ -324,6 +392,18 @@ app_server <- function(input, output, session) {
         app_state$model_nttdfgam_stale <- TRUE
         app_state$model_nttdfgam_status <- "stale"
       }
+      if (!is.null(app_state$model_nnn_results)) {
+        app_state$model_nnn_stale <- TRUE
+        app_state$model_nnn_status <- "stale"
+      }
+      if (!is.null(app_state$model_ntn_results)) {
+        app_state$model_ntn_stale <- TRUE
+        app_state$model_ntn_status <- "stale"
+      }
+      if (!is.null(app_state$model_nnt_results)) {
+        app_state$model_nnt_stale <- TRUE
+        app_state$model_nnt_status <- "stale"
+      }
     },
     ignoreInit = TRUE
   )
@@ -342,7 +422,7 @@ app_server <- function(input, output, session) {
       app_state$adapt_delta, app_state$max_treedepth, app_state$num_cores
     )
 
-    isolate({
+    shiny::isolate({
       if (!is.null(app_state$model_ntt_results)) {
         app_state$model_ntt_stale <- TRUE
         app_state$model_ntt_status <- "stale"
@@ -350,6 +430,18 @@ app_server <- function(input, output, session) {
       if (!is.null(app_state$model_nttdfgam_results)) {
         app_state$model_nttdfgam_stale <- TRUE
         app_state$model_nttdfgam_status <- "stale"
+      }
+      if (!is.null(app_state$model_nnn_results)) {
+        app_state$model_nnn_stale <- TRUE
+        app_state$model_nnn_status <- "stale"
+      }
+      if (!is.null(app_state$model_ntn_results)) {
+        app_state$model_ntn_stale <- TRUE
+        app_state$model_ntn_status <- "stale"
+      }
+      if (!is.null(app_state$model_nnt_results)) {
+        app_state$model_nnt_stale <- TRUE
+        app_state$model_nnt_status <- "stale"
       }
     })
   })
@@ -363,6 +455,24 @@ app_server <- function(input, output, session) {
   shiny::observeEvent(app_state$model_nttdfgam_results, {
     if (!is.null(app_state$model_nttdfgam_results)) {
       app_state$model_nttdfgam_stale <- FALSE
+    }
+  })
+
+  shiny::observeEvent(app_state$model_nnn_results, {
+    if (!is.null(app_state$model_nnn_results)) {
+      app_state$model_nnn_stale <- FALSE
+    }
+  })
+
+  shiny::observeEvent(app_state$model_ntn_results, {
+    if (!is.null(app_state$model_ntn_results)) {
+      app_state$model_ntn_stale <- FALSE
+    }
+  })
+
+  shiny::observeEvent(app_state$model_nnt_results, {
+    if (!is.null(app_state$model_nnt_results)) {
+      app_state$model_nnt_stale <- FALSE
     }
   })
 

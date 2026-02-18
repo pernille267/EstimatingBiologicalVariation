@@ -172,6 +172,16 @@ mod_hyperparameters_ui <- function(id) {
           label_icon = icon("microchip"),
           choices = seq(1, 16),
           selected = 4
+        ),
+        glassNumericInput(
+          inputId = ns("seed"),
+          label = "Random Seed",
+          label_icon = icon("dice"),
+          value = as.integer(Sys.time()) %% .Machine$integer.max,
+          min = 1,
+          max = .Machine$integer.max,
+          step = 1,
+          help_text = "Set a custom seed for reproducible results across sessions"
         )
       )
     )
@@ -251,7 +261,8 @@ mod_hyperparameters_server <- function(id, filter_values = NULL) {
         nchains = shiny::reactive(input$nchains),
         adapt_delta = shiny::reactive(input$adapt_delta),
         max_treedepth = shiny::reactive(input$max_treedepth),
-        number_of_cores = shiny::reactive(input$number_of_cores)
+        number_of_cores = shiny::reactive(input$number_of_cores),
+        seed = shiny::reactive(input$seed)
       )
     )
   })

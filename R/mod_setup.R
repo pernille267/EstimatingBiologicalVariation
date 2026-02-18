@@ -167,7 +167,7 @@ mod_setup_server <- function(id, app_state) {
             )
             for (nm in names(field_map)) {
                 if (!identical(snapshot[[nm]], prev[[nm]])) {
-                    app_state[[ field_map[[nm]] ]] <- snapshot[[nm]]
+                    app_state[[field_map[[nm]]]] <- snapshot[[nm]]
                 }
             }
             bv_timer_end(.t)
@@ -227,7 +227,7 @@ mod_setup_server <- function(id, app_state) {
             )
             for (nm in names(field_map)) {
                 if (!identical(snapshot[[nm]], prev[[nm]])) {
-                    app_state[[ field_map[[nm]] ]] <- snapshot[[nm]]
+                    app_state[[field_map[[nm]]]] <- snapshot[[nm]]
                 }
             }
             bv_timer_end(.t)
@@ -336,6 +336,7 @@ mod_setup_server <- function(id, app_state) {
             app_state$adapt_delta <- hyperparams$adapt_delta() / 100
             app_state$max_treedepth <- hyperparams$max_treedepth()
             app_state$num_cores <- hyperparams$number_of_cores()
+            app_state$seed <- hyperparams$seed()
             bv_timer_end(.t)
         })
 
@@ -448,58 +449,76 @@ mod_setup_server <- function(id, app_state) {
         # =========================================================================
 
         # Step 1 -> 2
-        observeEvent(input$goto_step2, {
-            if (!uploaded_results$file_uploaded()) {
-                showGlassToast(
-                    message = "Please upload a data file to proceed.",
-                    title = "No Data Uploaded",
-                    type = "error",
-                    duration = 5000
-                )
-            } else {
-                updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step2_map")
-                app_state$current_wizard_step <- "step2_map"
-            }
-        }, ignoreInit = TRUE)
+        observeEvent(input$goto_step2,
+            {
+                if (!uploaded_results$file_uploaded()) {
+                    showGlassToast(
+                        message = "Please upload a data file to proceed.",
+                        title = "No Data Uploaded",
+                        type = "error",
+                        duration = 5000
+                    )
+                } else {
+                    updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step2_map")
+                    app_state$current_wizard_step <- "step2_map"
+                }
+            },
+            ignoreInit = TRUE
+        )
 
         # Step 2 -> 1
-        observeEvent(input$back_to_step1, {
-            updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step1_upload")
-            app_state$current_wizard_step <- "step1_upload"
-        }, ignoreInit = TRUE)
+        observeEvent(input$back_to_step1,
+            {
+                updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step1_upload")
+                app_state$current_wizard_step <- "step1_upload"
+            },
+            ignoreInit = TRUE
+        )
 
         # Step 2 -> 3
-        observeEvent(input$goto_step3, {
-            if (!app_state$mandatory_columns_selected) {
-                showGlassToast(
-                    message = "Please map all mandatory columns to proceed.",
-                    title = "Incomplete Column Mapping",
-                    type = "error",
-                    duration = 5000
-                )
-            } else {
-                updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step3_filter")
-                app_state$current_wizard_step <- "step3_filter"
-            }
-        }, ignoreInit = TRUE)
+        observeEvent(input$goto_step3,
+            {
+                if (!app_state$mandatory_columns_selected) {
+                    showGlassToast(
+                        message = "Please map all mandatory columns to proceed.",
+                        title = "Incomplete Column Mapping",
+                        type = "error",
+                        duration = 5000
+                    )
+                } else {
+                    updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step3_filter")
+                    app_state$current_wizard_step <- "step3_filter"
+                }
+            },
+            ignoreInit = TRUE
+        )
 
         # Step 3 -> 2
-        observeEvent(input$back_to_step2, {
-            updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step2_map")
-            app_state$current_wizard_step <- "step2_map"
-        }, ignoreInit = TRUE)
+        observeEvent(input$back_to_step2,
+            {
+                updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step2_map")
+                app_state$current_wizard_step <- "step2_map"
+            },
+            ignoreInit = TRUE
+        )
 
         # Step 3 -> 4
-        observeEvent(input$goto_step4, {
-            updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step4_params")
-            app_state$current_wizard_step <- "step4_params"
-        }, ignoreInit = TRUE)
+        observeEvent(input$goto_step4,
+            {
+                updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step4_params")
+                app_state$current_wizard_step <- "step4_params"
+            },
+            ignoreInit = TRUE
+        )
 
         # Step 4 -> 3
-        observeEvent(input$back_to_step3, {
-            updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step3_filter")
-            app_state$current_wizard_step <- "step3_filter"
-        }, ignoreInit = TRUE)
+        observeEvent(input$back_to_step3,
+            {
+                updateGlassTabsetPanel(session, ns("setup_wizard"), selected = "step3_filter")
+                app_state$current_wizard_step <- "step3_filter"
+            },
+            ignoreInit = TRUE
+        )
 
         # =========================================================================
         # Sync Flyout State with Wizard Navigation
@@ -509,9 +528,9 @@ mod_setup_server <- function(id, app_state) {
 
         # Lookup table for step -> flyout label + icon
         step_meta <- list(
-            step1_upload = list(label = "Upload Data",     icon = "upload"),
-            step2_map    = list(label = "Map Columns",     icon = "columns"),
-            step3_filter = list(label = "Filter & Name",   icon = "filter"),
+            step1_upload = list(label = "Upload Data", icon = "upload"),
+            step2_map    = list(label = "Map Columns", icon = "columns"),
+            step3_filter = list(label = "Filter & Name", icon = "filter"),
             step4_params = list(label = "Hyperparameters", icon = "sliders")
         )
 
@@ -519,19 +538,22 @@ mod_setup_server <- function(id, app_state) {
             meta <- step_meta[[app_state$current_wizard_step]]
             if (!is.null(meta)) {
                 syncGlassFlyout(
-                    session  = session,
+                    session = session,
                     navTarget = "setup",
                     flyoutLabel = meta$label,
-                    flyoutIcon  = meta$icon
+                    flyoutIcon = meta$icon
                 )
             }
         })
 
         # When the setup wizard tab is switched via the sidebar flyout,
         # the JS switchGlassTab sets the Shiny input. Keep app_state in sync.
-        observeEvent(input$setup_wizard, {
-            app_state$current_wizard_step <- input$setup_wizard
-        }, ignoreInit = TRUE)
+        observeEvent(input$setup_wizard,
+            {
+                app_state$current_wizard_step <- input$setup_wizard
+            },
+            ignoreInit = TRUE
+        )
     })
 }
 
@@ -548,24 +570,24 @@ mod_setup_server <- function(id, app_state) {
 #' @return A list of glassFlyoutItem elements
 #' @export
 mod_setup_flyout_items <- function(id) {
-  ns <- NS(id)
-  tabset_id <- ns("setup_wizard")
-  list(
-    glassFlyoutItem(
-      "setup", icon("upload"), "Upload Data",
-      tabset_id = tabset_id, tab_value = "step1_upload"
-    ),
-    glassFlyoutItem(
-      "setup", icon("columns"), "Map Columns",
-      tabset_id = tabset_id, tab_value = "step2_map"
-    ),
-    glassFlyoutItem(
-      "setup", icon("filter"), "Filter & Name",
-      tabset_id = tabset_id, tab_value = "step3_filter"
-    ),
-    glassFlyoutItem(
-      "setup", icon("sliders"), "Hyperparameters",
-      tabset_id = tabset_id, tab_value = "step4_params"
+    ns <- NS(id)
+    tabset_id <- ns("setup_wizard")
+    list(
+        glassFlyoutItem(
+            "setup", icon("upload"), "Upload Data",
+            tabset_id = tabset_id, tab_value = "step1_upload"
+        ),
+        glassFlyoutItem(
+            "setup", icon("columns"), "Map Columns",
+            tabset_id = tabset_id, tab_value = "step2_map"
+        ),
+        glassFlyoutItem(
+            "setup", icon("filter"), "Filter & Name",
+            tabset_id = tabset_id, tab_value = "step3_filter"
+        ),
+        glassFlyoutItem(
+            "setup", icon("sliders"), "Hyperparameters",
+            tabset_id = tabset_id, tab_value = "step4_params"
+        )
     )
-  )
 }

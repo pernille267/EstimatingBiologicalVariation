@@ -7,12 +7,30 @@
 mod_data_exploration_flyout_items(id)
 }
 \arguments{
-\item{id}{Namespace ID matching the module's ID}
+\item{id}{Character string. Namespace ID matching the `id` used in
+[mod_data_exploration_ui()] and [mod_data_exploration_server()].}
 }
 \value{
-A list of glassFlyoutItem elements
+A list of five [glassFlyoutItem()] tag objects, each bound to the
+  `"exploring"` navigation group and wired to a tab value in the
+  exploration tabset.
 }
 \description{
 Generates flyout menu items for the Data Exploration sidebar navigation.
-Each item targets a specific tab in the headless exploration tabset.
+Each [glassFlyoutItem()] targets a specific tab in the headless
+[glassTabsetPanel()] created by [mod_data_exploration_ui()], allowing the
+sidebar to drive tab switching via JavaScript.
+}
+\details{
+The returned items correspond to the five exploration tabs:
+\enumerate{
+  \item Data Overview
+  \item Exclude / Include
+  \item Prior Distributions
+  \item ANOVA & Descriptive
+  \item Bootstrap Estimates
+}
+}
+\seealso{
+[mod_data_exploration_ui()], [glassFlyoutItem()]
 }

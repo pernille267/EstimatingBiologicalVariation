@@ -1,13 +1,16 @@
 #' Glass D3 Plot Dependencies
 #'
-#' Loads D3.js (v7) and the glass_d3_plots JS/CSS assets.
-#' Call this once in your UI (e.g., in app.R or a layout wrapper).
+#' Loads D3.js (v7), UTIF.js (TIFF export) and the glass_d3_plots JS/CSS
+#' assets.  Call this once in your UI (e.g., in app.R or a layout wrapper).
 #'
 #' @return An \code{htmltools::tagList} containing the required dependencies.
 #' @export
 useGlassD3Plot <- function() { # nolint
   d3_head <- htmltools::tags$head(
-    htmltools::tags$script(src = "https://d3js.org/d3.v7.min.js")
+    htmltools::tags$script(src = "https://d3js.org/d3.v7.min.js"),
+    htmltools::tags$script(
+      src = "https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"
+    )
   )
 
   asset_path <- system.file("assets", package = "EstimatingBiologicalVariation")

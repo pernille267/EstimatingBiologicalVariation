@@ -28,82 +28,82 @@
 #' @export
 glassModelOverviewGrid <- function(ns, color = "purple") { # nolint
 
-    theme_class <- if (identical(color, "green")) {
-        "model-overview-grid theme-green"
-    } else {
-        "model-overview-grid"
-    }
+  theme_class <- if (identical(color, "green")) {
+    "model-overview-grid theme-green"
+  } else {
+    "model-overview-grid"
+  }
 
-    # Build the 2×2 grid -------------------------------------------------
-    grid_ui <- tags$div(
-        class = theme_class,
+  # Build the 2×2 grid -------------------------------------------------
+  grid_ui <- tags$div(
+    class = theme_class,
 
-        # ── Top-left: Analysis Data Summary ──
-        tags$div(
-            class = "overview-panel",
-            tags$div(
-                class = "overview-panel-header",
-                icon("database"),
-                tags$span("Analysis Data")
-            ),
-            tags$div(
-                class = "overview-panel-body",
-                uiOutput(ns("overview_data_summary"))
-            )
-        ),
+    # ── Top-left: Analysis Data Summary ──
+    tags$div(
+      class = "overview-panel",
+      tags$div(
+        class = "overview-panel-header",
+        icon("database"),
+        tags$span("Analysis Data")
+      ),
+      tags$div(
+        class = "overview-panel-body",
+        uiOutput(ns("overview_data_summary"))
+      )
+    ),
 
-        # ── Top-right: Sampler Configuration ──
-        tags$div(
-            class = "overview-panel",
-            tags$div(
-                class = "overview-panel-header",
-                icon("sliders-h"),
-                tags$span("Sampler Configuration")
-            ),
-            tags$div(
-                class = "overview-panel-body",
-                uiOutput(ns("overview_sampler_config"))
-            )
-        ),
+    # ── Top-right: Sampler Configuration ──
+    tags$div(
+      class = "overview-panel",
+      tags$div(
+        class = "overview-panel-header",
+        icon("sliders-h"),
+        tags$span("Sampler Configuration")
+      ),
+      tags$div(
+        class = "overview-panel-body",
+        uiOutput(ns("overview_sampler_config"))
+      )
+    ),
 
-        # ── Bottom-left: Sampler Diagnostics ──
-        tags$div(
-            class = "overview-panel",
-            tags$div(
-                class = "overview-panel-header",
-                icon("stethoscope"),
-                tags$span("Sampler Diagnostics")
-            ),
-            tags$div(
-                class = "overview-panel-body",
-                uiOutput(ns("overview_diagnostics"))
-            )
-        ),
+    # ── Bottom-left: Sampler Diagnostics ──
+    tags$div(
+      class = "overview-panel",
+      tags$div(
+        class = "overview-panel-header",
+        icon("stethoscope"),
+        tags$span("Sampler Diagnostics")
+      ),
+      tags$div(
+        class = "overview-panel-body",
+        uiOutput(ns("overview_diagnostics"))
+      )
+    ),
 
-        # ── Bottom-right: Recommendations ──
-        tags$div(
-            class = "overview-panel",
-            tags$div(
-                class = "overview-panel-header",
-                icon("lightbulb"),
-                tags$span("Recommendations")
-            ),
-            tags$div(
-                class = "overview-panel-body",
-                uiOutput(ns("overview_advice"))
-            )
-        )
+    # ── Bottom-right: Recommendations ──
+    tags$div(
+      class = "overview-panel",
+      tags$div(
+        class = "overview-panel-header",
+        icon("lightbulb"),
+        tags$span("Recommendations")
+      ),
+      tags$div(
+        class = "overview-panel-body",
+        uiOutput(ns("overview_advice"))
+      )
     )
+  )
 
-    # Return UI + dependency bundle ---------------------------------------
-    tagList(
-        grid_ui,
-        htmlDependency(
-            name = "glass-model-overview",
-            version = "1.0.0",
-            src = c(file = system.file("assets", package = "EstimatingBiologicalVariation")),
-            stylesheet = "glass_model_overview.css",
-            script = "glass_model_overview.js"
-        )
+  # Return UI + dependency bundle ---------------------------------------
+  tagList(
+    grid_ui,
+    htmlDependency(
+      name = "glass-model-overview",
+      version = "1.0.0",
+      src = c(file = system.file("assets", package = "EstimatingBiologicalVariation")),
+      stylesheet = "glass_model_overview.css",
+      script = "glass_model_overview.js"
     )
+  )
 }

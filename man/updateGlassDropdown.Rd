@@ -27,5 +27,6 @@ updateGlassDropdown(
 \item{color}{Optional. Color variant: "green" or "purple".}
 }
 \description{
-Updates the choices, selection, or disabled state of a glassDropdown on the client.
+Updates the choices, selection, or
+disabled state of a glassDropdown on the client.
 }

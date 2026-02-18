@@ -4,7 +4,7 @@
 \alias{build_prior_panel}
 \title{Build a Single Prior Panel Entry}
 \usage{
-build_prior_panel(parameter, label, is_cv, values, max_display = 5000L)
+build_prior_panel(parameter, label, is_cv, values, n_density = 256L)
 }
 \arguments{
 \item{parameter}{Parameter identifier string.}
@@ -15,12 +15,17 @@ build_prior_panel(parameter, label, is_cv, values, max_display = 5000L)
 
 \item{values}{Numeric vector of samples.}
 
-\item{max_display}{Maximum values to include in output.}
+\item{n_density}{Number of equally spaced points at which the
+density is evaluated (passed to \code{stats::density()}).}
 }
 \value{
-A list suitable for the \code{panels} array.
+A list suitable for the \code{panels} array, containing
+  pre-computed density (\code{x}, \code{y}), \code{mean},
+  \code{cri025}, and \code{cri975}.
 }
 \description{
-Build a Single Prior Panel Entry
+Computes a kernel density estimate on the R side and trims values
+above the 99.5th percentile to prevent extreme tails from
+distorting the density plot.
 }
 \keyword{internal}

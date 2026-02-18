@@ -186,6 +186,352 @@ function createButton(html, action, disabled) {
   return btn;
 }
 
+// --- TABLE DOWNLOAD LOGIC (CSV & XLSX) ---
+
+(function() {
+
+  // --- Get export data from embedded JSON script tag ---
+  function getExportData(container) {
+    var scriptEl = container.querySelector('script.glass-table-export-data');
+    if (!scriptEl) return null;
+    try {
+      return JSON.parse(scriptEl.textContent);
+    } catch (e) {
+      console.error('[GlassTable] Failed to parse export data:', e);
+      return null;
+    }
+  }
+
+  // --- CSV Builder ---
+  function buildCsv(data) {
+    var lines = [];
+    lines.push(data.columns.map(csvEscape).join(','));
+    data.rows.forEach(function(row) {
+      lines.push(row.map(function(val) {
+        if (val === null || val === undefined) return '';
+        return csvEscape(String(val));
+      }).join(','));
+    });
+    return lines.join('\r\n');
+  }
+
+  function csvEscape(val) {
+    if (val === null || val === undefined) return '';
+    var s = String(val);
+    if (s.indexOf(',') >= 0 || s.indexOf('"') >= 0 ||
+        s.indexOf('\n') >= 0 || s.indexOf('\r') >= 0) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  // --- XLSX Builder (minimal pure-JS, no external libraries) ---
+
+  // Column index to Excel reference (0 -> A, 25 -> Z, 26 -> AA)
+  function colRef(i) {
+    var r = '';
+    i++;
+    while (i > 0) {
+      i--;
+      r = String.fromCharCode(65 + (i % 26)) + r;
+      i = Math.floor(i / 26);
+    }
+    return r;
+  }
+
+  function escapeXml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+
+  function buildXlsx(data) {
+    // Shared strings pool
+    var sharedStrings = [];
+    var ssMap = {};
+    function getSSIndex(str) {
+      str = String(str);
+      if (ssMap.hasOwnProperty(str)) return ssMap[str];
+      var idx = sharedStrings.length;
+      sharedStrings.push(str);
+      ssMap[str] = idx;
+      return idx;
+    }
+
+    // Index headers
+    data.columns.forEach(function(h) { getSSIndex(h); });
+
+    // Build worksheet XML
+    var sp = [];
+    sp.push('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>');
+    sp.push('<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">');
+    sp.push('<sheetData>');
+
+    // Header row (style s="1" = bold)
+    sp.push('<row r="1">');
+    data.columns.forEach(function(col, ci) {
+      sp.push('<c r="' + colRef(ci) + '1" t="s" s="1"><v>' +
+        getSSIndex(col) + '</v></c>');
+    });
+    sp.push('</row>');
+
+    // Data rows
+    data.rows.forEach(function(row, ri) {
+      var rowNum = ri + 2;
+      sp.push('<row r="' + rowNum + '">');
+      row.forEach(function(val, ci) {
+        var ref = colRef(ci) + rowNum;
+        if (val === null || val === undefined) return;
+        var type = data.types ? data.types[ci] : 'string';
+        if (type === 'number' && !isNaN(Number(val))) {
+          sp.push('<c r="' + ref + '"><v>' + val + '</v></c>');
+        } else {
+          sp.push('<c r="' + ref + '" t="s"><v>' +
+            getSSIndex(String(val)) + '</v></c>');
+        }
+      });
+      sp.push('</row>');
+    });
+    sp.push('</sheetData></worksheet>');
+    var sheetXml = sp.join('');
+
+    // Shared strings XML
+    var ssp = [];
+    ssp.push('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>');
+    ssp.push('<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"' +
+      ' count="' + sharedStrings.length + '" uniqueCount="' + sharedStrings.length + '">');
+    sharedStrings.forEach(function(s) {
+      ssp.push('<si><t>' + escapeXml(s) + '</t></si>');
+    });
+    ssp.push('</sst>');
+    var ssXml = ssp.join('');
+
+    // Content Types
+    var contentTypes =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+      '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+      '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+      '<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>' +
+      '</Types>';
+
+    // Root relationships
+    var rels =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+      '</Relationships>';
+
+    // Workbook
+    var workbook =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"' +
+      ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+      '<sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>';
+
+    // Workbook relationships
+    var wbRels =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+      '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>' +
+      '</Relationships>';
+
+    // Styles (index 0 = normal, index 1 = bold header)
+    var styles =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      '<fonts count="2">' +
+        '<font><sz val="11"/><name val="Calibri"/></font>' +
+        '<font><b/><sz val="11"/><name val="Calibri"/></font>' +
+      '</fonts>' +
+      '<fills count="2">' +
+        '<fill><patternFill patternType="none"/></fill>' +
+        '<fill><patternFill patternType="gray125"/></fill>' +
+      '</fills>' +
+      '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
+      '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+      '<cellXfs count="2">' +
+        '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+        '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>' +
+      '</cellXfs>' +
+      '</styleSheet>';
+
+    // Bundle into ZIP (stored, no compression)
+    var files = [
+      { name: '[Content_Types].xml', content: contentTypes },
+      { name: '_rels/.rels', content: rels },
+      { name: 'xl/workbook.xml', content: workbook },
+      { name: 'xl/_rels/workbook.xml.rels', content: wbRels },
+      { name: 'xl/worksheets/sheet1.xml', content: sheetXml },
+      { name: 'xl/styles.xml', content: styles },
+      { name: 'xl/sharedStrings.xml', content: ssXml }
+    ];
+
+    return createZip(files);
+  }
+
+  // --- Minimal ZIP builder (stored, no compression) ---
+
+  var crcTable = null;
+  function getCrcTable() {
+    if (crcTable) return crcTable;
+    crcTable = new Uint32Array(256);
+    for (var n = 0; n < 256; n++) {
+      var c = n;
+      for (var k = 0; k < 8; k++) {
+        c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      }
+      crcTable[n] = c;
+    }
+    return crcTable;
+  }
+
+  function crc32(data) {
+    var table = getCrcTable();
+    var crc = 0xFFFFFFFF;
+    for (var i = 0; i < data.length; i++) {
+      crc = (crc >>> 8) ^ table[(crc ^ data[i]) & 0xFF];
+    }
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function createZip(files) {
+    var encoder = new TextEncoder();
+    var centralDir = [];
+    var localParts = [];
+    var offset = 0;
+
+    files.forEach(function(file) {
+      var nameBytes = encoder.encode(file.name);
+      var dataBytes = encoder.encode(file.content);
+      var crc = crc32(dataBytes);
+
+      // Local file header (30 bytes) + name + data
+      var localBuf = new ArrayBuffer(30 + nameBytes.length + dataBytes.length);
+      var lv = new DataView(localBuf);
+      var lu = new Uint8Array(localBuf);
+      lv.setUint32(0, 0x04034b50, true);
+      lv.setUint16(4, 20, true);
+      lv.setUint16(6, 0, true);
+      lv.setUint16(8, 0, true);
+      lv.setUint16(10, 0, true);
+      lv.setUint16(12, 0, true);
+      lv.setUint32(14, crc, true);
+      lv.setUint32(18, dataBytes.length, true);
+      lv.setUint32(22, dataBytes.length, true);
+      lv.setUint16(26, nameBytes.length, true);
+      lv.setUint16(28, 0, true);
+      lu.set(nameBytes, 30);
+      lu.set(dataBytes, 30 + nameBytes.length);
+      localParts.push(lu);
+
+      // Central directory header (46 bytes) + name
+      var cdBuf = new ArrayBuffer(46 + nameBytes.length);
+      var cv = new DataView(cdBuf);
+      var cu = new Uint8Array(cdBuf);
+      cv.setUint32(0, 0x02014b50, true);
+      cv.setUint16(4, 20, true);
+      cv.setUint16(6, 20, true);
+      cv.setUint16(8, 0, true);
+      cv.setUint16(10, 0, true);
+      cv.setUint16(12, 0, true);
+      cv.setUint16(14, 0, true);
+      cv.setUint32(16, crc, true);
+      cv.setUint32(20, dataBytes.length, true);
+      cv.setUint32(24, dataBytes.length, true);
+      cv.setUint16(28, nameBytes.length, true);
+      cv.setUint16(30, 0, true);
+      cv.setUint16(32, 0, true);
+      cv.setUint16(34, 0, true);
+      cv.setUint16(36, 0, true);
+      cv.setUint32(38, 0, true);
+      cv.setUint32(42, offset, true);
+      cu.set(nameBytes, 46);
+      centralDir.push(cu);
+
+      offset += lu.length;
+    });
+
+    // End of central directory (22 bytes)
+    var cdSize = centralDir.reduce(function(a, b) { return a + b.length; }, 0);
+    var eocdBuf = new ArrayBuffer(22);
+    var ev = new DataView(eocdBuf);
+    ev.setUint32(0, 0x06054b50, true);
+    ev.setUint16(4, 0, true);
+    ev.setUint16(6, 0, true);
+    ev.setUint16(8, files.length, true);
+    ev.setUint16(10, files.length, true);
+    ev.setUint32(12, cdSize, true);
+    ev.setUint32(16, offset, true);
+    ev.setUint16(20, 0, true);
+
+    // Concatenate all parts
+    var allParts = localParts.concat(centralDir, [new Uint8Array(eocdBuf)]);
+    var totalLen = allParts.reduce(function(a, b) { return a + b.length; }, 0);
+    var result = new Uint8Array(totalLen);
+    var pos = 0;
+    allParts.forEach(function(part) {
+      result.set(part, pos);
+      pos += part.length;
+    });
+    return result.buffer;
+  }
+
+  // --- Download trigger (Blob + anchor) ---
+  function triggerDownload(content, filename, mimeType) {
+    var blob;
+    if (content instanceof ArrayBuffer) {
+      blob = new Blob([content], { type: mimeType });
+    } else {
+      blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
+    }
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 100);
+  }
+
+  // --- Delegated click handler for download buttons ---
+  $(document).off('click', '.glass-table-dl-btn').on('click', '.glass-table-dl-btn', function(e) {
+    e.preventDefault();
+    var btn = $(this);
+    var container = btn.closest('.glass-table-container');
+    if (!container.length) return;
+
+    var data = getExportData(container[0]);
+    if (!data) {
+      console.error('[GlassTable] No export data found for download.');
+      return;
+    }
+
+    var format = btn.data('format');
+    var filename = data.filename || 'table_export';
+
+    if (format === 'csv') {
+      // BOM prefix ensures Excel handles UTF-8 correctly
+      var csv = '\ufeff' + buildCsv(data);
+      triggerDownload(csv, filename + '.csv', 'text/csv');
+    } else if (format === 'xlsx') {
+      var xlsx = buildXlsx(data);
+      triggerDownload(xlsx, filename + '.xlsx',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
+  });
+
+})();
+
 // --- SORTING LOGIC ---
 
 function sortTable(table, header) {

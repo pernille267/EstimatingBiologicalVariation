@@ -1,7 +1,8 @@
 #' Render a Custom Glass Table (Table-based Layout)
-#' 
-#' NEED ADD: Search functionality (client-side) and integrated
-#' download button in the future.
+#'
+#' Renders a styled data table with optional sidebar, sorting,
+#' pagination, and integrated download buttons for CSV and Excel
+#' export. Exported data is stripped of any HTML markup.
 #'
 #' @param data A data.frame or data.table.
 #' @param col_names Optional vector of column names.
@@ -12,16 +13,22 @@
 #' @param excluded_rows Vector of row indices to mark
 #'  as excluded (red styling).
 #' @param highlight_cells A list where names are specific
-#'  cell values (strings) that may may appear, and the list 
+#'  cell values (strings) that may may appear, and the list
 #'  list values are the HTML replacement.
 #' @param sortable Logical.
 #' @param rounded Character. Where to round corners:
 #'   \code{"all"} (default) or \code{"bottom"}
 #'   (flat top, rounded bottom).
-#' 
+#' @param downloadable Logical. If \code{TRUE}, render CSV and
+#'  Excel download buttons in a toolbar above the table.
+#' @param download_filename Character. Base filename (without
+#'  extension) used when downloading. Defaults to
+#'  \code{"table_export"}.
+#'
 #' @importFrom htmltools tagList tags htmlDependency HTML
 #' @importFrom data.table is.data.table as.data.table
 #' @importFrom shiny withMathJax
+#' @importFrom jsonlite toJSON
 #' @export
 renderGlassTable <- function(data, # nolint
                              col_names = NULL,
@@ -32,8 +39,9 @@ renderGlassTable <- function(data, # nolint
                              excluded_rows = NULL,
                              highlight_cells = NULL,
                              sortable = TRUE,
-                             rounded = "all") {
-  
+                             rounded = "all",
+                             downloadable = FALSE,
+                             download_filename = "table_export") {
   # data must be a data.table for efficient processing.
   if (!data.table::is.data.table(data)) {
     data <- tryCatch(
@@ -88,8 +96,8 @@ renderGlassTable <- function(data, # nolint
     # What is the first value is missing or is not interpretable as numeric?
     # We might want to consider looking at more values to be sure
     # (e.g., check the first 5 non-NA values).
-    is_numeric_ish <- is.numeric(first_val) || 
-      (is.character(first_val) && grepl("^[0-9.% ]+$", first_val))
+    is_numeric_ish <- is.numeric(first_val) ||
+      (is.character(first_val) && grepl("^[<> 0-9.%,]+$", first_val))
     header_align <- if (is_numeric_ish) {
       "center"
     } else {
@@ -146,7 +154,7 @@ renderGlassTable <- function(data, # nolint
 
       # Auto-Align Body Cells
       is_numeric_ish <- is.numeric(val) ||
-       (is.character(val) && grepl("^[0-9.% ]+$", val))
+        (is.character(val) && grepl("^[<> 0-9.%,]+$", val))
       body_align <- if (is_numeric_ish) {
         "center"
       } else {
@@ -180,7 +188,7 @@ renderGlassTable <- function(data, # nolint
   pagination_footer <- htmltools::tags$div(class = "glass-pagination-container")
 
   # --- Caption ----------------------------------------------------------------
-  caption_html <- if (!is.null(caption)) {
+  caption_el <- if (!is.null(caption)) {
     htmltools::tags$div(
       class = "glass-table-caption",
       htmltools::HTML(caption)
@@ -189,14 +197,95 @@ renderGlassTable <- function(data, # nolint
     NULL
   }
 
+  # --- Download Toolbar -------------------------------------------------------
+  download_toolbar <- NULL
+  export_script <- NULL
+
+  if (downloadable) {
+    # Strip HTML tags from strings for clean export
+    strip_html <- function(x) gsub("<[^>]+>", "", as.character(x))
+
+    export_columns <- vapply(
+      col_names, strip_html, character(1),
+      USE.NAMES = FALSE
+    )
+    export_types <- vapply(data, function(col) {
+      if (is.numeric(col)) "number" else "string"
+    }, character(1), USE.NAMES = FALSE)
+
+    export_rows <- lapply(seq_len(nrow(data)), function(i) {
+      lapply(seq_along(data), function(j) {
+        val <- data[[j]][i]
+        if (is.na(val)) {
+          return(NULL)
+        }
+        if (is.numeric(val)) {
+          return(val)
+        }
+        strip_html(as.character(val))
+      })
+    })
+
+    export_data <- list(
+      columns = export_columns,
+      types = export_types,
+      rows = export_rows,
+      filename = download_filename
+    )
+    export_json <- jsonlite::toJSON(
+      export_data,
+      auto_unbox = TRUE, null = "null"
+    )
+
+    export_script <- htmltools::tags$script(
+      type = "application/json",
+      class = "glass-table-export-data",
+      htmltools::HTML(as.character(export_json))
+    )
+
+    download_toolbar <- htmltools::tags$div(
+      class = "glass-table-download-actions",
+      htmltools::tags$button(
+        class = "glass-table-dl-btn",
+        `data-format` = "csv",
+        title = "Download as CSV",
+        htmltools::tags$i(class = "fas fa-file-csv"),
+        " CSV"
+      ),
+      htmltools::tags$button(
+        class = "glass-table-dl-btn",
+        `data-format` = "xlsx",
+        title = "Download as Excel",
+        htmltools::tags$i(class = "fas fa-file-excel"),
+        " Excel"
+      )
+    )
+  }
+
+  # Combine caption and download into a toolbar when downloadable
+  if (downloadable) {
+    toolbar_cls <- "glass-table-toolbar"
+    if (is.null(caption_el)) {
+      toolbar_cls <- paste(toolbar_cls, "download-only")
+    }
+    top_section <- htmltools::tags$div(
+      class = toolbar_cls,
+      caption_el,
+      download_toolbar
+    )
+  } else {
+    top_section <- caption_el
+  }
+
   # --- Final Assembly ---------------------------------------------------------
   container_cls <- "glass-table-container"
   if (rounded == "bottom") container_cls <- paste(container_cls, "glass-table-round-bottom")
 
   ui <- htmltools::tags$div(
     class = container_cls,
-    `data-page-size` = "25", # <--- ADD THIS (Configurable in future if you want)
-    caption_html,
+    `data-page-size` = "25",
+    export_script,
+    top_section,
     htmltools::tags$div(
       class = "glass-table-main",
       sidebar_col,

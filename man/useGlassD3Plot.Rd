@@ -10,6 +10,6 @@ useGlassD3Plot()
 An \code{htmltools::tagList} containing the required dependencies.
 }
 \description{
-Loads D3.js (v7) and the glass_d3_plots JS/CSS assets.
-Call this once in your UI (e.g., in app.R or a layout wrapper).
+Loads D3.js (v7), UTIF.js (TIFF export) and the glass_d3_plots JS/CSS
+assets.  Call this once in your UI (e.g., in app.R or a layout wrapper).
 }

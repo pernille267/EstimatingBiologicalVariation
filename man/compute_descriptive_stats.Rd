@@ -4,11 +4,15 @@
 \alias{compute_descriptive_stats}
 \title{Compute Descriptive Statistics from Analysis Data}
 \usage{
-compute_descriptive_stats(data)
+compute_descriptive_stats(data, log_transformed = FALSE)
 }
 \arguments{
 \item{data}{A \code{data.table} with columns
 \code{y}, \code{SubjectID}, \code{SampleID}.}
+
+\item{log_transformed}{Logical.  If \code{TRUE} the
+\code{y} values are log-transformed and
+CVs are derived via \code{\link{lognormal_sd_to_cv}}.}
 }
 \value{
 A named list with \code{grand_summary},

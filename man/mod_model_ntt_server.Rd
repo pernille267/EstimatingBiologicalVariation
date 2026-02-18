@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_model_ntt.R
 \name{mod_model_ntt_server}
 \alias{mod_model_ntt_server}
-\title{Model 1 (NTT) Module Server}
+\title{Model 1 (NTT/NNN/NTN/NNT) Module Server}
 \usage{
 mod_model_ntt_server(id, app_state)
 }
@@ -12,5 +12,5 @@ mod_model_ntt_server(id, app_state)
 \item{app_state}{reactiveValues object containing shared application state}
 }
 \description{
-Model 1 (NTT) Module Server
+Model 1 (NTT/NNN/NTN/NNT) Module Server
 }

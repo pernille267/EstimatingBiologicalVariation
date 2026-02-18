@@ -37,7 +37,7 @@
 /* ---- Titles ---- */
 .gd3-title {
   font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   fill: #000;
   text-anchor: middle;
@@ -46,7 +46,7 @@
 
 .gd3-subtitle {
   font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 400;
   fill: #555;
   text-anchor: middle;
@@ -62,13 +62,13 @@
 
 .gd3-axis text {
   font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
-  font-size: 10.5px;
+  font-size: 13px;
   fill: #333;
 }
 
 .gd3-axis-label {
   font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   fill: #000;
   text-anchor: middle;
@@ -109,14 +109,15 @@
 
 /* ---- Population Band (green shading for CVI plots) ---- */
 .gd3-pop-band {
-  fill: #28A745;
-  fill-opacity: 0.10;
+  fill-opacity: 1;
+  pointer-events: none;
 }
 
 .gd3-pop-line {
   stroke: #1a702e;
   stroke-width: 1.2px;
   stroke-dasharray: none;
+  pointer-events: none;
 }
 
 /* ---- Reference Lines (RCV plots) ---- */
@@ -124,17 +125,22 @@
   stroke: #605CA8;
   stroke-width: 1.5px;
   stroke-dasharray: 6,3;
+  pointer-events: none;
 }
 
 /* ---- Error Bars ---- */
 .gd3-errbar {
   stroke: #333;
-  stroke-width: 1.2px;
+  stroke-width: 2.5px;
+  transition: stroke-width 0.15s ease;
+  cursor: pointer;
 }
 
 .gd3-errbar-cap {
   stroke: #333;
-  stroke-width: 1.2px;
+  stroke-width: 2.5px;
+  transition: stroke-width 0.15s ease;
+  cursor: pointer;
 }
 
 /* ---- Data Points ---- */
@@ -188,12 +194,17 @@
 /* ---- Zoom Capture ---- */
 .gd3-zoom-rect {
   fill: transparent;
-  pointer-events: all;
-  cursor: grab;
+  pointer-events: none;
+  cursor: default;
 }
 
-.gd3-zoom-rect:active {
-  cursor: grabbing;
+.gd3-zoom-rect.gd3-ctrl-active {
+  pointer-events: all;
+  cursor: zoom-in;
+}
+
+.gd3-zoom-rect.gd3-ctrl-active:active {
+  cursor: zoom-in;
 }
 
 .gd3-hover-rect {
@@ -204,8 +215,8 @@
 .gd3-tooltip {
   position: fixed;
   text-align: left;
-  padding: 8px 10px;
-  font: 12px/1.4 'Source Sans Pro', 'Segoe UI', sans-serif;
+  padding: 10px 14px;
+  font: 14px/1.4 'Source Sans Pro', 'Segoe UI', sans-serif;
   background: #605CA8;
   color: white;
   border-radius: 5px;
@@ -391,6 +402,51 @@
 
 .gd3-toolbar-btn-reset:hover .gd3-toolbar-btn-icon {
   color: #4d4a8e;
+}
+
+/* --- Toolbar Separator --- */
+.gd3-toolbar-separator {
+  display: inline-block;
+  width: 1px;
+  height: 22px;
+  background: linear-gradient(180deg, transparent 0%, rgba(96, 92, 168, 0.25) 30%, rgba(96, 92, 168, 0.25) 70%, transparent 100%);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* --- Data Export Buttons (Green Variant) --- */
+.gd3-toolbar-btn-data {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #43a047 0%, #388e3c 50%, #2e7d32 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 3px 8px rgba(56, 142, 60, 0.3);
+}
+
+.gd3-toolbar-btn-data .gd3-toolbar-btn-icon {
+  background-color: #ffffff;
+  color: #2e7d32;
+  box-shadow: inset -2px 0 4px rgba(56, 142, 60, 0.1);
+}
+
+.gd3-toolbar-btn-data .gd3-toolbar-btn-label {
+  color: #ffffff;
+}
+
+.gd3-toolbar-btn-data:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    0 6px 16px rgba(56, 142, 60, 0.4);
+  filter: brightness(1.08);
+}
+
+.gd3-toolbar-btn-data:hover .gd3-toolbar-btn-icon {
+  color: #1b5e20;
+}
+
+.gd3-toolbar-btn-data:active {
+  filter: brightness(0.95);
 }
 
 /* --- Scroll Toggle Button --- */

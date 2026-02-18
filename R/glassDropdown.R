@@ -157,7 +157,8 @@ glassDropdown <- function(inputId, # nolint
 
 #' Update Glass Dropdown
 #'
-#' Updates the choices, selection, or disabled state of a glassDropdown on the client.
+#' Updates the choices, selection, or
+#' disabled state of a glassDropdown on the client.
 #'
 #' @param session The Shiny session object.
 #' @param inputId The id of the input object.
@@ -172,8 +173,8 @@ updateGlassDropdown <- function(session, inputId, # nolint
                                 selected = NULL,
                                 disabled = NULL,
                                 color = NULL) {
-  fullId <- session$ns(inputId)
-  message <- list(id = fullId)
+  full_id <- session$ns(inputId)
+  message <- list(id = full_id)
 
   # Handle Choices (Split Labels/Values)
   if (!is.null(choices)) {

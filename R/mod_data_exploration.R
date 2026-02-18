@@ -14,14 +14,48 @@
 
 #' Data Exploration Module UI
 #'
-#' @param id Namespace ID for the module
-#' @return Shiny UI elements for the data exploration page
+#' Builds the user interface for the Data Exploration page, which provides
+#' five tabbed views inside a single [glassCard()]:
+#'
+#' \enumerate{
+#'   \item **Data Overview** — read-only [renderGlassTable()] of the current
+#'         analysis data.
+#'   \item **Exclude / Include** — interactive D3 scatter plot and clickable
+#'         table for toggling individual observations in or out of the analysis
+#'         set. Includes per-subject filtering and combined/faceted view modes.
+#'   \item **Prior Distributions** — D3 density plots of the current
+#'         hyperparameter priors (\eqn{\beta}, CV\subscript{I}, CV\subscript{A},
+#'         CV\subscript{G}, etc.).
+#'   \item **ANOVA & Descriptive Statistics** — dot-plots, grand/subject/sample
+#'         summary tables, ANOVA variance-component plots and tables.
+#'   \item **Bootstrap Estimates** — non-parametric bootstrap confidence
+#'         intervals via [bv_anova_bootstrap_ci()], with a comparison table
+#'         against the classical ANOVA (Burdick–Graybill) intervals.
+#' }
+#'
+#' Navigation between tabs is driven by the headless [glassTabsetPanel()]
+#' whose tab values are exposed through [mod_data_exploration_flyout_items()].
+#'
+#' @param id Character string. Shiny namespace ID for the module, used to
+#'   scope all input/output IDs via [shiny::NS()].
+#'
+#' @return A [shiny::tagList()] containing the complete exploration UI,
+#'   including an [htmltools::htmlDependency()] for the module-specific
+#'   JavaScript and CSS assets (`glass_data_exploration.js`,
+#'   `glass_data_exploration.css`).
+#'
+#' @seealso [mod_data_exploration_server()] for the companion server logic,
+#'   [mod_data_exploration_flyout_items()] for sidebar navigation entries.
+#'
+#' @keywords internal
+#' @importFrom htmltools htmlDependency
+#' @importFrom shiny icon NS uiOutput
 mod_data_exploration_ui <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
 
-  tagList(
+  shiny::tagList(
     # Exploration-specific CSS / JS assets
-    htmlDependency(
+    htmltools::htmlDependency(
       name = "glass-data-exploration",
       version = "1.0.0",
       src = c(
@@ -146,22 +180,16 @@ mod_data_exploration_ui <- function(id) {
               icon = icon("table"),
               glassRow(
                 glassCol(
-                  4,
+                  6,
                   label = "Grand Summary",
                   label_underline = TRUE,
                   uiOutput(ns("grand_summary_table_ui"))
                 ),
                 glassCol(
-                  4,
+                  6,
                   label = "Per-Subject Summary",
                   label_underline = TRUE,
                   uiOutput(ns("subject_summary_table_ui"))
-                ),
-                glassCol(
-                  4,
-                  label = "Per-Sample Summary",
-                  label_underline = TRUE,
-                  uiOutput(ns("sample_summary_table_ui"))
                 )
               )
             ),
@@ -248,7 +276,10 @@ mod_data_exploration_ui <- function(id) {
               glassRow(
                 glassCol(
                   12,
-                  uiOutput(ns("bootstrap_plot_area_ui"))
+                  glassD3PlotOutput(
+                    outputId = ns("bootstrap_plot"),
+                    height = "350px"
+                  )
                 )
               )
             ),
@@ -282,11 +313,90 @@ mod_data_exploration_ui <- function(id) {
 
 #' Data Exploration Module Server
 #'
-#' @param id Namespace ID for the module
-#' @param app_state reactiveValues object containing shared application state
+#' Server-side logic for the Data Exploration page.
+#'
+#' @details
+#' ## Reactive pipeline
+#'
+#' The central data flow is:
+#'
+#' \deqn{\texttt{filtered\_data} - \texttt{excluded\_rows} =
+#'  \texttt{analysis\_data}}
+#'
+#' `filtered_data` and `excluded_rows` are read from `app_state`; the derived
+#' `analysis_data` is written back into `app_state` so that downstream modules
+#' (modelling, results) operate on the same cleaned dataset.
+#'
+#' ## Key responsibilities
+#'
+#' \itemize{
+#'   \item **Exclusion pipeline** — an [observe()] derives `analysis_data`
+#'         whenever `filtered_data` or `excluded_rows` change.
+#'   \item **Descriptive statistics** — a [shiny::reactive()] wrapping
+#'         [compute_descriptive_stats()] that returns grand, subject, and
+#'         sample summaries.
+#'   \item **ANOVA estimates** — a [shiny::reactive()] wrapping
+#'         [compute_anova_estimates()] (classical Burdick–Graybill CIs).
+#'   \item **Bootstrap CIs** — triggered on button click; calls
+#'         [bv_anova_bootstrap_ci()] with integer-coded data prepared for the
+#'         C++ back-end.
+#'   \item **Scatter plot** — renders an interactive D3 scatter via
+#'         [updateGlassD3Plot()]; supports subject filtering and
+#'         combined/faceted view modes.
+#'   \item **Click handlers** — `observeEvent()` handlers for scatter-point
+#'         clicks and table-row clicks that toggle rows between included and
+#'         excluded status.
+#'   \item **Prior density plots** — re-rendered whenever hyperparameter
+#'         values in `app_state` change.
+#' }
+#'
+#' All `renderUI` outputs use `suspendWhenHidden = FALSE` so that tab content
+#' stays up-to-date even when the tab is not currently visible.
+#'
+#' @param id Character string. Shiny namespace ID for the module (must match
+#'   the `id` passed to [mod_data_exploration_ui()]).
+#' @param app_state A [shiny::reactiveValues()] object containing shared
+#'   application state. The following fields are **read**:
+#'   \describe{
+#'     \item{`filtered_data`}{A [data.table::data.table()] of the current
+#'       dataset after column mapping and any upstream filters have been
+#'       applied. Must contain columns `SubjectID`, `SampleID`,
+#'       `ReplicateID`, and `y`.}
+#'     \item{`excluded_rows`}{A [data.table::data.table()] with columns
+#'       `SubjectID`, `SampleID`, `ReplicateID` identifying rows to exclude.}
+#'     \item{`log_transformed`}{Logical flag indicating whether values are on
+#'       the log scale.}
+#'     \item{`hyper_beta`, `hyper_cvi`, `hyper_cva`, `hyper_cvg`,
+#'       `hyper_dfi`, `hyper_dfa`, `hyper_hbhr`}{Numeric hyperparameter
+#'       centres used for prior density plots.}
+#'     \item{`hyper_*_weakness`}{Numeric weakness/strength multipliers
+#'       for each hyperparameter prior.}
+#'   }
+#'   The following field is **written**:
+#'   \describe{
+#'     \item{`analysis_data`}{The cleaned [data.table::data.table()] after
+#'       exclusions have been applied (i.e., `filtered_data` minus
+#'       `excluded_rows`).}
+#'   }
+#'
+#' @return Called for its side effects (registers outputs and observers inside
+#'   the Shiny module). No meaningful return value.
+#'
+#' @seealso [mod_data_exploration_ui()] for the companion UI,
+#'   [compute_descriptive_stats()], [compute_anova_estimates()],
+#'   [bv_anova_bootstrap_ci()] for the underlying computations.
+#'
+#' @keywords internal
+#' @importFrom data.table copy rbindlist setkey
+#' @importFrom shiny icon isolate moduleServer observe observeEvent reactive
+#' @importFrom shiny reactiveVal renderUI req
 mod_data_exploration_server <- function(id, app_state) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    # Fix global binding issues
+    SubjectID <- SampleID <- ReplicateID <- NULL # nolint
+    `.row_idx` <- NULL
 
     # =========================================================================
     # Exclusion -> Analysis Data Pipeline
@@ -296,7 +406,7 @@ mod_data_exploration_server <- function(id, app_state) {
       .t <- bv_timer_start("explore::build_analysis_data")
       req(app_state$filtered_data)
 
-      data <- copy(app_state$filtered_data)
+      data <- data.table::copy(app_state$filtered_data)
       excluded <- app_state$excluded_rows
 
       if (nrow(excluded) == 0) {
@@ -305,8 +415,8 @@ mod_data_exploration_server <- function(id, app_state) {
         return()
       }
 
-      setkey(data, SubjectID, SampleID, ReplicateID)
-      setkey(excluded, SubjectID, SampleID, ReplicateID)
+      data.table::setkey(data, SubjectID, SampleID, ReplicateID)
+      data.table::setkey(excluded, SubjectID, SampleID, ReplicateID)
 
       data <- data[!excluded]
       app_state$analysis_data <- data
@@ -320,7 +430,10 @@ mod_data_exploration_server <- function(id, app_state) {
     descriptive_stats <- reactive({
       .t <- bv_timer_start("explore::descriptive_stats")
       req(app_state$analysis_data, nrow(app_state$analysis_data) > 0)
-      result <- compute_descriptive_stats(app_state$analysis_data)
+      result <- compute_descriptive_stats(
+        app_state$analysis_data,
+        log_transformed = isTRUE(app_state$log_transformed)
+      )
       bv_timer_end(.t)
       result
     })
@@ -350,8 +463,11 @@ mod_data_exploration_server <- function(id, app_state) {
       result <- renderGlassTable(
         data = data,
         caption = paste0(
-          "Showing <strong>", nrow(data), "</strong> observations across <strong>",
-          length(unique(data$SubjectID)), "</strong> subjects"
+          "Showing <strong>",
+          nrow(data),
+          "</strong> observations across <strong>",
+          length(unique(data$SubjectID)),
+          "</strong> subjects"
         ),
         sortable = TRUE
       )
@@ -366,10 +482,17 @@ mod_data_exploration_server <- function(id, app_state) {
     # --- Subject filter UI (selectize in toolbar) ---
     output$subject_filter_ui <- renderUI({
       req(app_state$filtered_data)
-      subjects <- sort(unique(as.character(app_state$filtered_data$SubjectID)))
+      subjects <- sort(
+        unique(
+          as.character(app_state$filtered_data$SubjectID)
+        )
+      )
       glassSelectizeInput(
         inputId = ns("subject_filter"),
-        choices = c("All" = "all", stats::setNames(subjects, subjects)),
+        choices = c(
+          "All" = "all",
+          stats::setNames(subjects, subjects)
+        ),
         selected = "all",
         multiple = TRUE,
         placeholder = "All subjects",
@@ -382,10 +505,17 @@ mod_data_exploration_server <- function(id, app_state) {
     # --- Table subject filter UI (selectize in toolbar) ---
     output$table_subject_filter_ui <- renderUI({
       req(app_state$filtered_data)
-      subjects <- sort(unique(as.character(app_state$filtered_data$SubjectID)))
+      subjects <- sort(
+        unique(
+          as.character(app_state$filtered_data$SubjectID)
+        )
+      )
       glassSelectizeInput(
         inputId = ns("table_subject_filter"),
-        choices = c("All" = "all", stats::setNames(subjects, subjects)),
+        choices = c(
+          "All" = "all",
+          stats::setNames(subjects, subjects)
+        ),
         selected = "all",
         multiple = TRUE,
         placeholder = "All subjects",
@@ -438,14 +568,18 @@ mod_data_exploration_server <- function(id, app_state) {
       # Subject filter (isolated — read current value without subscribing)
       selected_subjects <- isolate(input$subject_filter)
       if (!is.null(selected_subjects) &&
-          length(selected_subjects) > 0 &&
-          !("all" %in% selected_subjects)) {
+        length(selected_subjects) > 0 &&
+        !("all" %in% selected_subjects)) {
         data <- data[as.character(SubjectID) %in% selected_subjects]
       }
 
       # View mode (isolated)
       n_subjects <- length(unique(app_state$filtered_data$SubjectID))
-      default_view <- if (n_subjects <= 15) "faceted" else "combined"
+      default_view <- if (n_subjects <= 15) {
+        "faceted"
+      } else {
+        "combined"
+      }
       view_mode <- isolate(input$scatter_view_mode) %||% default_view
 
       scatter_data <- prepare_exploration_scatter_d3(
@@ -525,14 +659,14 @@ mod_data_exploration_server <- function(id, app_state) {
       req(click_info, app_state$filtered_data)
 
       row_idx <- click_info$row
-      action  <- click_info$action
-      data    <- app_state$filtered_data
+      action <- click_info$action
+      data <- app_state$filtered_data
 
       # Apply the same subject filter so row_idx matches the displayed table
       selected_subjects <- input$table_subject_filter
       if (!is.null(selected_subjects) &&
-          length(selected_subjects) > 0 &&
-          !("all" %in% selected_subjects)) {
+        length(selected_subjects) > 0 &&
+        !("all" %in% selected_subjects)) {
         data <- data[as.character(SubjectID) %in% selected_subjects]
       }
 
@@ -575,8 +709,8 @@ mod_data_exploration_server <- function(id, app_state) {
       # Subject filter for table view
       selected_subjects <- input$table_subject_filter
       if (!is.null(selected_subjects) &&
-          length(selected_subjects) > 0 &&
-          !("all" %in% selected_subjects)) {
+        length(selected_subjects) > 0 &&
+        !("all" %in% selected_subjects)) {
         data <- data[as.character(SubjectID) %in% selected_subjects]
       }
 
@@ -592,15 +726,20 @@ mod_data_exploration_server <- function(id, app_state) {
         excluded_indices <- sort(matched$.row_idx)
       }
 
-      n_total    <- nrow(data)
+      n_total <- nrow(data)
       n_excluded <- length(excluded_indices)
       n_analysis <- n_total - n_excluded
 
       caption_text <- if (n_excluded > 0) {
         paste0(
-          n_total, " total rows &mdash; ",
-          "<strong>", n_analysis, "</strong> in analysis, ",
-          "<span style='color:#dc3545;'>", n_excluded, " excluded</span>"
+          n_total,
+          " total rows &mdash; ",
+          "<strong>",
+          n_analysis,
+          "</strong> in analysis, ",
+          "<span style='color:#dc3545;'>",
+          n_excluded,
+          " excluded</span>"
         )
       } else {
         paste0(n_total, " rows in analysis")
@@ -615,7 +754,12 @@ mod_data_exploration_server <- function(id, app_state) {
           caption = caption_text,
           excluded_rows = excluded_indices,
           sortable = TRUE,
-          rounded = "bottom"
+          rounded = "bottom",
+          downloadable = TRUE,
+          download_filename = paste0(
+            "analysis_data_",
+            Sys.Date()
+          )
         )
       )
     })
@@ -623,7 +767,9 @@ mod_data_exploration_server <- function(id, app_state) {
     # Exclusion counter badge
     output$exclusion_counter_ui <- renderUI({
       n <- nrow(app_state$excluded_rows)
-      if (n == 0) return(NULL)
+      if (n == 0) {
+        return(NULL)
+      }
       tags$div(
         class = "explore-exclusion-counter",
         glassBadge(
@@ -714,8 +860,25 @@ mod_data_exploration_server <- function(id, app_state) {
     output$grand_summary_table_ui <- renderUI({
       .t <- bv_timer_start("explore::grand_summary_table")
       stats <- descriptive_stats()
+      caption_test <- paste0(
+        "Overall summary statistics for the entire group. ",
+        "Current grouping is: "
+        # MUST ADD: Implement dynamic caption based on
+        # current grouping (analyte, material, sex, etc.)
+      )
       req(stats)
-      result <- renderGlassTable(data = stats$grand_summary, sortable = FALSE)
+      result <- renderGlassTable(
+        data = stats$grand_summary,
+        sortable = FALSE,
+        caption = caption_test,
+        downloadable = TRUE,
+        download_filename = paste0(
+          "bvem_grouping_info_trans_info_grand_summary_",
+          Sys.Date()
+          # MUST ADD: Implement dynamic filename components based on
+          # current grouping (analyte, material, sex, etc.)
+        )
+      )
       bv_timer_end(.t)
       result
     })
@@ -725,17 +888,23 @@ mod_data_exploration_server <- function(id, app_state) {
       .t <- bv_timer_start("explore::subject_summary_table")
       stats <- descriptive_stats()
       req(stats)
-      result <- renderGlassTable(data = stats$subject_summary, sortable = TRUE)
-      bv_timer_end(.t)
-      result
-    })
-
-    # Per-sample summary table
-    output$sample_summary_table_ui <- renderUI({
-      .t <- bv_timer_start("explore::sample_summary_table")
-      stats <- descriptive_stats()
-      req(stats)
-      result <- renderGlassTable(data = stats$sample_summary, sortable = TRUE)
+      caption_text <- paste0(
+        "Overall summary statistics for the entire group. ",
+        "Current grouping is: "
+        # MUST ADD: Implement dynamic caption based on
+        # current grouping (analyte, material, sex, etc.)
+      )
+      result <- renderGlassTable(
+        data = stats$subject_summary,
+        sortable = TRUE,
+        caption = caption_text,
+        downloadable = TRUE,
+        download_filename = paste0(
+          "bvem_grouping_info_trans_info_subject_summary_",
+          Sys.Date(),
+          ".csv"
+        )
+      )
       bv_timer_end(.t)
       result
     })
@@ -763,7 +932,15 @@ mod_data_exploration_server <- function(id, app_state) {
       .t <- bv_timer_start("explore::anova_cv_table")
       anova <- anova_results()
       req(anova)
-      result <- renderGlassTable(data = anova$cv_table, sortable = FALSE)
+      result <- renderGlassTable(
+        data = anova$cv_table,
+        sortable = FALSE,
+        downloadable = TRUE,
+        download_filename = paste0(
+          "bvem_grouping_info_trans_info_anova_cv_table_",
+          Sys.Date()
+        )
+      )
       bv_timer_end(.t)
       result
     })
@@ -773,7 +950,15 @@ mod_data_exploration_server <- function(id, app_state) {
       .t <- bv_timer_start("explore::anova_detail_table")
       anova <- anova_results()
       req(anova)
-      result <- renderGlassTable(data = anova$anova_table, sortable = FALSE)
+      result <- renderGlassTable(
+        data = anova$anova_table,
+        sortable = FALSE,
+        downloadable = TRUE,
+        download_filename = paste0(
+          "bvem_grouping_info_trans_info_anova_table_",
+          Sys.Date()
+        )
+      )
       bv_timer_end(.t)
       result
     })
@@ -836,25 +1021,6 @@ mod_data_exploration_server <- function(id, app_state) {
       )
     })
 
-    # Bootstrap plot area (placeholder until run, then D3 chart)
-    output$bootstrap_plot_area_ui <- renderUI({
-      boot_result <- bootstrap_results()
-      if (is.null(boot_result)) {
-        tags$div(
-          class = "explore-placeholder",
-          tags$div(class = "explore-placeholder-icon", icon("shuffle")),
-          tags$h3("Bootstrap Analysis"),
-          tags$p(
-            "Select the number of bootstrap replicates and click",
-            tags$strong("Run Bootstrap"),
-            "to generate non-parametric confidence intervals."
-          )
-        )
-      } else {
-        glassD3PlotOutput(ns("bootstrap_plot"), height = "350px")
-      }
-    })
-
     # Render bootstrap D3 chart (reuses anova_components chart type)
     observe({
       boot_result <- bootstrap_results()
@@ -877,7 +1043,7 @@ mod_data_exploration_server <- function(id, app_state) {
         ),
         title = "Bootstrap Variance Components",
         subtitle = paste0(
-          "Percentile bootstrap CIs (",
+          "Percentile bootstrap CIs (PBCIs) (",
           input$bootstrap_B %||% 2000,
           " replicates, 95% level)"
         )
@@ -906,12 +1072,28 @@ mod_data_exploration_server <- function(id, app_state) {
           "\\(\\mathrm{CV}_{\\mathrm{I}} (\\%)\\)",
           "\\(\\mathrm{CV}_{\\mathrm{G}} (\\%)\\)"
         ),
-        `Estimate (%)` = round(c(point_est$sigma_A, point_est$sigma_I, point_est$sigma_G), 2),
-        `Lower 95%` = round(c(conf_int$sigma_A_CI[1], conf_int$sigma_I_CI[1], conf_int$sigma_G_CI[1]), 2),
-        `Upper 95%` = round(c(conf_int$sigma_A_CI[2], conf_int$sigma_I_CI[2], conf_int$sigma_G_CI[2]), 2)
+        `Estimate (%)` = format_bv_value(
+          c(point_est$sigma_A, point_est$sigma_I, point_est$sigma_G)
+        ),
+        `Lower PBCI 95%` = format_bv_value(
+          c(
+            conf_int$sigma_A_CI[1],
+            conf_int$sigma_I_CI[1],
+            conf_int$sigma_G_CI[1]
+          )
+        ),
+        `Upper PBCI 95%` = format_bv_value(
+          c(
+            conf_int$sigma_A_CI[2],
+            conf_int$sigma_I_CI[2],
+            conf_int$sigma_G_CI[2]
+          )
+        )
       )
-
-      renderGlassTable(data = boot_table, sortable = FALSE)
+      renderGlassTable(
+        data = boot_table,
+        sortable = FALSE
+      )
     })
 
     # Comparison table: ANOVA (Burdick-Graybill) vs Bootstrap CIs
@@ -929,45 +1111,90 @@ mod_data_exploration_server <- function(id, app_state) {
           "\\(\\mathrm{CV}_{\\mathrm{I}} (\\%)\\)",
           "\\(\\mathrm{CV}_{\\mathrm{G}} (\\%)\\)"
         ),
-        `ANOVA Est.` = round(c(anova$CV_A, anova$CV_I, anova$CV_G), 2),
-        `ANOVA Lower` = round(c(anova$CV_A_lower, anova$CV_I_lower, anova$CV_G_lower), 2),
-        `ANOVA Upper` = round(c(anova$CV_A_upper, anova$CV_I_upper, anova$CV_G_upper), 2),
-        `Boot. Est.` = round(c(point_est$sigma_A, point_est$sigma_I, point_est$sigma_G), 2),
-        `Boot. Lower` = round(c(conf_int$sigma_A_CI[1], conf_int$sigma_I_CI[1], conf_int$sigma_G_CI[1]), 2),
-        `Boot. Upper` = round(c(conf_int$sigma_A_CI[2], conf_int$sigma_I_CI[2], conf_int$sigma_G_CI[2]), 2)
+        `ANOVA Est. (%)` = format_bv_value(
+          c(anova$CV_A, anova$CV_I, anova$CV_G)
+        ),
+        `ANOVA Lower CI (%)` = format_bv_value(
+          c(anova$CV_A_lower, anova$CV_I_lower, anova$CV_G_lower)
+        ),
+        `ANOVA Upper CI (%)` = format_bv_value(
+          c(anova$CV_A_upper, anova$CV_I_upper, anova$CV_G_upper)
+        ),
+        `Boot. Est. (%)` = format_bv_value(
+          c(point_est$sigma_A, point_est$sigma_I, point_est$sigma_G)
+        ),
+        `Boot. Lower PBCI 95%` = format_bv_value(
+          c(
+            conf_int$sigma_A_CI[1],
+            conf_int$sigma_I_CI[1],
+            conf_int$sigma_G_CI[1]
+          )
+        ),
+        `Boot. Upper PBCI 95%` = format_bv_value(
+          c(
+            conf_int$sigma_A_CI[2],
+            conf_int$sigma_I_CI[2],
+            conf_int$sigma_G_CI[2]
+          )
+        )
       )
 
-      renderGlassTable(data = comparison_table, sortable = FALSE)
+      renderGlassTable(
+        data = comparison_table,
+        sortable = FALSE
+      )
     })
 
     # Keep outputs rendered even when their tab is not active
-    shiny::outputOptions(output, "overview_table_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "main_table_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "exclusion_counter_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "subject_filter_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "table_subject_filter_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "view_mode_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "anova_table_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "anova_detail_table_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "grand_summary_table_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "subject_summary_table_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "sample_summary_table_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "bootstrap_plot_area_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "bootstrap_table_ui", suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "bootstrap_comparison_table_ui", suspendWhenHidden = FALSE)
+    not_suspend_when_hidden <- c(
+      "overview_table_ui",
+      "main_table_ui",
+      "exclusion_counter_ui",
+      "subject_filter_ui",
+      "table_subject_filter_ui",
+      "view_mode_ui",
+      "anova_table_ui",
+      "anova_detail_table_ui",
+      "grand_summary_table_ui",
+      "subject_summary_table_ui",
+      "bootstrap_table_ui",
+      "bootstrap_comparison_table_ui"
+    )
+
+    sapply(
+      X = not_suspend_when_hidden,
+      function(id) {
+        shiny::outputOptions(output, id, suspendWhenHidden = FALSE)
+      }
+    )
   })
-
-  
-
 }
 
 #' Data Exploration Flyout Items
 #'
 #' Generates flyout menu items for the Data Exploration sidebar navigation.
-#' Each item targets a specific tab in the headless exploration tabset.
+#' Each [glassFlyoutItem()] targets a specific tab in the headless
+#' [glassTabsetPanel()] created by [mod_data_exploration_ui()], allowing the
+#' sidebar to drive tab switching via JavaScript.
 #'
-#' @param id Namespace ID matching the module's ID
-#' @return A list of glassFlyoutItem elements
+#' The returned items correspond to the five exploration tabs:
+#' \enumerate{
+#'   \item Data Overview
+#'   \item Exclude / Include
+#'   \item Prior Distributions
+#'   \item ANOVA & Descriptive
+#'   \item Bootstrap Estimates
+#' }
+#'
+#' @param id Character string. Namespace ID matching the `id` used in
+#'   [mod_data_exploration_ui()] and [mod_data_exploration_server()].
+#'
+#' @return A list of five [glassFlyoutItem()] tag objects, each bound to the
+#'   `"exploring"` navigation group and wired to a tab value in the
+#'   exploration tabset.
+#'
+#' @seealso [mod_data_exploration_ui()], [glassFlyoutItem()]
+#'
 #' @export
 mod_data_exploration_flyout_items <- function(id) {
   ns <- NS(id)

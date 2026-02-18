@@ -7,11 +7,41 @@
 mod_data_exploration_ui(id)
 }
 \arguments{
-\item{id}{Namespace ID for the module}
+\item{id}{Character string. Shiny namespace ID for the module, used to
+scope all input/output IDs via [shiny::NS()].}
 }
 \value{
-Shiny UI elements for the data exploration page
+A [shiny::tagList()] containing the complete exploration UI,
+  including an [htmltools::htmlDependency()] for the module-specific
+  JavaScript and CSS assets (`glass_data_exploration.js`,
+  `glass_data_exploration.css`).
 }
 \description{
-Data Exploration Module UI
+Builds the user interface for the Data Exploration page, which provides
+five tabbed views inside a single [glassCard()]:
 }
+\details{
+\enumerate{
+  \item **Data Overview** — read-only [renderGlassTable()] of the current
+        analysis data.
+  \item **Exclude / Include** — interactive D3 scatter plot and clickable
+        table for toggling individual observations in or out of the analysis
+        set. Includes per-subject filtering and combined/faceted view modes.
+  \item **Prior Distributions** — D3 density plots of the current
+        hyperparameter priors (\eqn{\beta}, CV\subscript{I}, CV\subscript{A},
+        CV\subscript{G}, etc.).
+  \item **ANOVA & Descriptive Statistics** — dot-plots, grand/subject/sample
+        summary tables, ANOVA variance-component plots and tables.
+  \item **Bootstrap Estimates** — non-parametric bootstrap confidence
+        intervals via [bv_anova_bootstrap_ci()], with a comparison table
+        against the classical ANOVA (Burdick–Graybill) intervals.
+}
+
+Navigation between tabs is driven by the headless [glassTabsetPanel()]
+whose tab values are exposed through [mod_data_exploration_flyout_items()].
+}
+\seealso{
+[mod_data_exploration_server()] for the companion server logic,
+  [mod_data_exploration_flyout_items()] for sidebar navigation entries.
+}
+\keyword{internal}

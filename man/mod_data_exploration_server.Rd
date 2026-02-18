@@ -7,10 +7,81 @@
 mod_data_exploration_server(id, app_state)
 }
 \arguments{
-\item{id}{Namespace ID for the module}
+\item{id}{Character string. Shiny namespace ID for the module (must match
+the `id` passed to [mod_data_exploration_ui()]).}
 
-\item{app_state}{reactiveValues object containing shared application state}
+\item{app_state}{A [shiny::reactiveValues()] object containing shared
+application state. The following fields are **read**:
+\describe{
+  \item{`filtered_data`}{A [data.table::data.table()] of the current
+    dataset after column mapping and any upstream filters have been
+    applied. Must contain columns `SubjectID`, `SampleID`,
+    `ReplicateID`, and `y`.}
+  \item{`excluded_rows`}{A [data.table::data.table()] with columns
+    `SubjectID`, `SampleID`, `ReplicateID` identifying rows to exclude.}
+  \item{`log_transformed`}{Logical flag indicating whether values are on
+    the log scale.}
+  \item{`hyper_beta`, `hyper_cvi`, `hyper_cva`, `hyper_cvg`,
+    `hyper_dfi`, `hyper_dfa`, `hyper_hbhr`}{Numeric hyperparameter
+    centres used for prior density plots.}
+  \item{`hyper_*_weakness`}{Numeric weakness/strength multipliers
+    for each hyperparameter prior.}
+}
+The following field is **written**:
+\describe{
+  \item{`analysis_data`}{The cleaned [data.table::data.table()] after
+    exclusions have been applied (i.e., `filtered_data` minus
+    `excluded_rows`).}
+}}
+}
+\value{
+Called for its side effects (registers outputs and observers inside
+  the Shiny module). No meaningful return value.
 }
 \description{
-Data Exploration Module Server
+Server-side logic for the Data Exploration page.
 }
+\details{
+## Reactive pipeline
+
+The central data flow is:
+
+\deqn{\texttt{filtered\_data} - \texttt{excluded\_rows} =
+ \texttt{analysis\_data}}
+
+`filtered_data` and `excluded_rows` are read from `app_state`; the derived
+`analysis_data` is written back into `app_state` so that downstream modules
+(modelling, results) operate on the same cleaned dataset.
+
+## Key responsibilities
+
+\itemize{
+  \item **Exclusion pipeline** — an [observe()] derives `analysis_data`
+        whenever `filtered_data` or `excluded_rows` change.
+  \item **Descriptive statistics** — a [shiny::reactive()] wrapping
+        [compute_descriptive_stats()] that returns grand, subject, and
+        sample summaries.
+  \item **ANOVA estimates** — a [shiny::reactive()] wrapping
+        [compute_anova_estimates()] (classical Burdick–Graybill CIs).
+  \item **Bootstrap CIs** — triggered on button click; calls
+        [bv_anova_bootstrap_ci()] with integer-coded data prepared for the
+        C++ back-end.
+  \item **Scatter plot** — renders an interactive D3 scatter via
+        [updateGlassD3Plot()]; supports subject filtering and
+        combined/faceted view modes.
+  \item **Click handlers** — `observeEvent()` handlers for scatter-point
+        clicks and table-row clicks that toggle rows between included and
+        excluded status.
+  \item **Prior density plots** — re-rendered whenever hyperparameter
+        values in `app_state` change.
+}
+
+All `renderUI` outputs use `suspendWhenHidden = FALSE` so that tab content
+stays up-to-date even when the tab is not currently visible.
+}
+\seealso{
+[mod_data_exploration_ui()] for the companion UI,
+  [compute_descriptive_stats()], [compute_anova_estimates()],
+  [bv_anova_bootstrap_ci()] for the underlying computations.
+}
+\keyword{internal}

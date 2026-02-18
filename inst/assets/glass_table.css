@@ -240,6 +240,84 @@
    GLASS PAGINATION - v1.0
    ========================================================================== */
 
+/* ==========================================================================
+   GLASS TABLE DOWNLOAD TOOLBAR
+   ========================================================================== */
+
+.glass-table-toolbar {
+  display: flex;
+  align-items: center;
+  background-color: rgba(96, 92, 168, 0.06);
+  border-left: 5px solid #605CA8;
+  flex-shrink: 0;
+}
+
+/* When caption is inside the toolbar, let the toolbar handle its chrome */
+.glass-table-toolbar > .glass-table-caption {
+  flex: 1;
+  min-width: 0;
+  background-color: transparent;
+  border-left: none;
+}
+
+/* When there is no caption, keep the toolbar minimal */
+.glass-table-toolbar.download-only {
+  background-color: transparent;
+  border-left: none;
+  justify-content: flex-end;
+  padding: 6px 10px 0;
+}
+
+.glass-table-download-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 18px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Download Button Base */
+.glass-table-dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border: 1px solid rgba(96, 92, 168, 0.25);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #605CA8;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  outline: none;
+  white-space: nowrap;
+}
+
+/* Download Button Hover */
+.glass-table-dl-btn:hover {
+  background: #605CA8;
+  color: white;
+  border-color: #605CA8;
+  box-shadow: 0 4px 12px rgba(96, 92, 168, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Download Button Active (Pressed) */
+.glass-table-dl-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(96, 92, 168, 0.2);
+}
+
+.glass-table-dl-btn i {
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   GLASS PAGINATION CONTROLS
+   ========================================================================== */
+
 .glass-pagination-container {
   padding: 15px 25px;
   display: flex;

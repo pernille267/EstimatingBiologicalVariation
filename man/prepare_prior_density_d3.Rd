@@ -42,7 +42,7 @@ prepare_prior_density_d3(
 \item{model}{Character. \code{"NTT"} or \code{"NTTDFGAM"}.}
 
 \item{n_samples}{Number of Monte Carlo samples.
-Defaults to 50 000.}
+Defaults to 10 000.}
 
 \item{title}{Chart title.}
 
